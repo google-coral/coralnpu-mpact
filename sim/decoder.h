@@ -1,0 +1,59 @@
+#ifndef SIM_DECODER_H_
+#define SIM_DECODER_H_
+
+#include <memory>
+
+#include "sim/kelvin_decoder.h"
+#include "sim/kelvin_encoding.h"
+#include "sim/kelvin_state.h"
+#include "mpact/sim/generic/arch_state.h"
+#include "mpact/sim/generic/decoder_interface.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/memory_interface.h"
+
+namespace kelvin::sim {
+
+// This is the factory class needed by the generated decoder. It is responsible
+// for creating the decoder for each slot instance. Since the RISC-V
+// architecture only has a single slot, it's a pretty simple class.
+class KelvinIsaFactory : public isa32::KelvinInstructionSetFactory {
+ public:
+  std::unique_ptr<isa32::KelvinSlot> CreateKelvinSlot(
+      mpact::sim::generic::ArchState *state) override {
+    return std::make_unique<isa32::KelvinSlot>(state);
+  }
+};
+
+// This class implements the generic DecoderInterface and provides a bridge
+// to the (isa specific) generated decoder classes.
+class KelvinDecoder : public mpact::sim::generic::DecoderInterface {
+ public:
+  using SlotEnum = isa32::SlotEnum;
+  using OpcodeEnum = isa32::OpcodeEnum;
+
+  KelvinDecoder(KelvinState *state, mpact::sim::util::MemoryInterface *memory);
+  KelvinDecoder() = delete;
+  ~KelvinDecoder() override;
+
+  // This will always return a valid instruction that can be executed. In the
+  // case of a decode error, the semantic function in the instruction object
+  // instance will raise an internal simulator error when executed.
+  mpact::sim::generic::Instruction *DecodeInstruction(
+      uint64_t address) override;
+
+  // Getter.
+  isa32::KelvinEncoding *kelvin_encoding() const { return kelvin_encoding_; }
+
+ private:
+  KelvinState *state_;
+  mpact::sim::util::MemoryInterface *memory_;
+  std::unique_ptr<mpact::sim::generic::ProgramError> decode_error_;
+  mpact::sim::generic::DataBuffer *inst_db_;
+  isa32::KelvinEncoding *kelvin_encoding_;
+  KelvinIsaFactory *kelvin_isa_factory_;
+  isa32::KelvinInstructionSet *kelvin_isa_;
+};
+
+}  // namespace kelvin::sim
+
+#endif  // SIM_DECODER_H_
