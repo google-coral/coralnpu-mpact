@@ -71,9 +71,9 @@ TEST_F(KelvinTopTest, RunHelloProgram) {
   auto halt_result = kelvin_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
-            static_cast<int>(HaltReason::kSoftwareBreakpoint));
+            static_cast<int>(HaltReason::kUserRequest));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
-  EXPECT_EQ("Hit breakpoint or program exits with fault\n", stdout_str);
+  EXPECT_EQ("Program exits with fault\n", stdout_str);
 }
 
 // Runs the program from beginning to end. Enable arm semihosting.
@@ -103,7 +103,7 @@ TEST_F(KelvinTopTest, RunHelloMpauseProgram) {
   auto halt_result = kelvin_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
-            static_cast<int>(HaltReason::kSoftwareBreakpoint));
+            static_cast<int>(HaltReason::kUserRequest));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits properly\n", stdout_str);
 }
@@ -171,9 +171,9 @@ TEST_F(KelvinTopTest, StepProgram) {
   auto halt_result = kelvin_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
-            static_cast<int>(HaltReason::kSoftwareBreakpoint));
+            static_cast<int>(HaltReason::kUserRequest));
 
-  EXPECT_EQ("Hit breakpoint or program exits with fault\n",
+  EXPECT_EQ("Program exits with fault\n",
             testing::internal::GetCapturedStdout());
 }
 

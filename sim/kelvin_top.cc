@@ -115,28 +115,29 @@ void KelvinTop::Initialize() {
   semihost_ = new mpact::sim::riscv::RiscVArmSemihost(
       mpact::sim::riscv::RiscVArmSemihost::BitWidth::kWord32, memory_, memory_);
   // Set the software breakpoint callback.
-  state_->AddEbreakHandler([this](const mpact::sim::generic::Instruction *inst)
-                               -> bool {
-    if (inst != nullptr) {
-      if (absl::GetFlag(FLAGS_use_semihost) &&
-          semihost_->IsSemihostingCall(inst)) {
-        semihost_->OnEBreak(inst);
-      } else if (absl::GetFlag(FLAGS_use_semihost)) {  // Software breakpoint.
-        RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
-      } else {  // The default Kelvin simulation mode.
-        std::cout << "Hit breakpoint or program exits with fault" << std::endl;
-        RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
-      }
-      return true;
-    }
-    return false;
-  });
+  state_->AddEbreakHandler(
+      [this](const mpact::sim::generic::Instruction *inst) -> bool {
+        if (inst != nullptr) {
+          if (absl::GetFlag(FLAGS_use_semihost) &&
+              semihost_->IsSemihostingCall(inst)) {
+            semihost_->OnEBreak(inst);
+          } else if (rv_bp_manager_->HasBreakpoint(
+                         inst->address())) {  // Software breakpoint.
+            RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
+          } else {  // The default Kelvin simulation mode.
+            std::cout << "Program exits with fault" << std::endl;
+            RequestHalt(HaltReason::kUserRequest, inst);
+          }
+          return true;
+        }
+        return false;
+      });
 
   state_->AddMpauseHandler(
       [this](const mpact::sim::generic::Instruction *inst) -> bool {
-        if (inst != nullptr) {  // Software breakpoint
+        if (inst != nullptr) {
           std::cout << "Program exits properly" << std::endl;
-          RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
+          RequestHalt(HaltReason::kUserRequest, inst);
           return true;
         }
         return false;
