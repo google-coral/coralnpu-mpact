@@ -76,6 +76,23 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
     }
   }
 
+  template <typename T>
+  absl::string_view KelvinTestTypeSuffix() {
+    absl::string_view type_suffix = "Unknown";
+    switch (sizeof(T)) {
+      case 4:
+        type_suffix = "W";
+        break;
+      case 2:
+        type_suffix = "H";
+        break;
+      case 1:
+        type_suffix = "B";
+        break;
+    }
+    return type_suffix;
+  }
+
   template <typename Vd, typename Vs1, typename Vs2>
   static std::pair<Vs1, Vs2> CommonBinaryOpArgsGetter(
       int num_ops, int op_num, int dest_reg_sub_index, int element_index,
