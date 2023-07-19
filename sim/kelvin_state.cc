@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <ostream>
 #include <string>
 
 #include "absl/log/check.h"
@@ -47,10 +48,25 @@ void KelvinState::PrintLog(absl::string_view format_string) {
       CHECK_GT(log_args_.size(), 0)
           << "Invalid program with insufficient log argurments";
       if (log_args_[0].type() == typeid(uint32_t)) {
-        std::cout << std::any_cast<uint32_t>(log_args_[0]);
+        switch (print_ptr[1]) {
+          case 'u':
+            std::cout << std::any_cast<uint32_t>(log_args_[0]);
+            break;
+          case 'd':
+            std::cout << static_cast<int32_t>(
+                std::any_cast<uint32_t>(log_args_[0]));
+            break;
+          default:
+            std::cerr << "incorrect format" << std::endl;
+            break;
+        }
       }
       if (log_args_[0].type() == typeid(std::string)) {
-        std::cout << std::any_cast<std::string>(log_args_[0]);
+        if (print_ptr[1] == 's') {
+          std::cout << std::any_cast<std::string>(log_args_[0]);
+        } else {
+          std::cerr << "incorrect format" << std::endl;
+        }
       }
       log_args_.erase(log_args_.begin());
       print_ptr += 2;  // skip the format specifier too.

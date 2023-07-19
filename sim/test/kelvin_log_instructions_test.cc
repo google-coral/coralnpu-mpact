@@ -46,9 +46,9 @@ TEST_F(KelvinLogInstructionsTest, SimplePrint) {
   EXPECT_EQ(kHelloString, stdout_str);
 }
 
-TEST_F(KelvinLogInstructionsTest, PrintNumer) {
-  constexpr char kFormatString[] = "Hello %d\n";
-  constexpr uint32_t kPrintNum = 1337;
+TEST_F(KelvinLogInstructionsTest, PrintUnsignedNumber) {
+  constexpr char kFormatString[] = "Hello %u\n";
+  constexpr uint32_t kPrintNum = 2200000000;  // a number > INT32_MAX
 
   // Initialize memory.
   auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
@@ -80,7 +80,44 @@ TEST_F(KelvinLogInstructionsTest, PrintNumer) {
     instructions[i]->Execute(nullptr);
   }
   const std::string stdout_str = testing::internal::GetCapturedStdout();
-  EXPECT_EQ("Hello 1337\n", stdout_str);
+  EXPECT_EQ("Hello 2200000000\n", stdout_str);
+}
+
+TEST_F(KelvinLogInstructionsTest, PrintSignedNumber) {
+  constexpr char kFormatString[] = "Hello %d\n";
+  constexpr int32_t kPrintNum = -1337;
+
+  // Initialize memory.
+  auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
+  for (int i = 0; i < sizeof(kFormatString); ++i) {
+    db->Set<char>(i, kFormatString[i]);
+  }
+  db->DecRef();
+
+  std::array<InstructionPtr, 2> instructions = {CreateInstruction(),
+                                                CreateInstruction()};
+
+  AppendRegisterOperands(instructions[0].get(), {kelvin::sim::test::kRs1Name},
+                         {});
+  instructions[0]->set_semantic_function(
+      absl::bind_front(&KelvinLogInstruction, /*mode=*/1));  // scalar log
+
+  // Set the second instruction for the actual print out.
+  state_->StoreMemory(instructions[1].get(), kMemAddress, db);
+  AppendRegisterOperands(instructions[1].get(), {kelvin::sim::test::kRs2Name},
+                         {});
+  instructions[1]->set_semantic_function(
+      absl::bind_front(&KelvinLogInstruction, /*mode=*/0));
+
+  SetRegisterValues<int32_t>({{kelvin::sim::test::kRs1Name, kPrintNum}});
+  SetRegisterValues<uint32_t>({{kelvin::sim::test::kRs2Name, kMemAddress}});
+
+  testing::internal::CaptureStdout();
+  for (int i = 0; i < instructions.size(); ++i) {
+    instructions[i]->Execute(nullptr);
+  }
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Hello -1337\n", stdout_str);
 }
 
 TEST_F(KelvinLogInstructionsTest, PrintCharacterStream) {

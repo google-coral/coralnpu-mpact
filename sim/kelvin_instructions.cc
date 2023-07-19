@@ -60,6 +60,8 @@ void KelvinLogInstruction(int log_mode,
       break;
     }
     case 1: {  // Scalar log op to load an integer argument.
+      // The value is stored as an unsigned integer. The actual format will be
+      // determined with the format specifier "d" or "u".
       auto data =
           mpact::sim::generic::GetInstructionSource<uint32_t>(inst, 0, 0);
       state->SetLogArgs(data);
