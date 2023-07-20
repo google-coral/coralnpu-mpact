@@ -151,7 +151,7 @@ void KelvinTop::Initialize() {
         static_cast<uint64_t>(
             mpact::sim::riscv::ExceptionCode::kIllegalInstruction)) {
       std::cerr << "Illegal instruction at 0x" << std::hex << epc << std::endl;
-      RequestHalt(HaltReason::kSoftwareBreakpoint, nullptr);
+      RequestHalt(HaltReason::kUserRequest, nullptr);
       return true;
     }
     return false;

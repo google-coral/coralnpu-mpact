@@ -5,6 +5,7 @@ exports_files([
     "testfiles/rv32i.elf",
     "testfiles/rv32m.elf",
     "testfiles/rv32soft_fp.elf",
+    "testfiles/rv32uf_fadd.elf",
 ])
 
 cc_test(
@@ -54,6 +55,7 @@ cc_test(
         "testfiles/rv32i.elf",
         "testfiles/rv32m.elf",
         "testfiles/rv32soft_fp.elf",
+        "testfiles/rv32uf_fadd.elf",
     ],
     deps = [
         "//sim:kelvin_top",

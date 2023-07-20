@@ -28,6 +28,7 @@ constexpr char kRV32imfElfFileName[] = "hello_world_rv32imf.elf";
 constexpr char kRV32iElfFileName[] = "rv32i.elf";
 constexpr char kRV32mElfFileName[] = "rv32m.elf";
 constexpr char kRV32SoftFloatElfFileName[] = "rv32soft_fp.elf";
+constexpr char kRV32fElfFileName[] = "rv32uf_fadd.elf";
 
 // The depot path to the test directory.
 constexpr char kDepotPath[] = "sim/test/";
@@ -158,6 +159,21 @@ TEST_F(KelvinTopTest, RunRV32SoftFProgram) {
   EXPECT_EQ("7.00+3.00=10.00;7.00-3.00=4.00;7.00*3.00=21.00;7.00/3.00=2.33\n",
             stdout_str);
   absl::SetFlag(&FLAGS_use_semihost, false);
+}
+
+// Runs the rv32f program (not supported)
+TEST_F(KelvinTopTest, RunIllegalRV32FProgram) {
+  LoadFile(kRV32fElfFileName);
+  testing::internal::CaptureStderr();
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+  EXPECT_OK(kelvin_top_->Run());
+  EXPECT_OK(kelvin_top_->Wait());
+  auto halt_result = kelvin_top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(static_cast<int>(halt_result.value()),
+            static_cast<int>(HaltReason::kUserRequest));
+  const std::string stderr_str = testing::internal::GetCapturedStderr();
+  EXPECT_THAT(stderr_str, testing::HasSubstr("Illegal instruction at 0x"));
 }
 
 // Steps through the program from beginning to end.
