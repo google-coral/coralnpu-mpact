@@ -78,6 +78,7 @@ void KelvinTop::Initialize() {
   // Create the simulation state
   state_ = new sim::KelvinState(kKelvinName, mpact::sim::riscv::RiscVXlen::RV32,
                                 memory_);
+  state_->set_max_physical_address(kKelvinMaxMemoryAddress);
   fp_state_ = new mpact::sim::riscv::RiscVFPState(state_);
   state_->set_rv_fp(fp_state_);
   pc_ = state_->registers()->at(sim::KelvinState::kPcName);
@@ -143,18 +144,35 @@ void KelvinTop::Initialize() {
         return false;
       });
 
-  // Set illegal instruction callback.
+  // Set trap callbacks.
   state_->set_on_trap([this](bool is_interrupt, uint64_t trap_value,
                              uint64_t exception_code, uint64_t epc,
                              const Instruction *inst) -> bool {
-    if (exception_code ==
-        static_cast<uint64_t>(
-            mpact::sim::riscv::ExceptionCode::kIllegalInstruction)) {
-      std::cerr << "Illegal instruction at 0x" << std::hex << epc << std::endl;
-      RequestHalt(HaltReason::kUserRequest, nullptr);
-      return true;
+    auto code = static_cast<mpact::sim::riscv::ExceptionCode>(exception_code);
+    bool result = false;
+    switch (code) {
+      case mpact::sim::riscv::ExceptionCode::kIllegalInstruction: {
+        std::cerr << "Illegal instruction at 0x" << std::hex << epc
+                  << std::endl;
+        RequestHalt(HaltReason::kUserRequest, nullptr);
+        result = true;
+      } break;
+      case mpact::sim::riscv::ExceptionCode::kLoadAccessFault: {
+        std::cerr << "Memory load access fault at 0x" << std::hex << epc
+                  << " as: " << inst->AsString() << std::endl;
+        RequestHalt(HaltReason::kUserRequest, nullptr);
+        result = true;
+      } break;
+      case mpact::sim::riscv::ExceptionCode::kStoreAccessFault: {
+        std::cerr << "Memory store access fault at 0x" << std::hex << epc
+                  << " as: " << inst->AsString() << std::endl;
+        RequestHalt(HaltReason::kUserRequest, nullptr);
+        result = true;
+      } break;
+      default:
+        break;
     }
-    return false;
+    return result;
   });
 
   semihost_->set_exit_callback(

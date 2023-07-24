@@ -34,6 +34,9 @@ constexpr char kKelvinVldVstFileName[] = "kelvin_vldvst.elf";
 // The depot path to the test directory.
 constexpr char kDepotPath[] = "sim/test/";
 
+// Maximum memory size used by riscv programs build for userspace.
+constexpr uint64_t kRiscv32MaxAddress = 0x3'ffff'ffffULL;
+
 class KelvinTopTest : public testing::Test {
  protected:
   KelvinTopTest() {
@@ -63,8 +66,30 @@ class KelvinTopTest : public testing::Test {
   FlatDemandMemory *memory_ = nullptr;
 };
 
-// Runs the program from beginning to end.
-TEST_F(KelvinTopTest, RunHelloProgram) {
+// Check the max memory size
+TEST_F(KelvinTopTest, CheckDefaultMaxMemorySize) {
+  EXPECT_EQ(kelvin_top_->state()->max_physical_address(),
+            kelvin::sim::kKelvinMaxMemoryAddress);
+}
+
+// Run a program exceeds the default memory setting
+TEST_F(KelvinTopTest, RunProgramExceedDefaultMemory) {
+  LoadFile(kRV32imfElfFileName);
+  testing::internal::CaptureStderr();
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+  EXPECT_OK(kelvin_top_->Run());
+  EXPECT_OK(kelvin_top_->Wait());
+  auto halt_result = kelvin_top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(static_cast<int>(halt_result.value()),
+            static_cast<int>(HaltReason::kUserRequest));
+  const std::string stderr_str = testing::internal::GetCapturedStderr();
+  EXPECT_THAT(stderr_str, testing::HasSubstr("Memory store access fault"));
+}
+
+// Runs the program from has ebreak (from syscall).
+TEST_F(KelvinTopTest, RunEbreakProgram) {
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32imfElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
@@ -81,6 +106,7 @@ TEST_F(KelvinTopTest, RunHelloProgram) {
 // Runs the program from beginning to end. Enable arm semihosting.
 TEST_F(KelvinTopTest, RunHelloProgramSemihost) {
   absl::SetFlag(&FLAGS_use_semihost, true);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32imfElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
@@ -113,6 +139,7 @@ TEST_F(KelvinTopTest, RunHelloMpauseProgram) {
 // Runs the rv32i program with arm semihosting.
 TEST_F(KelvinTopTest, RunRV32IProgram) {
   absl::SetFlag(&FLAGS_use_semihost, true);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32iElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
@@ -130,6 +157,7 @@ TEST_F(KelvinTopTest, RunRV32IProgram) {
 // Runs the rv32m program with arm semihosting.
 TEST_F(KelvinTopTest, RunRV32MProgram) {
   absl::SetFlag(&FLAGS_use_semihost, true);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32mElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
@@ -147,6 +175,7 @@ TEST_F(KelvinTopTest, RunRV32MProgram) {
 // Runs the rv32 soft float program with arm semihosting.
 TEST_F(KelvinTopTest, RunRV32SoftFProgram) {
   absl::SetFlag(&FLAGS_use_semihost, true);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32SoftFloatElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
@@ -180,6 +209,7 @@ TEST_F(KelvinTopTest, RunIllegalRV32FProgram) {
 // Steps through the program from beginning to end.
 TEST_F(KelvinTopTest, StepProgram) {
   LoadFile(kRV32imfElfFileName);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
 
@@ -197,6 +227,7 @@ TEST_F(KelvinTopTest, StepProgram) {
 // Sets/Clears breakpoints without executing the program.
 TEST_F(KelvinTopTest, SetAndClearBreakpoint) {
   LoadFile(kRV32imfElfFileName);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   auto result = loader_->GetSymbol("printf");
   EXPECT_OK(result);
   auto address = result.value().first;
@@ -217,6 +248,7 @@ TEST_F(KelvinTopTest, SetAndClearBreakpoint) {
 // Runs program with breakpoint at printf with arm semihosting.
 TEST_F(KelvinTopTest, RunWithBreakpoint) {
   absl::SetFlag(&FLAGS_use_semihost, true);
+  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32imfElfFileName);
 
   // Set breakpoint at printf.

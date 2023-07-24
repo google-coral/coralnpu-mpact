@@ -23,6 +23,8 @@ ABSL_DECLARE_FLAG(bool, use_semihost);
 
 namespace kelvin::sim {
 
+constexpr uint64_t kKelvinMaxMemoryAddress = 0x3f'ffffULL;  // 4MB
+
 // Top level class for the Kelvin simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.
 // This class brings together the decoder, the architecture state, and control.
