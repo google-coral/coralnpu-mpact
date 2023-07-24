@@ -259,23 +259,26 @@ class KelvinVectorInstructionsTest
   }
 
   template <template <typename> class F, typename T>
-  void KelvinSlideOpHelper(absl::string_view name, bool horizontal) {
+  void KelvinSlideOpHelper(absl::string_view name, bool horizontal,
+                           bool strip_mine) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<T>());
 
     for (int i = 1; i < 5; ++i) {
       BinaryOpTestHelper<T, T, T>(
-          absl::bind_front(F<T>::KelvinOp, i),
-          absl::StrCat(name_with_type, i, "VM"), kNonScalar, kIsStripmine,
-          F<T>::Op, absl::bind_front(F<T>::kArgsGetter, horizontal, i),
-          kNonHalftypeOp, kNonVmvpOp, kNonWidenDst);
+          absl::bind_front(F<T>::KelvinOp, i, strip_mine),
+          absl::StrCat(name_with_type, i, "V", strip_mine ? "M" : ""),
+          kNonScalar, strip_mine, F<T>::Op,
+          absl::bind_front(F<T>::kArgsGetter, horizontal, i), kNonHalftypeOp,
+          kNonVmvpOp, kNonWidenDst);
     }
   }
 
   template <template <typename> class F, typename T, typename TNext1,
             typename... TNext>
-  void KelvinSlideOpHelper(absl::string_view name, bool horizontal) {
-    KelvinSlideOpHelper<F, T>(name, horizontal);
-    KelvinSlideOpHelper<F, TNext1, TNext...>(name, horizontal);
+  void KelvinSlideOpHelper(absl::string_view name, bool horizontal,
+                           bool strip_mine) {
+    KelvinSlideOpHelper<F, T>(name, horizontal, strip_mine);
+    KelvinSlideOpHelper<F, TNext1, TNext...>(name, horizontal, strip_mine);
   }
 
   template <template <typename> class F, typename T>
@@ -1429,10 +1432,10 @@ static std::pair<T, T> SlidenArgsGetter(
     int register_num;
     int source_arg;
   };
-  const Interleave interleave_start[2][4] = {{{3, 0}, {2, 0}, {1, 0}, {0, 0}},
-                                             {{3, 0}, {2, 0}, {1, 0}, {0, 0}}};
-  const Interleave interleave_end[2][4] = {{{3, 1}, {2, 1}, {1, 1}, {0, 1}},
-                                           {{0, 1}, {3, 0}, {2, 0}, {1, 0}}};
+  const Interleave interleave_start[2][4] = {{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
+                                             {{0, 0}, {1, 0}, {2, 0}, {3, 0}}};
+  const Interleave interleave_end[2][4] = {{{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+                                           {{1, 0}, {2, 0}, {3, 0}, {0, 1}}};
 
   T arg1;
   if (element_index + index < vd_size) {
@@ -1460,29 +1463,33 @@ template <typename T>
 struct VSlidehnOp {
   static constexpr auto kArgsGetter = SlidenArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
     KelvinVSlidehn<T>(index, inst);
   }
 };
 
-TEST_F(KelvinVectorInstructionsTest, VSlidehnOp) {
-  KelvinSlideOpHelper<VSlidehnOp, int8_t, int16_t, int32_t>("VSlidehnOp",
-                                                            kHorizontal);
+TEST_F(KelvinVectorInstructionsTest, VSlidehn) {
+  KelvinSlideOpHelper<VSlidehnOp, int8_t, int16_t, int32_t>(
+      "VSlidehnOp", kHorizontal, true /* strip_mine */);
 }
 
-// Slide next register vertically by index.
 template <typename T>
 struct VSlidevnOp {
   static constexpr auto kArgsGetter = SlidenArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, Instruction *inst) {
-    KelvinVSlidevn<T>(index, inst);
+  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+    KelvinVSlidevn<T>(index, strip_mine, inst);
   }
 };
 
-TEST_F(KelvinVectorInstructionsTest, VSlidevnOp) {
-  KelvinSlideOpHelper<VSlidevnOp, int8_t, int16_t, int32_t>("VSlidevnOp",
-                                                            kVertical);
+TEST_F(KelvinVectorInstructionsTest, VSliden) {
+  KelvinSlideOpHelper<VSlidevnOp, int8_t, int16_t, int32_t>(
+      "VSlidenOp", kVertical, false /* strip_mine */);
+}
+
+TEST_F(KelvinVectorInstructionsTest, VSlidevn) {
+  KelvinSlideOpHelper<VSlidevnOp, int8_t, int16_t, int32_t>(
+      "VSlidevnOp", kVertical, true /* strip_mine */);
 }
 
 // Slide previous register by index.
@@ -1499,23 +1506,23 @@ static std::pair<T, T> SlidepArgsGetter(
     int register_num;
     int source_arg;
   };
-  const Interleave interleave_start[2][4] = {{{3, 0}, {2, 0}, {1, 0}, {0, 0}},
-                                             {{3, 0}, {2, 0}, {1, 0}, {0, 0}}};
-  const Interleave interleave_end[2][4] = {{{2, 0}, {1, 0}, {0, 0}, {3, 1}},
-                                           {{0, 1}, {3, 0}, {2, 0}, {1, 0}}};
+  const Interleave interleave_start[2][4] = {{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
+                                             {{3, 0}, {0, 1}, {1, 1}, {2, 1}}};
+  const Interleave interleave_end[2][4] = {{{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+                                           {{0, 1}, {1, 1}, {2, 1}, {3, 1}}};
 
   T arg1;
-  if (element_index >= index) {
+  if (element_index < index) {
     auto src_element_index =
         interleave_start[horizontal][op_num].register_num * vd_size +
-        element_index - index;
+        element_index - index + vd_size;
     arg1 = interleave_start[horizontal][op_num].source_arg
                ? vs2_value[src_element_index]
                : vs1_value[src_element_index];
   } else {
     auto src_element_index =
         interleave_end[horizontal][op_num].register_num * vd_size +
-        element_index - index + vd_size;
+        element_index - index;
 
     arg1 = interleave_end[horizontal][op_num].source_arg
                ? vs2_value[src_element_index]
@@ -1530,29 +1537,33 @@ template <typename T>
 struct VSlidehpOp {
   static constexpr auto kArgsGetter = SlidepArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
     KelvinVSlidehp<T>(index, inst);
   }
 };
 
-TEST_F(KelvinVectorInstructionsTest, VSlidehpOp) {
-  KelvinSlideOpHelper<VSlidehpOp, int8_t, int16_t, int32_t>("VSlidehpOp",
-                                                            kHorizontal);
+TEST_F(KelvinVectorInstructionsTest, VSlidehp) {
+  KelvinSlideOpHelper<VSlidehpOp, int8_t, int16_t, int32_t>(
+      "VSlidehpOp", kHorizontal, true /* strip_mine */);
 }
 
-// Slide previous register vertically by index.
 template <typename T>
 struct VSlidevpOp {
   static constexpr auto kArgsGetter = SlidepArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, Instruction *inst) {
-    KelvinVSlidevp<T>(index, inst);
+  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+    KelvinVSlidevp<T>(index, strip_mine, inst);
   }
 };
 
-TEST_F(KelvinVectorInstructionsTest, VSlidevpOp) {
-  KelvinSlideOpHelper<VSlidevpOp, int8_t, int16_t, int32_t>("VSlidevpOp",
-                                                            kVertical);
+TEST_F(KelvinVectorInstructionsTest, VSlidep) {
+  KelvinSlideOpHelper<VSlidevpOp, int8_t, int16_t, int32_t>(
+      "VSlidepOp", kVertical, false /* strip_mine */);
+}
+
+TEST_F(KelvinVectorInstructionsTest, VSlidevp) {
+  KelvinSlideOpHelper<VSlidevpOp, int8_t, int16_t, int32_t>(
+      "VSlidevpOp", kVertical, true /* strip_mine */);
 }
 
 // Select lanes from two operands with vector selection boolean.

@@ -19,7 +19,6 @@ namespace kelvin::sim {
 
 using mpact::sim::generic::DataBuffer;
 using mpact::sim::generic::GetInstructionSource;
-using mpact::sim::generic::Instruction;
 using mpact::sim::riscv::RV32VectorDestinationOperand;
 
 template <typename Vd, typename Vs1, typename Vs2>
@@ -1018,11 +1017,23 @@ T VSlidenOpGetArg1(bool horizontal, int index, const Instruction *inst,
     int register_num;
     int source_arg;
   };
-  const Interleave interleave_start[2][4] = {{{3, 0}, {2, 0}, {1, 0}, {0, 0}},
-                                             {{3, 0}, {2, 0}, {1, 0}, {0, 0}}};
-  const Interleave interleave_end[2][4] = {{{3, 1}, {2, 1}, {1, 1}, {0, 1}},
-                                           {{0, 1}, {3, 0}, {2, 0}, {1, 0}}};
-
+  const Interleave interleave_start[2][4] = {{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
+                                             {{0, 0}, {1, 0}, {2, 0}, {3, 0}}};
+  const Interleave interleave_end[2][4] = {{{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+                                           {{1, 0}, {2, 0}, {3, 0}, {0, 1}}};
+  // Get the elements from the right up to `index`.
+  // For the horizontal mode, it treats the stripmine `vm` register based on
+  // `vs1` as a contiguous block, and only the first `index` elements from `vs2`
+  // will be used.
+  //
+  // For the vertical mode, each stripmine vector register `op_index` is mapped
+  // separatedly. it mimics the imaging tiling process shift of
+  //   |--------|--------|
+  //   | 4xVLEN | 4xVLEN |
+  //   |  (vs1) |  (vs2) |
+  //   |--------|--------|
+  // The vertical mode can also support the non-stripmine version to handle
+  // the last columns of the image.
   if (dst_element_index + index < elts_per_register) {
     auto src_element_index =
         interleave_start[horizontal][op_index].register_num *
@@ -1042,16 +1053,16 @@ T VSlidenOpGetArg1(bool horizontal, int index, const Instruction *inst,
 
 // Slide next register vertically by index.
 template <typename T>
-void KelvinVSlidevn(int index, Instruction *inst) {
+void KelvinVSlidevn(int index, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
-      inst, false /* scalar */, true /* strip_mine */,
+      inst, false /* scalar */, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(absl::bind_front(
           VSlidenOpGetArg1<T>, false /* horizontal */, index)));
 }
-template void KelvinVSlidevn<int8_t>(int, Instruction *);
-template void KelvinVSlidevn<int16_t>(int, Instruction *);
-template void KelvinVSlidevn<int32_t>(int, Instruction *);
+template void KelvinVSlidevn<int8_t>(int, bool, Instruction *);
+template void KelvinVSlidevn<int16_t>(int, bool, Instruction *);
+template void KelvinVSlidevn<int32_t>(int, bool, Instruction *);
 
 // Slide next register horizontally by index.
 template <typename T>
@@ -1080,16 +1091,28 @@ T VSlidepOpGetArg1(bool horizontal, int index, const Instruction *inst,
     int register_num;
     int source_arg;
   };
-  const Interleave interleave_start[2][4] = {{{3, 0}, {2, 0}, {1, 0}, {0, 0}},
-                                             {{3, 0}, {2, 0}, {1, 0}, {0, 0}}};
-  const Interleave interleave_end[2][4] = {{{2, 0}, {1, 0}, {0, 0}, {3, 1}},
-                                           {{0, 1}, {3, 0}, {2, 0}, {1, 0}}};
-
-  if (dst_element_index >= index) {
+  const Interleave interleave_start[2][4] = {{{0, 0}, {1, 0}, {2, 0}, {3, 0}},
+                                             {{3, 0}, {0, 1}, {1, 1}, {2, 1}}};
+  const Interleave interleave_end[2][4] = {{{0, 1}, {1, 1}, {2, 1}, {3, 1}},
+                                           {{0, 1}, {1, 1}, {2, 1}, {3, 1}}};
+  // Get the elements from the left up to `index`.
+  // For the horizontal mode, it treats the stripmine `vm` register based on
+  // `vs2` as a contiguous block, and only the LAST `index` elements from
+  // stripmine vm register based on `vs1` will be used AT THE BEGINNING.
+  //
+  // For the vertical mode, each stripmine vector register `op_index` is mapped
+  // separatedly. it mimics the imaging tiling process shift of
+  //   |--------|--------|
+  //   | 4xVLEN | 4xVLEN |
+  //   |  (vs1) |  (vs2) |
+  //   |--------|--------|
+  // The vertical mode can also support the non-stripmine version to handle
+  // the last columns of the image.
+  if (dst_element_index < index) {
     auto src_element_index =
         interleave_start[horizontal][op_index].register_num *
             elts_per_register +
-        dst_element_index - index;
+        dst_element_index - index + elts_per_register;
     return GetInstructionSource<T>(
         inst, interleave_start[horizontal][op_index].source_arg,
         src_element_index);
@@ -1097,23 +1120,23 @@ T VSlidepOpGetArg1(bool horizontal, int index, const Instruction *inst,
 
   auto src_element_index =
       interleave_end[horizontal][op_index].register_num * elts_per_register +
-      elts_per_register + dst_element_index - index;
+      dst_element_index - index;
   return GetInstructionSource<T>(
       inst, interleave_end[horizontal][op_index].source_arg, src_element_index);
 }
 
 // Slide previous register vertically by index.
 template <typename T>
-void KelvinVSlidevp(int index, Instruction *inst) {
+void KelvinVSlidevp(int index, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
-      inst, false /* scalar */, true /* strip_mine */,
+      inst, false /* scalar */, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(absl::bind_front(
           VSlidepOpGetArg1<T>, false /* horizontal */, index)));
 }
-template void KelvinVSlidevp<int8_t>(int, Instruction *);
-template void KelvinVSlidevp<int16_t>(int, Instruction *);
-template void KelvinVSlidevp<int32_t>(int, Instruction *);
+template void KelvinVSlidevp<int8_t>(int, bool, Instruction *);
+template void KelvinVSlidevp<int16_t>(int, bool, Instruction *);
+template void KelvinVSlidevp<int32_t>(int, bool, Instruction *);
 
 // Slide previous register horizontally by index.
 template <typename T>

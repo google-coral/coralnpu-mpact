@@ -151,13 +151,13 @@ template <typename T>
 void KelvinVMadd(bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
-void KelvinVSlidevn(int index, Instruction *inst);
+void KelvinVSlidevn(int index, bool strip_mine, Instruction *inst);
 
 template <typename T>
 void KelvinVSlidehn(int index, Instruction *inst);
 
 template <typename T>
-void KelvinVSlidevp(int index, Instruction *inst);
+void KelvinVSlidevp(int index, bool strip_mine, Instruction *inst);
 
 template <typename T>
 void KelvinVSlidehp(int index, Instruction *inst);

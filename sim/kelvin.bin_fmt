@@ -1199,6 +1199,18 @@ instruction group KelvinVectorInst[32] : KelvinV2ArgsType {
   vmadd_w_vx_m   : KelvinV2ArgsType : func2 == 0b01'0101, sz == 0b10, m == 0b01, func1 == 0b011, form == 0b10;
 
   //vslidevn
+  vsliden_b_1_vv      : KelvinV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_b_2_vv      : KelvinV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_b_3_vv      : KelvinV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_b_4_vv      : KelvinV2ArgsType : func2 == 0b00'0011, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_h_1_vv      : KelvinV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_h_2_vv      : KelvinV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_h_3_vv      : KelvinV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_h_4_vv      : KelvinV2ArgsType : func2 == 0b00'0011, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_w_1_vv      : KelvinV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_w_2_vv      : KelvinV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_w_3_vv      : KelvinV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vsliden_w_4_vv      : KelvinV2ArgsType : func2 == 0b00'0011, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
   vslidevn_b_1_vv_m   : KelvinV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
   vslidevn_b_2_vv_m   : KelvinV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
   vslidevn_b_3_vv_m   : KelvinV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
@@ -1227,6 +1239,18 @@ instruction group KelvinVectorInst[32] : KelvinV2ArgsType {
   vslidehn_w_4_vv_m   : KelvinV2ArgsType : func2 == 0b00'0111, sz == 0b10, m == 0b01, func1 == 0b110, form == 0b00;
 
   //vslidevp
+  vslidep_b_1_vv      : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_b_2_vv      : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_b_3_vv      : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_b_4_vv      : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_h_1_vv      : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_h_2_vv      : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_h_3_vv      : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_h_4_vv      : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_w_1_vv      : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_w_2_vv      : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_w_3_vv      : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
+  vslidep_w_4_vv      : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b00, func1 == 0b110, form == 0b00;
   vslidevp_b_1_vv_m   : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
   vslidevp_b_2_vv_m   : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
   vslidevp_b_3_vv_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b01, func1 == 0b110, form == 0b00;
