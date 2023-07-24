@@ -80,6 +80,9 @@ constexpr uint32_t kGetMaxVl = 0b0001'0'00'00000'00000'000'00000'111'0111;
 // Kelvin Logging Op
 constexpr uint32_t kFLog = 0b011'1100'00000'00000'000'00000'111'0111;
 
+// Kelvin VLd
+constexpr uint32_t kVld = 0b000000'000000'000000'00'000000'0'111'11;
+
 class KelvinEncodingTest : public testing::Test {
  protected:
   KelvinEncodingTest() {
@@ -232,6 +235,16 @@ TEST_F(KelvinEncodingTest, KelvinLogOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kClog);
   enc_->ParseInstruction(SetRs1(kFLog, kRdValue) | (0b11 << 12));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kKlog);
+}
+
+TEST_F(KelvinEncodingTest, KelvinVldOpcodes) {
+  enc_->ParseInstruction(SetRs1(kVld, kRdValue));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kVldBX);
+  enc_->ParseInstruction(SetRs1(kVld, kRdValue) | (0b01 << 12 /* sz */));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kVldHX);
+  enc_->ParseInstruction(SetRs1(kVld, kRdValue) | (0b10 << 12 /* sz */) |
+                         (0b10 << 20 /* xs2 */) | (0b1 << 26 /* length */));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kVldWLXx);
 }
 
 TEST_F(KelvinEncodingTest, ZifenceiOpcodes) {

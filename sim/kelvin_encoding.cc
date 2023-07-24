@@ -292,6 +292,8 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
 void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
   inst_word_ = inst_word;
   opcode_ = encoding::DecodeKelvinInst(inst_word_);
+  if (opcode_ == OpcodeEnum::kNone)
+    opcode_ = encoding::DecodeKelvinVectorInst(inst_word_);
 }
 
 DestinationOperandInterface *KelvinEncoding::GetDestination(SlotEnum, int,
