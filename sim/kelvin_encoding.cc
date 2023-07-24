@@ -202,6 +202,9 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
             return new mpact::sim::generic::IntLiteralOperand<0>(
                 {1}, xreg_alias_[0]);
           }
+          // `vs1` is stored in bit[19:14], but scalar xs1 is in bit[19:15]
+          // (same as the regular riscv32 encoding)
+          reg_num >>= 1;
           return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
               state_,
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
@@ -222,11 +225,25 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
             return new mpact::sim::generic::IntLiteralOperand<0>(
                 {1}, xreg_alias_[0]);
           }
+          // `vs2` is stored in bit[26:20], but scalar xs2 is in bit[25:20]
+          // (same as in the regular riscv32 encoding)
+          reg_num = reg_num & 0x1F;
           return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
               state_,
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
               xreg_alias_[reg_num]);
         }
+        return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
+            state_, reg_num, strip_mine, 1 /* widen_factor */);
+      });
+  source_op_getters_.emplace(
+      // vst and vstq use `vd` field as the source for the vector store.
+      static_cast<int>(SourceOpEnum::kVd),
+      [this]() -> SourceOperandInterface * {
+        auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
+        bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
+        if (opcode_ < OpcodeEnum::kVstBLXx || opcode_ > OpcodeEnum::kVstqWSpXxM)
+          return nullptr;
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
             state_, reg_num, strip_mine, 1 /* widen_factor */);
       });

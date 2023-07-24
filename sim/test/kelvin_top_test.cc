@@ -29,6 +29,7 @@ constexpr char kRV32iElfFileName[] = "rv32i.elf";
 constexpr char kRV32mElfFileName[] = "rv32m.elf";
 constexpr char kRV32SoftFloatElfFileName[] = "rv32soft_fp.elf";
 constexpr char kRV32fElfFileName[] = "rv32uf_fadd.elf";
+constexpr char kKelvinVldVstFileName[] = "kelvin_vldvst.elf";
 
 // The depot path to the test directory.
 constexpr char kDepotPath[] = "sim/test/";
@@ -327,6 +328,20 @@ TEST_F(KelvinTopTest, RegisterNames) {
     read_value = result.value();
     EXPECT_EQ(read_value, write_value);
   }
+}
+
+TEST_F(KelvinTopTest, RunKelvinVectorProgram) {
+  LoadFile(kKelvinVldVstFileName);
+  testing::internal::CaptureStdout();
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+  EXPECT_OK(kelvin_top_->Run());
+  EXPECT_OK(kelvin_top_->Wait());
+  auto halt_result = kelvin_top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(static_cast<int>(halt_result.value()),
+            static_cast<int>(HaltReason::kUserRequest));
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_THAT(stdout_str, testing::HasSubstr("vld_vst test passed!"));
 }
 
 }  // namespace

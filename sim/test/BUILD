@@ -2,6 +2,7 @@
 
 exports_files([
     "testfiles/hello_world_rv32imf.elf",
+    "testfiles/kelvin_vldvst.elf",
     "testfiles/rv32i.elf",
     "testfiles/rv32m.elf",
     "testfiles/rv32soft_fp.elf",
@@ -52,6 +53,7 @@ cc_test(
     data = [
         "testfiles/hello_world_mpause.elf",
         "testfiles/hello_world_rv32imf.elf",
+        "testfiles/kelvin_vldvst.elf",
         "testfiles/rv32i.elf",
         "testfiles/rv32m.elf",
         "testfiles/rv32soft_fp.elf",
