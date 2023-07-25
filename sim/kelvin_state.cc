@@ -50,11 +50,15 @@ void KelvinState::PrintLog(absl::string_view format_string) {
       if (log_args_[0].type() == typeid(uint32_t)) {
         switch (print_ptr[1]) {
           case 'u':
-            std::cout << std::any_cast<uint32_t>(log_args_[0]);
+            std::cout << std::dec << std::any_cast<uint32_t>(log_args_[0]);
             break;
           case 'd':
-            std::cout << static_cast<int32_t>(
-                std::any_cast<uint32_t>(log_args_[0]));
+            std::cout << std::dec
+                      << static_cast<int32_t>(
+                             std::any_cast<uint32_t>(log_args_[0]));
+            break;
+          case 'x':
+            std::cout << std::hex << std::any_cast<uint32_t>(log_args_[0]);
             break;
           default:
             std::cerr << "incorrect format" << std::endl;
