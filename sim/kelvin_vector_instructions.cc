@@ -267,8 +267,12 @@ void KelvinVAbsd(bool scalar, bool strip_mine, Instruction *inst) {
       inst, scalar, strip_mine,
       std::function<typename std::make_unsigned<T>::type(T, T)>(
           [](T vs1, T vs2) -> typename std::make_unsigned<T>::type {
-            T result = vs1 > vs2 ? vs1 - vs2 : vs2 - vs1;
-            return static_cast<typename std::make_unsigned<T>::type>(result);
+            using UT = typename std::make_unsigned<T>::type;
+            // Cast to unsigned type before the operation to avoid undefined
+            // overflow behavior in intx_t.
+            UT uvs1 = static_cast<UT>(vs1);
+            UT uvs2 = static_cast<UT>(vs2);
+            return vs1 > vs2 ? uvs1 - uvs2 : uvs2 - uvs1;
           }));
 }
 template void KelvinVAbsd<int8_t>(bool, bool, Instruction *);

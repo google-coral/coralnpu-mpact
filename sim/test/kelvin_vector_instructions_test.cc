@@ -450,7 +450,9 @@ TEST_F(KelvinVectorInstructionsTest, VGeu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAbsdOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    Vs1 result = vs1 > vs2 ? vs1 - vs2 : vs2 - vs1;
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    auto result = vs1_ext > vs2_ext ? vs1_ext - vs2_ext : vs2_ext - vs1_ext;
     return static_cast<Vd>(result);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
@@ -458,8 +460,7 @@ struct VAbsdOp {
   }
 };
 
-// TODO(b/291683818): Check the implementation and re-enable the logic.
-TEST_F(KelvinVectorInstructionsTest, DISABLED_VAbsd) {
+TEST_F(KelvinVectorInstructionsTest, VAbsd) {
   KelvinVectorBinaryOpHelper<VAbsdOp, uint8_t, int8_t, int8_t, uint16_t,
                              int16_t, int16_t, uint32_t, int32_t, int32_t>(
       "VAbsd");
