@@ -321,7 +321,11 @@ class KelvinVectorInstructionsTest
 // Vector add.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAddOp {
-  static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 + vs2; }
+  static Vd Op(Vs1 vs1, Vs2 vs2) {
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    return static_cast<Vd>(vs1_ext + vs2_ext);
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVAdd<Vd>(scalar, strip_mine, inst);
   }
@@ -333,7 +337,11 @@ TEST_F(KelvinVectorInstructionsTest, VAdd) {
 // Vector subtract.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSubOp {
-  static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 - vs2; }
+  static Vd Op(Vs1 vs1, Vs2 vs2) {
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    return static_cast<Vd>(vs1_ext - vs2_ext);
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVSub<Vd>(scalar, strip_mine, inst);
   }
@@ -345,7 +353,11 @@ TEST_F(KelvinVectorInstructionsTest, VSub) {
 // Vector reverse subtract.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VRSubOp {
-  static Vd Op(Vs1 vs1, Vs2 vs2) { return vs2 - vs1; }
+  static Vd Op(Vs1 vs1, Vs2 vs2) {
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    return static_cast<Vd>(vs2_ext - vs1_ext);
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVRSub<Vd>(scalar, strip_mine, inst);
   }
@@ -507,7 +519,12 @@ TEST_F(KelvinVectorInstructionsTest, VMinu) {
 // Vector add3.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAdd3Op {
-  static Vd Op(Vd vd, Vs1 vs1, Vs2 vs2) { return vd + vs1 + vs2; }
+  static Vd Op(Vd vd, Vs1 vs1, Vs2 vs2) {
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    int64_t vd_ext = static_cast<int64_t>(vd);
+    return static_cast<Vd>(vd_ext + vs1_ext + vs2_ext);
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVAdd3<Vd>(scalar, strip_mine, inst);
   }
@@ -647,7 +664,11 @@ TEST_F(KelvinVectorInstructionsTest, VSubwu) {
 // Vector accumulate with widening.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAccOp {
-  static Vd Op(Vd vs1, Vs2 vs2) { return vs1 + static_cast<Vd>(vs2); }
+  static Vd Op(Vd vs1, Vs2 vs2) {
+    int64_t vs1_ext = static_cast<int64_t>(vs1);
+    int64_t vs2_ext = static_cast<int64_t>(vs2);
+    return static_cast<Vd>(vs1_ext + vs2_ext);
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVAcc<Vd, Vs2>(scalar, strip_mine, inst);
   }
@@ -999,8 +1020,9 @@ struct VShiftOp {
       } else if (shamt > 0) {
         s = (static_cast<int64_t>(vs1) + (round ? (1ll << (shamt - 1)) : 0)) >>
             shamt;
-      } else {
-        s = static_cast<int64_t>(vs1) << (-shamt);
+      } else {  // shamt < 0
+        uint32_t ushamt = static_cast<uint32_t>(-shamt <= n ? -shamt : n);
+        s = static_cast<int64_t>(static_cast<uint64_t>(vs1) << ushamt);
       }
       int64_t neg_max = (-1ull) << (n - 1);
       int64_t pos_max = (1ll << (n - 1)) - 1;
@@ -1025,7 +1047,9 @@ struct VShiftOp {
              (round ? (1ull << (shamt - 1)) : 0)) >>
             shamt;
       } else {
-        s = static_cast<uint64_t>(vs1) << (-shamt);
+        using UT = typename std::make_unsigned<Vd>::type;
+        UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
+        s = static_cast<uint64_t>(vs1) << (ushamt);
       }
       uint64_t pos_max = (1ull << n) - 1;
       bool pos_sat = vs1 && (shamt < -n || s >= (1ull << n));
@@ -1207,7 +1231,15 @@ TEST_F(KelvinVectorInstructionsTest, VSraqsr) {
 // Vector elements multiplication.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VMulOp {
-  static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 * vs2; }
+  static Vd Op(Vs1 vs1, Vs2 vs2) {
+    if (std::is_signed<Vd>::value) {
+      return static_cast<Vd>(static_cast<int64_t>(vs1) *
+                             static_cast<int64_t>(vs2));
+    } else {
+      return static_cast<Vd>(static_cast<uint64_t>(vs1) *
+                             static_cast<uint64_t>(vs2));
+    }
+  }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVMul<Vd>(scalar, strip_mine, inst);
   }

@@ -174,8 +174,13 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
     int vs1_size = vector_length_in_bytes / sizeof(Vs1);
     const size_t vs1_regs_count = num_ops * src1_widen_factor;
     std::vector<Vs1> vs1_value(vs1_size * vs1_regs_count);
+    // Use the first 4 elements to check the min/max boundary behavior
+    vs1_value[0] = std::numeric_limits<Vs1>::lowest();
+    vs1_value[1] = std::numeric_limits<Vs1>::lowest();
+    vs1_value[2] = std::numeric_limits<Vs1>::max();
+    vs1_value[3] = std::numeric_limits<Vs1>::max();
     auto vs1_span = absl::Span<Vs1>(vs1_value);
-    FillArrayWithRandomValues<Vs1>(vs1_span);
+    FillArrayWithRandomValues<Vs1>(vs1_span.subspan(4, vs1_span.size() - 4));
     for (int i = 0; i < vs1_regs_count; i++) {
       auto vs1_name = absl::StrCat("v", kVs1 + i);
       SetVectorRegisterValues<Vs1>(
@@ -196,8 +201,14 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
           static_cast<typename mpact::sim::riscv::SameSignedType<
               RV32Register::ValueType, Ts2>::type>(rs2_reg_value));
     } else if (!halftype_op) {
+      // Use the value slightly greater than min so VShift won't complain
+      // -shamt.
+      vs2_value[0] = std::numeric_limits<Ts2>::lowest() + 1;
+      vs2_value[1] = std::numeric_limits<Ts2>::max();
+      vs2_value[2] = std::numeric_limits<Ts2>::lowest() + 1;
+      vs2_value[3] = std::numeric_limits<Ts2>::max();
       auto vs2_span = absl::Span<Ts2>(vs2_value);
-      FillArrayWithRandomValues<Ts2>(vs2_span);
+      FillArrayWithRandomValues<Ts2>(vs2_span.subspan(4, vs2_span.size() - 4));
       for (int i = 0; i < num_ops; i++) {
         auto vs2_name = absl::StrCat("v", kVs2 + i);
         SetVectorRegisterValues<Ts2>(
@@ -209,8 +220,12 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
     const size_t vd_size = vector_length_in_bytes / sizeof(Vd);
     const size_t dest_regs_count = num_ops * dest_regs_per_op;
     std::vector<Vd> vd_value(vd_size * dest_regs_count);
+    vd_value[0] = std::numeric_limits<Vd>::lowest();
+    vd_value[1] = std::numeric_limits<Vd>::max();
+    vd_value[2] = std::numeric_limits<Vd>::lowest();
+    vd_value[3] = std::numeric_limits<Vd>::max();
     auto vd_span = absl::Span<Vd>(vd_value);
-    FillArrayWithRandomValues<Vd>(vd_span);
+    FillArrayWithRandomValues<Vd>(vd_span.subspan(4, vd_span.size() - 4));
     for (int i = 0; i < dest_regs_count; i++) {
       auto vd_name = absl::StrCat("v", kVd + i);
       SetVectorRegisterValues<Vd>(

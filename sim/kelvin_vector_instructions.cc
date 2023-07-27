@@ -150,9 +150,15 @@ void KelvinUnaryVectorOp(const Instruction *inst, bool strip_mine,
 template <typename T>
 void KelvinVAdd(bool scalar, bool strip_mine, Instruction *inst) {
   // Return vs1 + vs2.
-  KelvinBinaryVectorOp(
-      inst, scalar, strip_mine,
-      std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 + vs2; }));
+  KelvinBinaryVectorOp(inst, scalar, strip_mine,
+                       std::function<T(T, T)>([](T vs1, T vs2) -> T {
+                         using UT = typename std::make_unsigned<T>::type;
+                         // Cast to unsigned type before the operation to avoid
+                         // undefined overflow behavior in intx_t.
+                         UT uvs1 = static_cast<UT>(vs1);
+                         UT uvs2 = static_cast<UT>(vs2);
+                         return static_cast<T>(uvs1 + uvs2);
+                       }));
 }
 template void KelvinVAdd<int8_t>(bool, bool, Instruction *);
 template void KelvinVAdd<int16_t>(bool, bool, Instruction *);
@@ -161,9 +167,15 @@ template void KelvinVAdd<int32_t>(bool, bool, Instruction *);
 template <typename T>
 void KelvinVSub(bool scalar, bool strip_mine, Instruction *inst) {
   // Return vs1 - vs2.
-  KelvinBinaryVectorOp(
-      inst, scalar, strip_mine,
-      std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 - vs2; }));
+  KelvinBinaryVectorOp(inst, scalar, strip_mine,
+                       std::function<T(T, T)>([](T vs1, T vs2) -> T {
+                         using UT = typename std::make_unsigned<T>::type;
+                         // Cast to unsigned type before the operation to avoid
+                         // undefined overflow behavior in intx_t.
+                         UT uvs1 = static_cast<UT>(vs1);
+                         UT uvs2 = static_cast<UT>(vs2);
+                         return static_cast<T>(uvs1 - uvs2);
+                       }));
 }
 template void KelvinVSub<int8_t>(bool, bool, Instruction *);
 template void KelvinVSub<int16_t>(bool, bool, Instruction *);
@@ -172,9 +184,15 @@ template void KelvinVSub<int32_t>(bool, bool, Instruction *);
 template <typename T>
 void KelvinVRSub(bool scalar, bool strip_mine, Instruction *inst) {
   // Return vs2 - vs1.
-  KelvinBinaryVectorOp(
-      inst, scalar, strip_mine,
-      std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs2 - vs1; }));
+  KelvinBinaryVectorOp(inst, scalar, strip_mine,
+                       std::function<T(T, T)>([](T vs1, T vs2) -> T {
+                         using UT = typename std::make_unsigned<T>::type;
+                         // Cast to unsigned type before the operation to avoid
+                         // undefined overflow behavior in intx_t.
+                         UT uvs1 = static_cast<UT>(vs1);
+                         UT uvs2 = static_cast<UT>(vs2);
+                         return static_cast<T>(uvs2 - uvs1);
+                       }));
 }
 template void KelvinVRSub<int8_t>(bool, bool, Instruction *);
 template void KelvinVRSub<int16_t>(bool, bool, Instruction *);
@@ -317,8 +335,13 @@ void KelvinVAdd3(bool scalar, bool strip_mine, Instruction *inst) {
   // Return the summation of vd, vs1, and vs2.
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
-      std::function<T(T, T, T)>(
-          [](T vd, T vs1, T vs2) -> T { return vd + vs1 + vs2; }));
+      std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
+        using UT = typename std::make_unsigned<T>::type;
+        UT uvs1 = static_cast<UT>(vs1);
+        UT uvs2 = static_cast<UT>(vs2);
+        UT uvd = static_cast<UT>(vd);
+        return static_cast<T>(uvd + uvs1 + uvs2);
+      }));
 }
 template void KelvinVAdd3<int8_t>(bool, bool, Instruction *);
 template void KelvinVAdd3<int16_t>(bool, bool, Instruction *);
@@ -437,10 +460,12 @@ template void KelvinVSubw<uint32_t, uint16_t>(bool, bool, Instruction *);
 template <typename Td, typename Ts2>
 void KelvinVAcc(bool scalar, bool strip_mine, Instruction *inst) {
   // Accumulates operands with widening.
-  KelvinBinaryVectorOp(inst, scalar, strip_mine,
-                       std::function<Td(Td, Ts2)>([](Td vs1, Ts2 vs2) -> Td {
-                         return vs1 + static_cast<Td>(vs2);
-                       }));
+  KelvinBinaryVectorOp(
+      inst, scalar, strip_mine,
+      std::function<Td(Td, Ts2)>([](Td vs1, Ts2 vs2) -> Td {
+        using UTd = typename std::make_unsigned<Td>::type;
+        return static_cast<Td>(static_cast<UTd>(vs1) + static_cast<UTd>(vs2));
+      }));
 }
 template void KelvinVAcc<int16_t, int8_t>(bool, bool, Instruction *);
 template void KelvinVAcc<int32_t, int16_t>(bool, bool, Instruction *);
@@ -712,8 +737,11 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
     } else if (shamt > 0) {
       s = (static_cast<int64_t>(vs1) + (round ? (1ll << (shamt - 1)) : 0)) >>
           shamt;
-    } else {
-      s = static_cast<int64_t>(vs1) << (-shamt);
+    } else {  // shamt < 0
+      using UT = typename std::make_unsigned<T>::type;
+      UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
+      CHECK(ushamt >= 0 && ushamt <= n);
+      s = static_cast<int64_t>(static_cast<uint64_t>(vs1) << ushamt);
     }
     T neg_max = std::numeric_limits<T>::min();
     T pos_max = std::numeric_limits<T>::max();
@@ -724,6 +752,7 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
     return s;
   } else {
     constexpr int n = sizeof(T) * 8;
+    // Shift can be positive/negative.
     int shamt = static_cast<typename std::make_signed<T>::type>(vs2);
     uint64_t s = vs1;
     if (!vs1) {
@@ -731,10 +760,12 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
     } else if (shamt > n) {
       s = 0;
     } else if (shamt > 0) {
-      s = (static_cast<int64_t>(vs1) + (round ? (1ull << (shamt - 1)) : 0)) >>
+      s = (static_cast<uint64_t>(vs1) + (round ? (1ull << (shamt - 1)) : 0)) >>
           shamt;
     } else {
-      s = static_cast<int64_t>(vs1) << (-shamt);
+      using UT = typename std::make_unsigned<T>::type;
+      UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
+      s = static_cast<uint64_t>(vs1) << (ushamt);
     }
     T pos_max = std::numeric_limits<T>::max();
     bool pos_sat = vs1 && (shamt < -n || s > pos_max);
@@ -869,9 +900,16 @@ template void KelvinVSrans<uint8_t, uint32_t>(bool, bool, bool, Instruction *);
 // Multiplication of vector elements.
 template <typename T>
 void KelvinVMul(bool scalar, bool strip_mine, Instruction *inst) {
-  KelvinBinaryVectorOp(
-      inst, scalar, strip_mine,
-      std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 * vs2; }));
+  KelvinBinaryVectorOp(inst, scalar, strip_mine,
+                       std::function<T(T, T)>([](T vs1, T vs2) -> T {
+                         if (std::is_signed<T>::value) {
+                           return static_cast<T>(static_cast<int64_t>(vs1) *
+                                                 static_cast<int64_t>(vs2));
+                         } else {
+                           return static_cast<T>(static_cast<uint64_t>(vs1) *
+                                                 static_cast<uint64_t>(vs2));
+                         }
+                       }));
 }
 template void KelvinVMul<int8_t>(bool, bool, Instruction *);
 template void KelvinVMul<int16_t>(bool, bool, Instruction *);
