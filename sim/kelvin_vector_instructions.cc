@@ -9,6 +9,7 @@
 
 #include "sim/kelvin_state.h"
 #include "absl/functional/bind_front.h"
+#include "absl/log/check.h"
 #include "absl/numeric/bits.h"
 #include "absl/types/span.h"
 #include "riscv/riscv_register.h"
@@ -740,7 +741,8 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
     } else {  // shamt < 0
       using UT = typename std::make_unsigned<T>::type;
       UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
-      CHECK(ushamt >= 0 && ushamt <= n);
+      CHECK_LE(ushamt, n);
+      CHECK_GE(ushamt, 0);
       s = static_cast<int64_t>(static_cast<uint64_t>(vs1) << ushamt);
     }
     T neg_max = std::numeric_limits<T>::min();

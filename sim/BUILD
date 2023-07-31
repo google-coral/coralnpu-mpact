@@ -40,6 +40,7 @@ cc_library(
     deps = [
         ":kelvin_state",
         "@com_google_absl//absl/functional:bind_front",
+        "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/types:span",
         "@com_google_mpact-riscv//riscv:riscv_state",
