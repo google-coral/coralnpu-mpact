@@ -14,9 +14,9 @@ http_archive(
 # MPACT-Sim repo
 http_archive(
     name = "com_google_mpact-sim",
-    sha256 = "240e6fa1cba9f26dd5e5343eeff6cc2f8a890cb1ead63c8f7a95323cb88b6593",
-    strip_prefix = "mpact-sim-d3977cd11e560fe19c7ad5ee6b269d806ca6c768",
-    url = "https://github.com/google/mpact-sim/archive/d3977cd11e560fe19c7ad5ee6b269d806ca6c768.tar.gz",
+    sha256 = "2405278024e66328217ab945e385fc4e3e028be19d71448ddeda2579679bd82d",
+    strip_prefix = "mpact-sim-daacce22769d45ffb37207ad772751f6a7e03bd4",
+    url = "https://github.com/google/mpact-sim/archive/daacce22769d45ffb37207ad772751f6a7e03bd4.tar.gz",
 )
 
 load("@com_google_mpact-sim//:repos.bzl", "mpact_sim_repos")
