@@ -296,6 +296,9 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
           return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
               state_, "X0Dest", 0, xreg_alias_[0]);
         } else {
+          // `vs1` is stored in bit[19:14], but scalar xs1 is in bit[19:15]
+          // (same as the regular riscv32 encoding)
+          reg_num >>= 1;
           return GetRegisterDestinationOp<mpact::sim::riscv::RVFpRegister>(
               state_, absl::StrCat(KelvinState::kXregPrefix, reg_num), latency,
               xreg_alias_[reg_num]);
