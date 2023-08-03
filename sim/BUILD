@@ -52,7 +52,13 @@ cc_library(
 mpact_isa_decoder(
     name = "kelvin_isa",
     src = "kelvin.isa",
-    includes = [],
+    includes = [
+        "kelvin_arith.isa",
+        "kelvin_base.isa",
+        "kelvin_memory.isa",
+        "kelvin_mul.isa",
+        "kelvin_shift.isa",
+    ],
     isa_name = "Kelvin",
     deps = [
         ":kelvin_instructions",

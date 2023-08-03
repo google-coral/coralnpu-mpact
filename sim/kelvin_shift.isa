@@ -1,0 +1,851 @@
+// This file define the kelvin base isa for mpact-sim. For more info on mpact-sim
+// isa format, check: go/mpact-sim-codelabs-riscv-instruction-decoder
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+// Kelvin simd instructions:
+// https://spacebeaker.googlesource.com/shodan/sw/kelvin/+/refs/heads/master/docs/kelvin_isa.md
+// Shift / Shuffle instructions (func1 010/110)
+slot kelvin_shift {
+  includes {
+    #include "sim/kelvin_instructions.h"
+    #include "sim/kelvin_vector_instructions.h"
+    #include "absl/functional/bind_front.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    //vsll
+    vsll_b_vv{: vs1, vs2 : vd},
+      disasm: "vsll.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsll_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsll.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsll_h_vv{: vs1, vs2 : vd},
+      disasm: "vsll.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsll_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsll.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsll_w_vv{: vs1, vs2 : vd},
+      disasm: "vsll.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsll_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsll.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsll_b_vx{: vs1, vs2 : vd},
+      disasm: "vsll.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsll_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsll.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsll_h_vx{: vs1, vs2 : vd},
+      disasm: "vsll.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsll_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsll.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsll_w_vx{: vs1, vs2 : vd},
+      disasm: "vsll.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsll_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsll.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSll<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsra
+    vsra_b_vv{: vs1, vs2 : vd},
+      disasm: "vsra.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsra_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsra.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsra_h_vv{: vs1, vs2 : vd},
+      disasm: "vsra.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsra_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsra.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsra_w_vv{: vs1, vs2 : vd},
+      disasm: "vsra.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsra_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsra.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsra_b_vx{: vs1, vs2 : vd},
+      disasm: "vsra.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsra_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsra.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsra_h_vx{: vs1, vs2 : vd},
+      disasm: "vsra.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsra_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsra.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsra_w_vx{: vs1, vs2 : vd},
+      disasm: "vsra.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsra_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsra.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSra<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsrl
+    vsrl_b_vv{: vs1, vs2 : vd},
+      disasm: "vsrl.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrl_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrl.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrl_h_vv{: vs1, vs2 : vd},
+      disasm: "vsrl.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrl_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrl.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrl_w_vv{: vs1, vs2 : vd},
+      disasm: "vsrl.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrl_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrl.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrl_b_vx{: vs1, vs2 : vd},
+      disasm: "vsrl.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrl_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrl.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsrl_h_vx{: vs1, vs2 : vd},
+      disasm: "vsrl.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrl_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrl.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsrl_w_vx{: vs1, vs2 : vd},
+      disasm: "vsrl.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrl_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrl.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrl<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsha
+    vsha_b_vv{: vs1, vs2 : vd},
+      disasm: "vsha.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int8_t>, /* round */ false, /*strip_mine*/ false)";
+    vsha_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int8_t>, /* round */ false, /*strip_mine*/ true)";
+    vsha_h_vv{: vs1, vs2 : vd},
+      disasm: "vsha.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int16_t>, /* round */ false, /*strip_mine*/ false)";
+    vsha_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int16_t>, /* round */ false, /*strip_mine*/ true)";
+    vsha_w_vv{: vs1, vs2 : vd},
+      disasm: "vsha.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int32_t>, /* round */ false, /*strip_mine*/ false)";
+    vsha_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int32_t>, /* round */ false, /*strip_mine*/ true)";
+    vsha_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vsha.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int8_t>, /* round */ true, /*strip_mine*/ false)";
+    vsha_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int8_t>, /* round */ true, /*strip_mine*/ true)";
+    vsha_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vsha.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int16_t>, /* round */ true, /*strip_mine*/ false)";
+    vsha_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int16_t>, /* round */ true, /*strip_mine*/ true)";
+    vsha_w_r_vv{: vs1, vs2 : vd},
+      disasm: "vsha.w.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int32_t>, /* round */ true, /*strip_mine*/ false)";
+    vsha_w_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsha.w.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<int32_t>, /* round */ true, /*strip_mine*/ true)";
+
+    //vshl
+    vshl_b_vv{: vs1, vs2 : vd},
+      disasm: "vshl.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint8_t>, /* round */ false, /*strip_mine*/ false)";
+    vshl_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint8_t>, /* round */ false, /*strip_mine*/ true)";
+    vshl_h_vv{: vs1, vs2 : vd},
+      disasm: "vshl.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint16_t>, /* round */ false, /*strip_mine*/ false)";
+    vshl_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint16_t>, /* round */ false, /*strip_mine*/ true)";
+    vshl_w_vv{: vs1, vs2 : vd},
+      disasm: "vshl.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint32_t>, /* round */ false, /*strip_mine*/ false)";
+    vshl_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint32_t>, /* round */ false, /*strip_mine*/ true)";
+    vshl_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vshl.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint8_t>, /* round */ true, /*strip_mine*/ false)";
+    vshl_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint8_t>, /* round */ true, /*strip_mine*/ true)";
+    vshl_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vshl.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint16_t>, /* round */ true, /*strip_mine*/ false)";
+    vshl_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint16_t>, /* round */ true, /*strip_mine*/ true)";
+    vshl_w_r_vv{: vs1, vs2 : vd},
+      disasm: "vshl.w.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint32_t>, /* round */ true, /*strip_mine*/ false)";
+    vshl_w_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vshl.w.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVShift<uint32_t>, /* round */ true, /*strip_mine*/ true)";
+
+    //vnot
+    vnot_v{: vs1 : vd},
+      disasm: "vnot.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVNot<int32_t>, /*strip_mine*/ false)";
+    vnot_v_m{: vs1 : vd},
+      disasm: "vnot.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVNot<int32_t>, /*strip_mine*/ true)";
+
+    //vclb
+    vclb_b_v{: vs1 : vd},
+      disasm: "vclb.b.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint8_t>, /*strip_mine*/ false)";
+    vclb_b_v_m{: vs1 : vd},
+      disasm: "vclb.b.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint8_t>, /*strip_mine*/ true)";
+    vclb_h_v{: vs1 : vd},
+      disasm: "vclb.h.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint16_t>, /*strip_mine*/ false)";
+    vclb_h_v_m{: vs1 : vd},
+      disasm: "vclb.h.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint16_t>, /*strip_mine*/ true)";
+    vclb_w_v{: vs1 : vd},
+      disasm: "vclb.w.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint32_t>, /*strip_mine*/ false)";
+    vclb_w_v_m{: vs1 : vd},
+      disasm: "vclb.w.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClb<uint32_t>, /*strip_mine*/ true)";
+
+    //vclz
+    vclz_b_v{: vs1 : vd},
+      disasm: "vclz.b.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint8_t>, /*strip_mine*/ false)";
+    vclz_b_v_m{: vs1 : vd},
+      disasm: "vclz.b.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint8_t>, /*strip_mine*/ true)";
+    vclz_h_v{: vs1 : vd},
+      disasm: "vclz.h.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint16_t>, /*strip_mine*/ false)";
+    vclz_h_v_m{: vs1 : vd},
+      disasm: "vclz.h.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint16_t>, /*strip_mine*/ true)";
+    vclz_w_v{: vs1 : vd},
+      disasm: "vclz.w.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint32_t>, /*strip_mine*/ false)";
+    vclz_w_v_m{: vs1 : vd},
+      disasm: "vclz.w.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVClz<uint32_t>, /*strip_mine*/ true)";
+
+    //vcpop
+    vcpop_b_v{: vs1 : vd},
+      disasm: "vcpop.b.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint8_t>, /*strip_mine*/ false)";
+    vcpop_b_v_m{: vs1 : vd},
+      disasm: "vcpop.b.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint8_t>, /*strip_mine*/ true)";
+    vcpop_h_v{: vs1 : vd},
+      disasm: "vcpop.h.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint16_t>, /*strip_mine*/ false)";
+    vcpop_h_v_m{: vs1 : vd},
+      disasm: "vcpop.h.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint16_t>, /*strip_mine*/ true)";
+    vcpop_w_v{: vs1 : vd},
+      disasm: "vcpop.w.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint32_t>, /*strip_mine*/ false)";
+    vcpop_w_v_m{: vs1 : vd},
+      disasm: "vcpop.w.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVCpop<uint32_t>, /*strip_mine*/ true)";
+
+    //vmv
+    vmv_v{: vs1 : vd},
+      disasm: "vmv.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVMv<int32_t>, /*strip_mine*/ false)";
+    vmv_v_m{: vs1 : vd},
+      disasm: "vmv.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinVMv<int32_t>, /*strip_mine*/ true)";
+
+    //vsrans
+    vsrans_b_vv{: vs1, vs2 : vd},
+      disasm: "vsrans.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrans_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrans.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrans_h_vv{: vs1, vs2 : vd},
+      disasm: "vsrans.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrans_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrans.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrans_b_vx{: vs1, vs2 : vd},
+      disasm: "vsrans.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrans_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrans.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsrans_h_vx{: vs1, vs2 : vd},
+      disasm: "vsrans.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrans_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrans.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsrans_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vsrans.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrans_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrans.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrans_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vsrans.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsrans_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsrans.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsrans_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vsrans.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrans_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrans.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int16_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+    vsrans_h_r_vx{: vs1, vs2 : vd},
+      disasm: "vsrans.h.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsrans_h_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsrans.h.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int16_t, int32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsransu
+    vsransu_b_vv{: vs1, vs2 : vd},
+      disasm: "vsransu.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsransu_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsransu.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsransu_h_vv{: vs1, vs2 : vd},
+      disasm: "vsransu.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsransu_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsransu.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsransu_b_vx{: vs1, vs2 : vd},
+      disasm: "vsransu.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsransu_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsransu.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsransu_h_vx{: vs1, vs2 : vd},
+      disasm: "vsransu.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsransu_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsransu.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsransu_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vsransu.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsransu_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsransu.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsransu_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vsransu.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsransu_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsransu.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsransu_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vsransu.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsransu_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsransu.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint16_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+    vsransu_h_r_vx{: vs1, vs2 : vd},
+      disasm: "vsransu.h.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsransu_h_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsransu.h.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint16_t, uint32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsraqs
+    vsraqs_b_vv{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsraqs_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsraqs_b_vx{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsraqs_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsraqs_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsraqs_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsraqs_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsraqs_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsraqs.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<int8_t, int32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsraqsu
+    vsraqsu_b_vv{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ false)";
+    vsraqsu_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ false, /*scalar*/ false, /*strip_mine*/ true)";
+    vsraqsu_b_vx{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ false)";
+    vsraqsu_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ false, /*scalar*/ true, /*strip_mine*/ true)";
+    vsraqsu_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ false)";
+    vsraqsu_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ true, /*scalar*/ false, /*strip_mine*/ true)";
+    vsraqsu_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ false)";
+    vsraqsu_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vsraqsu.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSrans<uint8_t, uint32_t>, /*round*/ true, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vslidevn
+    vsliden_b_1_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.b.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 1 /* index */, false /* strip_mine */)";
+    vsliden_b_2_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.b.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 2 /* index */, false /* strip_mine */)";
+    vsliden_b_3_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.b.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 3 /* index */, false /* strip_mine */)";
+    vsliden_b_4_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.b.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 4 /* index */, false /* strip_mine */)";
+    vsliden_h_1_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.h.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 1 /* index */, false /* strip_mine */)";
+    vsliden_h_2_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.h.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 2 /* index */, false /* strip_mine */)";
+    vsliden_h_3_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.h.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 3 /* index */, false /* strip_mine */)";
+    vsliden_h_4_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.h.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 4 /* index */, false /* strip_mine */)";
+    vsliden_w_1_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.w.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 1 /* index */, false /* strip_mine */)";
+    vsliden_w_2_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.w.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 2 /* index */, false /* strip_mine */)";
+    vsliden_w_3_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.w.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 3 /* index */, false /* strip_mine */)";
+    vsliden_w_4_vv{: vs1, vs2 : vd},
+      disasm: "vsliden.w.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 4 /* index */, false /* strip_mine */)";
+    vslidevn_b_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.b.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevn_b_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.b.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevn_b_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.b.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevn_b_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.b.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int8_t>, 4 /* index */, true /* strip_mine */)";
+    vslidevn_h_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.h.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevn_h_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.h.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevn_h_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.h.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevn_h_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.h.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int16_t>, 4 /* index */, true /* strip_mine */)";
+    vslidevn_w_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.w.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevn_w_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.w.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevn_w_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.w.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevn_w_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevn.w.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevn<int32_t>, 4 /* index */, true /* strip_mine */)";
+
+    //vslidehn
+    vslidehn_b_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.b.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int8_t>, 1 /* index */)";
+    vslidehn_b_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.b.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int8_t>, 2 /* index */)";
+    vslidehn_b_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.b.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int8_t>, 3 /* index */)";
+    vslidehn_b_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.b.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int8_t>, 4 /* index */)";
+    vslidehn_h_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.h.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int16_t>, 1 /* index */)";
+    vslidehn_h_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.h.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int16_t>, 2 /* index */)";
+    vslidehn_h_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.h.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int16_t>, 3 /* index */)";
+    vslidehn_h_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.h.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int16_t>, 4 /* index */)";
+    vslidehn_w_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.w.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int32_t>, 1 /* index */)";
+    vslidehn_w_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.w.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int32_t>, 2 /* index */)";
+    vslidehn_w_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.w.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int32_t>, 3 /* index */)";
+    vslidehn_w_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehn.w.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehn<int32_t>, 4 /* index */)";
+
+    //vslidevp
+    vslidep_b_1_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.b.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 1 /* index */, false /* strip_mine */)";
+    vslidep_b_2_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.b.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 2 /* index */, false /* strip_mine */)";
+    vslidep_b_3_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.b.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 3 /* index */, false /* strip_mine */)";
+    vslidep_b_4_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.b.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 4 /* index */, false /* strip_mine */)";
+    vslidep_h_1_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.h.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 1 /* index */, false /* strip_mine */)";
+    vslidep_h_2_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.h.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 2 /* index */, false /* strip_mine */)";
+    vslidep_h_3_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.h.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 3 /* index */, false /* strip_mine */)";
+    vslidep_h_4_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.h.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 4 /* index */, false /* strip_mine */)";
+    vslidep_w_1_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.w.1.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 1 /* index */, false /* strip_mine */)";
+    vslidep_w_2_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.w.2.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 2 /* index */, false /* strip_mine */)";
+    vslidep_w_3_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.w.3.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 3 /* index */, false /* strip_mine */)";
+    vslidep_w_4_vv{: vs1, vs2 : vd},
+      disasm: "vslidep.w.4.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 4 /* index */, false /* strip_mine */)";
+    vslidevp_b_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.b.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevp_b_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.b.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevp_b_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.b.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevp_b_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.b.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int8_t>, 4 /* index */, true /* strip_mine */)";
+    vslidevp_h_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.h.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevp_h_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.h.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevp_h_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.h.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevp_h_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.h.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int16_t>, 4 /* index */, true /* strip_mine */)";
+    vslidevp_w_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.w.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 1 /* index */, true /* strip_mine */)";
+    vslidevp_w_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.w.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 2 /* index */, true /* strip_mine */)";
+    vslidevp_w_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.w.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 3 /* index */, true /* strip_mine */)";
+    vslidevp_w_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidevp.w.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidevp<int32_t>, 4 /* index */, true /* strip_mine */)";
+
+    //vslidehp
+    vslidehp_b_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.b.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int8_t>, 1 /* index */)";
+    vslidehp_b_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.b.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int8_t>, 2 /* index */)";
+    vslidehp_b_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.b.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int8_t>, 3 /* index */)";
+    vslidehp_b_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.b.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int8_t>, 4 /* index */)";
+    vslidehp_h_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.h.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int16_t>, 1 /* index */)";
+    vslidehp_h_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.h.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int16_t>, 2 /* index */)";
+    vslidehp_h_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.h.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int16_t>, 3 /* index */)";
+    vslidehp_h_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.h.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int16_t>, 4 /* index */)";
+    vslidehp_w_1_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.w.1.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int32_t>, 1 /* index */)";
+    vslidehp_w_2_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.w.2.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int32_t>, 2 /* index */)";
+    vslidehp_w_3_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.w.3.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int32_t>, 3 /* index */)";
+    vslidehp_w_4_vv_m{: vs1, vs2 : vd},
+      disasm: "vslidehp.w.4.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSlidehp<int32_t>, 4 /* index */)";
+
+    //vsel
+    vsel_b_vv{: vs1, vs2, vd : vd},
+      disasm: "vsel.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsel_b_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsel_h_vv{: vs1, vs2, vd : vd},
+      disasm: "vsel.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsel_h_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsel_w_vv{: vs1, vs2, vd : vd},
+      disasm: "vsel.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsel_w_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsel_b_vx{: vs1, vs2, vd : vd},
+      disasm: "vsel.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsel_b_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsel_h_vx{: vs1, vs2, vd : vd},
+      disasm: "vsel.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsel_h_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsel_w_vx{: vs1, vs2, vd : vd},
+      disasm: "vsel.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsel_w_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vsel.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVSel<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vevn
+    vevn_b_vv{: vs1, vs2 : vd},
+      disasm: "vevn.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevn_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vevn.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevn_h_vv{: vs1, vs2 : vd},
+      disasm: "vevn.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevn_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vevn.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevn_w_vv{: vs1, vs2 : vd},
+      disasm: "vevn.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevn_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vevn.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevn_b_vx{: vs1, vs2 : vd},
+      disasm: "vevn.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevn_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vevn.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vevn_h_vx{: vs1, vs2 : vd},
+      disasm: "vevn.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevn_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vevn.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vevn_w_vx{: vs1, vs2 : vd},
+      disasm: "vevn.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevn_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vevn.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvn<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vodd
+    vodd_b_vv{: vs1, vs2 : vd},
+      disasm: "vodd.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vodd_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vodd.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vodd_h_vv{: vs1, vs2 : vd},
+      disasm: "vodd.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vodd_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vodd.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vodd_w_vv{: vs1, vs2 : vd},
+      disasm: "vodd.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vodd_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vodd.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vodd_b_vx{: vs1, vs2 : vd},
+      disasm: "vodd.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vodd_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vodd.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vodd_h_vx{: vs1, vs2 : vd},
+      disasm: "vodd.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vodd_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vodd.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vodd_w_vx{: vs1, vs2 : vd},
+      disasm: "vodd.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vodd_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vodd.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVOdd<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vevnodd
+    vevnodd_b_vv{: vs1, vs2 : vd},
+      disasm: "vevnodd.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevnodd_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevnodd_h_vv{: vs1, vs2 : vd},
+      disasm: "vevnodd.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevnodd_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevnodd_w_vv{: vs1, vs2 : vd},
+      disasm: "vevnodd.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vevnodd_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vevnodd_b_vx{: vs1, vs2 : vd},
+      disasm: "vevnodd.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevnodd_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vevnodd_h_vx{: vs1, vs2 : vd},
+      disasm: "vevnodd.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevnodd_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vevnodd_w_vx{: vs1, vs2 : vd},
+      disasm: "vevnodd.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vevnodd_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vevnodd.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVEvnodd<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vzip
+    vzip_b_vv{: vs1, vs2 : vd},
+      disasm: "vzip.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vzip_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vzip.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vzip_h_vv{: vs1, vs2 : vd},
+      disasm: "vzip.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vzip_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vzip.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vzip_w_vv{: vs1, vs2 : vd},
+      disasm: "vzip.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vzip_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vzip.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vzip_b_vx{: vs1, vs2 : vd},
+      disasm: "vzip.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vzip_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vzip.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vzip_h_vx{: vs1, vs2 : vd},
+      disasm: "vzip.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vzip_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vzip.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vzip_w_vx{: vs1, vs2 : vd},
+      disasm: "vzip.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vzip_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vzip.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&KelvinVZip<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+  }
+}
