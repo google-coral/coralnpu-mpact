@@ -9,6 +9,7 @@
 #include "sim/kelvin_decoder.h"
 #include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
@@ -311,9 +312,17 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
 // Parse the instruction word to determine the opcode.
 void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
   inst_word_ = inst_word;
-  opcode_ = encoding::DecodeKelvinInst(inst_word_);
-  if (opcode_ == OpcodeEnum::kNone)
-    opcode_ = encoding::DecodeKelvinVectorInst(inst_word_);
+  std::vector<absl::AnyInvocable<isa32::OpcodeEnum(uint32_t inst_word)>>
+      decode_functions;
+  decode_functions.push_back(encoding::DecodeKelvinInst);
+  decode_functions.push_back(encoding::DecodeKelvinVectorArithInst);
+  decode_functions.push_back(encoding::DecodeKelvinVectorMemoryInst);
+  decode_functions.push_back(encoding::DecodeKelvinVectorMulInst);
+  decode_functions.push_back(encoding::DecodeKelvinVectorShiftInst);
+  for (auto &function : decode_functions) {
+    opcode_ = function(inst_word_);
+    if (opcode_ != OpcodeEnum::kNone) break;
+  }
 }
 
 DestinationOperandInterface *KelvinEncoding::GetDestination(SlotEnum, int,

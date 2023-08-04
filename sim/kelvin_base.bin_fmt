@@ -1,0 +1,112 @@
+
+// Kelvin base (non-vector) instruction group.
+
+instruction group KelvinInst[32] : Inst32Format {
+  lui    : UType  : opcode == 0b011'0111;
+  auipc  : UType  : opcode == 0b001'0111;
+  jal    : JType  : rd != 0, opcode == 0b110'1111;
+  j      : JType  : rd == 0, opcode == 0b110'1111;
+  jalr   : IType  : rd != 0, func3 == 0b000, opcode == 0b110'0111;
+  jr     : IType  : rd == 0, func3 == 0b000, opcode == 0b110'0111;
+  beq    : BType  : func3 == 0b000, opcode == 0b110'0011;
+  bne    : BType  : func3 == 0b001, opcode == 0b110'0011;
+  blt    : BType  : func3 == 0b100, opcode == 0b110'0011;
+  bge    : BType  : func3 == 0b101, opcode == 0b110'0011;
+  bltu   : BType  : func3 == 0b110, opcode == 0b110'0011;
+  bgeu   : BType  : func3 == 0b111, opcode == 0b110'0011;
+  lb     : BType  : func3 == 0b000, opcode == 0b000'0011;
+  lh     : BType  : func3 == 0b001, opcode == 0b000'0011;
+  lw     : BType  : func3 == 0b010, opcode == 0b000'0011;
+  lbu    : BType  : func3 == 0b100, opcode == 0b000'0011;
+  lhu    : BType  : func3 == 0b101, opcode == 0b000'0011;
+  sb     : SType  : func3 == 0b000, opcode == 0b010'0011;
+  sh     : SType  : func3 == 0b001, opcode == 0b010'0011;
+  sw     : SType  : func3 == 0b010, opcode == 0b010'0011;
+  addi   : IType  : func3 == 0b000, opcode == 0b001'0011;
+  slti   : IType  : func3 == 0b010, opcode == 0b001'0011;
+  sltiu  : IType  : func3 == 0b011, opcode == 0b001'0011;
+  xori   : IType  : func3 == 0b100, opcode == 0b001'0011;
+  ori    : IType  : func3 == 0b110, opcode == 0b001'0011;
+  andi   : IType  : func3 == 0b111, opcode == 0b001'0011;
+  slli   : RType  : func7 == 0b000'0000, func3==0b001, opcode == 0b001'0011;
+  srli   : RType  : func7 == 0b000'0000, func3==0b101, opcode == 0b001'0011;
+  srai   : RType  : func7 == 0b010'0000, func3==0b101, opcode == 0b001'0011;
+  add    : RType  : func7 == 0b000'0000, func3==0b000, opcode == 0b011'0011;
+  sub    : RType  : func7 == 0b010'0000, func3==0b000, opcode == 0b011'0011;
+  sll    : RType  : func7 == 0b000'0000, func3==0b001, opcode == 0b011'0011;
+  slt    : RType  : func7 == 0b000'0000, func3==0b010, opcode == 0b011'0011;
+  sltu   : RType  : func7 == 0b000'0000, func3==0b011, opcode == 0b011'0011;
+  xor    : RType  : func7 == 0b000'0000, func3==0b100, opcode == 0b011'0011;
+  srl    : RType  : func7 == 0b000'0000, func3==0b101, opcode == 0b011'0011;
+  sra    : RType  : func7 == 0b010'0000, func3==0b101, opcode == 0b011'0011;
+  or     : RType  : func7 == 0b000'0000, func3==0b110, opcode == 0b011'0011;
+  and    : RType  : func7 == 0b000'0000, func3==0b111, opcode == 0b011'0011;
+  fence  : Fence  : func3 == 0b000, opcode == 0b000'1111;
+  ecall  : Inst32Format : bits == 0b0000'0000'0000'00000'000'00000, opcode == 0b111'0011;
+  ebreak : Inst32Format : bits == 0b0000'0000'0001'00000'000'00000, opcode == 0b111'0011;
+  // RiscV32 Instruction fence.
+  fencei : IType  : func3 == 001, opcode == 0b000'1111;
+  // RiscV32 multiply divide.
+  mul    : RType  : func7 == 0b000'0001, func3 == 0b000, opcode == 0b011'0011;
+  mulh   : RType  : func7 == 0b000'0001, func3 == 0b001, opcode == 0b011'0011;
+  mulhsu : RType  : func7 == 0b000'0001, func3 == 0b010, opcode == 0b011'0011;
+  mulhu  : RType  : func7 == 0b000'0001, func3 == 0b011, opcode == 0b011'0011;
+  div    : RType  : func7 == 0b000'0001, func3 == 0b100, opcode == 0b011'0011;
+  divu   : RType  : func7 == 0b000'0001, func3 == 0b101, opcode == 0b011'0011;
+  rem    : RType  : func7 == 0b000'0001, func3 == 0b110, opcode == 0b011'0011;
+  remu   : RType  : func7 == 0b000'0001, func3 == 0b111, opcode == 0b011'0011;
+  // RiscV32 CSR manipulation instructions.
+  csrrw    : IType  : func3 == 0b001, rd != 0,  opcode == 0b111'0011;
+  csrrs    : IType  : func3 == 0b010, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrc    : IType  : func3 == 0b011, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrs_nr : IType  : func3 == 0b010, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrc_nr : IType  : func3 == 0b011, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrw_nr : IType  : func3 == 0b001, rd == 0,  opcode == 0b111'0011;
+  csrrs_nw : IType  : func3 == 0b010, rs1 == 0, opcode == 0b111'0011;
+  csrrc_nw : IType  : func3 == 0b011, rs1 == 0, opcode == 0b111'0011;
+  csrrwi   : IType  : func3 == 0b101, rd != 0,  opcode == 0b111'0011;
+  csrrsi   : IType  : func3 == 0b110, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrci   : IType  : func3 == 0b111, rs1 != 0, rd != 0, opcode == 0b111'0011;
+  csrrsi_nr: IType  : func3 == 0b110, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrci_nr: IType  : func3 == 0b111, rs1 != 0, rd == 0, opcode == 0b111'0011;
+  csrrwi_nr: IType  : func3 == 0b101, rd == 0,  opcode == 0b111'0011;
+  csrrsi_nw: IType  : func3 == 0b110, rs1 == 0, opcode == 0b111'0011;
+  csrrci_nw: IType  : func3 == 0b111, rs1 == 0, opcode == 0b111'0011;
+  // RiscV32 Privileged instructions.
+  uret    : Inst32Format  : bits == 0b000'0000'00010'00000'000'00000, opcode == 0b111'0011;
+  sret    : Inst32Format  : bits == 0b000'1000'00010'00000'000'00000, opcode == 0b111'0011;
+  mret    : Inst32Format  : bits == 0b001'1000'00010'00000'000'00000, opcode == 0b111'0011;
+  wfi     : Inst32Format  : bits == 0b000'1000'00101'00000'000'00000, opcode == 0b111'0011;
+  mpause  : Inst32Format  : bits == 0b000'0100'00000'00000'000'00000, opcode == 0b111'0011;
+  sfence_vma_zz : RType : func7 == 0b000'1001, rs2 == 0, rs1 == 0, func3 == 0, rd == 0, opcode == 0b111'0011;
+  sfence_vma_zn : RType : func7 == 0b000'1001, rs2 != 0, rs1 == 0, func3 == 0, rd == 0, opcode == 0b111'0011;
+  sfence_vma_nz : RType : func7 == 0b000'1001, rs2 == 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0011;
+  sfence_vma_nn : RType : func7 == 0b000'1001, rs2 != 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0011;
+  // Kelvin memory flush instructions.
+  flushall : Inst32Format : bits == 0b001'0011'00000'00000'000'00000, opcode == 0b111'0111;
+  flushat  : RType        : func7 == 0b001'0011, rs2 == 0, rs1 != 0, func3 == 0, rd == 0, opcode == 0b111'0111;
+  // Kelvin system instructions.
+  getmaxvl_b   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b00, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getmaxvl_h   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b01, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getmaxvl_w   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b10, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_b_x    : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b00, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_h_x    : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b01, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_w_x    : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b10, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_b_xx   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b00, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_h_xx   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b01, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_w_xx   : KelvinSystemType : func2 == 0b0001, m == 0, mode == 0b10, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getmaxvl_b_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b00, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getmaxvl_h_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b01, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getmaxvl_w_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b10, rs2 == 0, rs1 == 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_b_x_m  : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b00, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_h_x_m  : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b01, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_w_x_m  : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b10, rs2 == 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_b_xx_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b00, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_h_xx_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b01, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  getvl_w_xx_m : KelvinSystemType : func2 == 0b0001, m == 1, mode == 0b10, rs2 != 0, rs1 != 0, func1 == 0, rd != 0, opcode == 0b111'0111;
+  // Kelvin log instructions.
+  flog         : KelvinSystemType : func2 == 0b0111, m == 1, mode == 0, rs2 == 0, rs1 != 0, func1 == 0, rd == 0, opcode == 0b111'0111;
+  slog         : KelvinSystemType : func2 == 0b0111, m == 1, mode == 0, rs2 == 0, rs1 != 0, func1 == 1, rd == 0, opcode == 0b111'0111;
+  clog         : KelvinSystemType : func2 == 0b0111, m == 1, mode == 0, rs2 == 0, rs1 != 0, func1 == 2, rd == 0, opcode == 0b111'0111;
+  klog         : KelvinSystemType : func2 == 0b0111, m == 1, mode == 0, rs2 == 0, rs1 != 0, func1 == 3, rd == 0, opcode == 0b111'0111;
+};

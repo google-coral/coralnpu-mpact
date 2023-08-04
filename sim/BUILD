@@ -71,7 +71,14 @@ mpact_bin_fmt_decoder(
     name = "kelvin_bin_fmt",
     src = "kelvin.bin_fmt",
     decoder_name = "Kelvin",
-    includes = [],
+    includes = [
+        "kelvin_arith.bin_fmt",
+        "kelvin_base.bin_fmt",
+        "kelvin_format.bin_fmt",
+        "kelvin_memory.bin_fmt",
+        "kelvin_mul.bin_fmt",
+        "kelvin_shift.bin_fmt",
+    ],
     deps = [
         ":kelvin_isa",
     ],
