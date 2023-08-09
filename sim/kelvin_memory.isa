@@ -481,5 +481,18 @@ slot kelvin_vector_memory {
     vstq_w_sp_xx_m{: vd, vs1, vs2 : vs1},
     disasm: "vstq.w.s.xx.m", "%vd, %vs1, %vs2",
     semfunc: "absl::bind_front(&KelvinVStQ<int32_t>, /*strip_mine*/ true)";
+
+    // vcget
+    vcget{: : vd},
+      disasm: "vcget", "%vd",
+      semfunc: "absl::bind_front(&KelvinVcGet)";
+
+    // acset/actr
+    acset{: vs1 : vd},
+      disasm: "acset.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinAcSet, /* is_transpose */ false)";
+    actr{: vs1 : vd},
+      disasm: "actr.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&KelvinAcSet, /* is_transpose */ true)";
   }
 }

@@ -2,6 +2,7 @@
 #define SIM_KELVIN_STATE_H_
 
 #include <any>
+#include <array>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -18,6 +19,11 @@ using Instruction = ::mpact::sim::generic::Instruction;
 // Default to 256 to match
 // https://spacebeaker.googlesource.com/shodan/experimental-kelvin/+/refs/heads/master/tools/iss/iss.cc#18.
 inline constexpr uint32_t kVectorLengthInBits = 256;
+
+template <typename T>
+using AccArrayTemplate = std::array<T, kVectorLengthInBits / 32>;
+
+using AccArrayType = AccArrayTemplate<uint32_t>;
 
 class KelvinState : public mpact::sim::riscv::RiscVState {
  public:
@@ -39,6 +45,9 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   void set_vector_length(uint32_t length) { vector_length_ = length; }
   uint32_t vector_length() const { return vector_length_; }
 
+  void SetAccRegister(uint32_t *data, int index);
+  AccArrayType *acc_vec(int index) { return &(acc_register_.at(index)); }
+
   void SetLogArgs(std::any data) { log_args_.emplace_back(std::move(data)); }
   std::string *clog_string() { return &clog_string_; }
   void PrintLog(absl::string_view format_string);
@@ -59,6 +68,9 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   std::string clog_string_;
   // Extra state handlers
   std::vector<absl::AnyInvocable<bool(const Instruction *)>> on_mpause_;
+
+  // Convolution accumulation register, set to be uint32[VLENW][VLENW].
+  AccArrayTemplate<AccArrayType> acc_register_;
 };
 
 }  // namespace kelvin::sim

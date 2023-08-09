@@ -8,6 +8,7 @@
 #include "sim/kelvin_state.h"
 #include "absl/types/span.h"
 #include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 
@@ -278,5 +279,46 @@ void KelvinGetVl(bool strip_mine, bool is_rs1, bool is_rs2,
 template void KelvinGetVl<int8_t>(bool, bool, bool, const Instruction *);
 template void KelvinGetVl<int16_t>(bool, bool, bool, const Instruction *);
 template void KelvinGetVl<int32_t>(bool, bool, bool, const Instruction *);
+
+// Copy convolution accumulation registers into general vector register. In HW,
+// it is set to be v48..55.
+void KelvinVcGet(const mpact::sim::generic::Instruction *inst) {
+  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto *state = static_cast<KelvinState *>(inst->state());
+  const uint32_t kVecLenInWord = state->vector_length() / 32;
+  for (int op_index = 0; op_index < kVecLenInWord; ++op_index) {
+    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    absl::Span<uint32_t> dest_span = dest_db->Get<uint32_t>();
+    auto *acc_vec = state->acc_vec(op_index);
+    for (int i = 0; i < dest_span.size(); ++i) {
+      dest_span[i] = acc_vec->data()[i];
+    }
+    acc_vec->fill(0);
+    dest_db->Submit();
+  }
+}
+
+// Copy the content from the general vector registers to convolution
+// accumulation register. In HW, vs has to be 16-register aligned, and vd has
+// to be set to v48.
+void KelvinAcSet(bool is_transpose,
+                 const mpact::sim::generic::Instruction *inst) {
+  auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto *state = static_cast<KelvinState *>(inst->state());
+  const uint32_t kVecLenInWord = state->vector_length() / 32;
+  for (int op_index = 0; op_index < kVecLenInWord; ++op_index) {
+    auto source_span =
+        vs->GetRegister(op_index)->data_buffer()->Get<uint32_t>();
+    for (int i = 0; i < source_span.size(); ++i) {
+      if (is_transpose) {
+        auto *acc_vec = state->acc_vec(i);
+        acc_vec->at(op_index) = source_span[i];
+      } else {
+        auto *acc_vec = state->acc_vec(op_index);
+        acc_vec->at(i) = source_span[i];
+      }
+    }
+  }
+}
 
 }  // namespace kelvin::sim

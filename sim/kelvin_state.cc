@@ -19,6 +19,9 @@ KelvinState::KelvinState(
     mpact::sim::util::AtomicMemoryOpInterface *atomic_memory)
     : mpact::sim::riscv::RiscVState(id, xlen, memory, atomic_memory) {
   set_vector_register_width(kVectorRegisterWidth);
+  for (int i = 0; i < acc_register_.size(); ++i) {
+    acc_register_.at(i).fill(0);
+  }
 }
 
 KelvinState::KelvinState(absl::string_view id,

@@ -13,6 +13,7 @@
 #include "absl/functional/bind_front.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "mpact/sim/generic/instruction.h"
 
 // This file contains the tests for testing kelvin vector memory instructions.
@@ -22,7 +23,9 @@ namespace {
 using mpact::sim::generic::Instruction;
 
 // Semantic functions.
+using kelvin::sim::KelvinAcSet;
 using kelvin::sim::KelvinGetVl;
+using kelvin::sim::KelvinVcGet;
 using kelvin::sim::KelvinVLd;
 using kelvin::sim::KelvinVLdRegWrite;
 using kelvin::sim::KelvinVSt;
@@ -415,6 +418,95 @@ class KelvinGetVlInstructionTest
 
 TEST_F(KelvinGetVlInstructionTest, GetVl) {
   GetVlTestHelper<int8_t, int16_t, int32_t>();
+}
+
+class KelvinAccumulateInstructionTest
+    : public kelvin::sim::test::KelvinVectorInstructionsTestBase {
+ public:
+  void VcGetTestHelper() {
+    constexpr int kVd = 48;
+    const uint32_t kVLenInWord = state_->vector_length() / 32;
+    // Set v48..55 with random values.
+    std::vector<uint32_t> vd_value(kVLenInWord * kVLenInWord);
+    auto vd_span = absl::Span<uint32_t>(vd_value);
+    FillArrayWithRandomValues<uint32_t>(vd_span);
+    for (int i = 0; i < kVLenInWord; ++i) {
+      auto vd_name = absl::StrCat("v", kVd + i);
+      SetVectorRegisterValues<uint32_t>(
+          {{vd_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
+    }
+    auto instruction = CreateInstruction();
+    AppendVectorRegisterOperands(instruction.get(), kVLenInWord,
+                                 1 /* src1_widen_factor */, {}, {},
+                                 false /* widen_dst */, {kVd});
+    instruction->set_semantic_function(&KelvinVcGet);
+    instruction->Execute();
+    // Resulting v48..55 should all have 0 values
+    for (int i = 0; i < kVLenInWord; ++i) {
+      auto vreg_num = kVd + i;
+      auto test_vreg = vreg_[vreg_num];
+      auto vreg_span = test_vreg->data_buffer()->Get<uint32_t>();
+      for (int element_index = 0; element_index < kVLenInWord;
+           element_index++) {
+        EXPECT_EQ(vreg_span[element_index], 0)
+            << absl::StrCat("vreg[", vreg_num, "][", element_index, "] != 0");
+      }
+    }
+  }
+  void AcSetTestHelper(bool is_transpose, bool expected_fail = false) {
+    constexpr int kVd = 48;
+    constexpr int kVs = 16;
+    const uint32_t kVLenInWord = state_->vector_length() / 32;
+    // Set v24..31, 48..55 with random values.
+    std::vector<uint32_t> vd_value(kVLenInWord * kVLenInWord);
+    auto vd_span = absl::Span<uint32_t>(vd_value);
+    FillArrayWithRandomValues<uint32_t>(vd_span);
+    for (int i = 0; i < kVLenInWord; ++i) {
+      auto vd_name = absl::StrCat("v", kVd + i);
+      auto vs_name = absl::StrCat("v", kVs + i);
+      SetVectorRegisterValues<uint32_t>(
+          {{vd_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
+      SetVectorRegisterValues<uint32_t>(
+          {{vs_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
+    }
+    auto instruction = CreateInstruction();
+    AppendVectorRegisterOperands(instruction.get(), kVLenInWord,
+                                 1 /* src1_widen_factor */, kVs, {},
+                                 false /* widen_dst */, {kVd});
+    instruction->set_semantic_function(
+        absl::bind_front(&KelvinAcSet, is_transpose));
+    instruction->Execute();
+    // Resulting acc_register_ should match `vs` content
+    for (int i = 0; i < kVLenInWord; ++i) {
+      auto vreg_num = kVs + i;
+      auto test_vreg = vreg_[vreg_num];
+      auto vreg_span = test_vreg->data_buffer()->Get<uint32_t>();
+      for (int element_index = 0; element_index < kVLenInWord;
+           element_index++) {
+        if (is_transpose) {
+          auto *acc_vec = state_->acc_vec(element_index);
+          EXPECT_EQ(vreg_span[element_index], acc_vec->at(i))
+              << absl::StrCat("vreg[", vreg_num, "][", element_index,
+                              "] != acc[", element_index, "][", i, "]");
+        } else {
+          auto *acc_vec = state_->acc_vec(i);
+          EXPECT_EQ(vreg_span[element_index], acc_vec->at(element_index))
+              << absl::StrCat("vreg[", vreg_num, "][", element_index,
+                              "] != acc[", i, "][", element_index, "]");
+        }
+      }
+    }
+  }
+};
+
+TEST_F(KelvinAccumulateInstructionTest, VcGet) { VcGetTestHelper(); }
+
+TEST_F(KelvinAccumulateInstructionTest, AcSet) {
+  AcSetTestHelper(/*is_transpose=*/false);
+}
+
+TEST_F(KelvinAccumulateInstructionTest, AcTr) {
+  AcSetTestHelper(/*is_transpose=*/true);
 }
 
 }  // namespace
