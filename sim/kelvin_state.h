@@ -17,7 +17,7 @@ namespace kelvin::sim {
 using Instruction = ::mpact::sim::generic::Instruction;
 
 // Default to 256 to match
-// https://spacebeaker.googlesource.com/shodan/experimental-kelvin/+/refs/heads/master/tools/iss/iss.cc#18.
+// https://spacebeaker.googlesource.com/shodan/hw/kelvin/+/refs/heads/master/hdl/chisel/src/kelvin/Parameters.scala#13.
 inline constexpr uint32_t kVectorLengthInBits = 256;
 
 template <typename T>

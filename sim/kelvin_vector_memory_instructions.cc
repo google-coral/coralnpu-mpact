@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstdlib>
-#include <functional>
 
 #include "sim/kelvin_state.h"
 #include "absl/types/span.h"
@@ -16,7 +14,6 @@ namespace kelvin::sim {
 
 using mpact::sim::generic::DataBuffer;
 using mpact::sim::generic::GetInstructionSource;
-using mpact::sim::generic::Instruction;
 using mpact::sim::riscv::LoadContext;
 using mpact::sim::riscv::RV32VectorDestinationOperand;
 using mpact::sim::riscv::RV32VectorSourceOperand;
