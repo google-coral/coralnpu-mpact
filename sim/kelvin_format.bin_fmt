@@ -114,4 +114,6 @@ format KelvinV2ArgsType[32] {
     unsigned form[2]; // .vv==0b00, .vx==0b10, .xx==0b11
   overlays:  // For accumulation register support.
     unsigned vs1_low3[3] = vs1[2..0];
+    unsigned vs1_low2[2] = vs1[1..0];
+    unsigned vd_low2[2] = vd[1..0];
 };

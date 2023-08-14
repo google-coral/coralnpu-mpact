@@ -24,6 +24,7 @@ using mpact::sim::generic::Instruction;
 
 // Semantic functions.
 using kelvin::sim::KelvinAcSet;
+using kelvin::sim::KelvinADwInit;
 using kelvin::sim::KelvinGetVl;
 using kelvin::sim::KelvinVcGet;
 using kelvin::sim::KelvinVLd;
@@ -453,7 +454,7 @@ class KelvinAccumulateInstructionTest
       }
     }
   }
-  void AcSetTestHelper(bool is_transpose, bool expected_fail = false) {
+  void AcSetTestHelper(bool is_transpose) {
     constexpr int kVd = 48;
     constexpr int kVs = 16;
     const uint32_t kVLenInWord = state_->vector_length() / 32;
@@ -507,6 +508,48 @@ TEST_F(KelvinAccumulateInstructionTest, AcSet) {
 
 TEST_F(KelvinAccumulateInstructionTest, AcTr) {
   AcSetTestHelper(/*is_transpose=*/true);
+}
+
+TEST_F(KelvinAccumulateInstructionTest, ADwInit) {
+  constexpr int kVd = 16;
+  constexpr int kVs = 32;
+  const uint32_t kVLenInByte = state_->vector_length() / 8;
+  constexpr int kInitLength = 4;
+  // Set vs and vd with random values.
+  std::vector<uint8_t> vs_value(kVLenInByte * kInitLength);
+  auto vs_span = absl::Span<uint8_t>(vs_value);
+  FillArrayWithRandomValues<uint8_t>(vs_span);
+  std::vector<uint8_t> vd_value(kVLenInByte * kInitLength);
+  auto vd_span = absl::Span<uint8_t>(vd_value);
+  FillArrayWithRandomValues<uint8_t>(vd_span);
+  for (int i = 0; i < kInitLength; ++i) {
+    auto vd_name = absl::StrCat("v", kVd + i);
+    auto vs_name = absl::StrCat("v", kVs + i);
+    SetVectorRegisterValues<uint8_t>(
+        {{vs_name, vs_span.subspan(kVLenInByte * i, kVLenInByte)},
+         {vd_name, vd_span.subspan(kVLenInByte * i, kVLenInByte)}});
+  }
+  auto instruction = CreateInstruction();
+  AppendVectorRegisterOperands(instruction.get(), kVLenInByte,
+                               1 /* src1_widen_factor */, kVs, {},
+                               false /* widen_dst */, {kVd});
+  instruction->set_semantic_function(&KelvinADwInit);
+  instruction->Execute();
+  // Resulting `vd` should match `vs` in the first quarter of each vector
+  for (int i = 0; i < kInitLength; ++i) {
+    auto vreg_num = kVd + i;
+    auto test_vreg = vreg_[vreg_num];
+    auto vreg_span = test_vreg->data_buffer()->Get<uint8_t>();
+    auto vref_num = kVs + i;
+    auto ref_vreg = vreg_[vref_num];
+    auto ref_span = ref_vreg->data_buffer()->Get<uint8_t>();
+    for (int element_index = 0; element_index < ref_span.size() / 4;
+         element_index++) {
+      EXPECT_EQ(vreg_span[element_index], ref_span[element_index])
+          << absl::StrCat("vreg[", vreg_num, "][", element_index, "] != ref[",
+                          vref_num, "][", element_index, "]");
+    }
+  }
 }
 
 }  // namespace

@@ -30,6 +30,8 @@ void KelvinVcGet(const mpact::sim::generic::Instruction *inst);
 void KelvinAcSet(bool is_transpose,
                  const mpact::sim::generic::Instruction *inst);
 
+void KelvinADwInit(const mpact::sim::generic::Instruction *inst);
+
 }  // namespace kelvin::sim
 
 #endif  // SIM_KELVIN_VECTOR_MEMORY_INSTRUCTIONS_H_

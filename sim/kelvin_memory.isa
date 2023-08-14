@@ -487,12 +487,15 @@ slot kelvin_vector_memory {
       disasm: "vcget", "%vd",
       semfunc: "absl::bind_front(&KelvinVcGet)";
 
-    // acset/actr
+    // acset/actr/adwinit
     acset{: vs1 : vd},
       disasm: "acset.v", "%vd, %vs1",
       semfunc: "absl::bind_front(&KelvinAcSet, /* is_transpose */ false)";
     actr{: vs1 : vd},
       disasm: "actr.v", "%vd, %vs1",
       semfunc: "absl::bind_front(&KelvinAcSet, /* is_transpose */ true)";
+    adwinit{: vs1 : vd},
+      disasm: "adwinit.v", "%vd, %vs1",
+      semfunc: "&KelvinADwInit";
   }
 }

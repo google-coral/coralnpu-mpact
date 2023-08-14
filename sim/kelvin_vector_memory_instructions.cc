@@ -318,4 +318,26 @@ void KelvinAcSet(bool is_transpose,
   }
 }
 
+// Copy the content from the source `vs1` banks to the `vd` banks to prepare the
+// depthwise convolution. Due to compiler encoding, this op is typeless and only
+// assumes `vs1` and `vd` content in 8-bit type.
+void KelvinADwInit(const mpact::sim::generic::Instruction *inst) {
+  auto *state = static_cast<KelvinState *>(inst->state());
+  // Only set a quarter of the to prepare for double-widening in depth-wise
+  // convolution.
+  const uint32_t init_n = state->vector_length() / (8 * 4);
+  constexpr int kInitSize = 4;
+  auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  for (int op_index = 0; op_index < kInitSize; ++op_index) {
+    auto source_span = vs->GetRegister(op_index)->data_buffer()->Get<uint8_t>();
+    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    absl::Span<uint8_t> dest_span = dest_db->Get<uint8_t>();
+    for (int i = 0; i < init_n; ++i) {
+      dest_span[i] = source_span[i];
+    }
+    dest_db->Submit();
+  }
+}
+
 }  // namespace kelvin::sim

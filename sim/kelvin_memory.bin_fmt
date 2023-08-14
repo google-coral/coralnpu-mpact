@@ -116,7 +116,8 @@ instruction group KelvinVectorMemoryInst[32] : KelvinV2ArgsType {
   // vcget
   vcget           : KelvinV2ArgsType : func2 == 0b01'0100, vs2 == 0, vs1 == 0, vd == 48, func1 == 0b111, form == 0b11;
 
-  // acset / actr
+  // acset / actr / adwinit
   acset           : KelvinV2ArgsType : func2 == 0b01'0000, vs2 == 0, m == 0, vd == 48;
   actr            : KelvinV2ArgsType : func2 == 0b01'0001, vs2 == 0, vs1_low3 == 0, m == 0, vd == 48;
+  adwinit         : KelvinV2ArgsType : func2 == 0b01'0010, vs2 == 0, vs1_low2 == 0, sz == 0b00, m == 0, vd_low2 == 0;
 };
