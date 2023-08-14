@@ -16,8 +16,15 @@
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/synchronization/notification.h"
+#include "riscv/riscv_arm_semihost.h"
+#include "riscv/riscv_breakpoint.h"
+#include "riscv/riscv_fp_state.h"
+#include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/component.h"
+#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/resource_operand_interface.h"
@@ -459,6 +466,21 @@ absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
       return absl::InternalError("Register size is not 1, 2, 4, or 8 bytes");
   }
   return absl::OkStatus();
+}
+
+absl::StatusOr<DataBuffer *> KelvinTop::GetRegisterDataBuffer(
+    const std::string &name) {
+  // The registers aren't protected by a mutex, so let's not access them while
+  // the simulator is running.
+  if (run_status_ != RunStatus::kHalted) {
+    return absl::FailedPreconditionError(
+        "GetRegisterDataBuffer: Core must be halted");
+  }
+  auto iter = state_->registers()->find(name);
+  if (iter == state_->registers()->end()) {
+    return absl::NotFoundError(absl::StrCat("Register '", name, "' not found"));
+  }
+  return iter->second->data_buffer();
 }
 
 absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
