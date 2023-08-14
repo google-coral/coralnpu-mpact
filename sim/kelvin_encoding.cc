@@ -239,14 +239,21 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       });
   source_op_getters_.emplace(
       // vst and vstq use `vd` field as the source for the vector store.
+      // convolution instructions also use `vd` as one of the sources.
       static_cast<int>(SourceOpEnum::kVd),
       [this]() -> SourceOperandInterface * {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
-        if (opcode_ < OpcodeEnum::kVstBLXx || opcode_ > OpcodeEnum::kVstqWSpXxM)
-          return nullptr;
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
             state_, reg_num, strip_mine, 1 /* widen_factor */);
+      });
+  source_op_getters_.emplace(
+      // Used by convolution instructions.
+      static_cast<int>(SourceOpEnum::kVs3),
+      [this]() -> SourceOperandInterface * {
+        auto reg_num = encoding::kelvin_v3_args_type::ExtractVs3(inst_word_);
+        return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
+            state_, reg_num, false /* strip_mine */, 1 /* widen_factor */);
       });
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kNone), []() { return nullptr; }));
@@ -316,6 +323,7 @@ void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
       decode_functions;
   decode_functions.push_back(encoding::DecodeKelvinInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorArithInst);
+  decode_functions.push_back(encoding::DecodeKelvinVectorConvInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorMemoryInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorMulInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorShiftInst);

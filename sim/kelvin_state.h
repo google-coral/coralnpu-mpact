@@ -45,8 +45,8 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   void set_vector_length(uint32_t length) { vector_length_ = length; }
   uint32_t vector_length() const { return vector_length_; }
 
-  void SetAccRegister(uint32_t *data, int index);
   AccArrayType *acc_vec(int index) { return &(acc_register_.at(index)); }
+  AccArrayTemplate<AccArrayType> acc_register() const { return acc_register_; }
 
   void SetLogArgs(std::any data) { log_args_.emplace_back(std::move(data)); }
   std::string *clog_string() { return &clog_string_; }

@@ -28,11 +28,13 @@ cc_library(
     name = "kelvin_instructions",
     srcs = [
         "kelvin_instructions.cc",
+        "kelvin_vector_convolution_instructions.cc",
         "kelvin_vector_instructions.cc",
         "kelvin_vector_memory_instructions.cc",
     ],
     hdrs = [
         "kelvin_instructions.h",
+        "kelvin_vector_convolution_instructions.h",
         "kelvin_vector_instructions.h",
         "kelvin_vector_memory_instructions.h",
     ],
@@ -74,6 +76,7 @@ mpact_bin_fmt_decoder(
     includes = [
         "kelvin_arith.bin_fmt",
         "kelvin_base.bin_fmt",
+        "kelvin_conv.bin_fmt",
         "kelvin_format.bin_fmt",
         "kelvin_memory.bin_fmt",
         "kelvin_mul.bin_fmt",

@@ -19,7 +19,8 @@ isa Kelvin {
 
 // Combining all kelvin instruction sets.
 slot kelvin : riscv32i, riscv32m, zicsr, zfencei, privileged, kelvin_arith,
-    kelvin_log, kelvin_memory, kelvin_mul, kelvin_shift, kelvin_vector_memory {
+    kelvin_conv, kelvin_log, kelvin_memory, kelvin_mul, kelvin_shift,
+    kelvin_vector_memory {
   includes {
     #include "sim/kelvin_instructions.h"
   }

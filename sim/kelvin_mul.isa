@@ -9,7 +9,6 @@ disasm widths = {-18};
 // Mul/Div instructions (func1 011)
 slot kelvin_mul {
   includes {
-    #include "sim/kelvin_instructions.h"
     #include "sim/kelvin_vector_instructions.h"
     #include "absl/functional/bind_front.h"
   }
@@ -523,5 +522,20 @@ slot kelvin_mul {
     vmadd_w_vx_m{: vs1, vs2 : vd},
       disasm: "vmadd.w.vx.m", "%vd, %vs1, %vs2",
       semfunc: "absl::bind_front(&KelvinVMadd<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+  }
+}
+
+slot kelvin_conv {
+  includes {
+    #include "sim/kelvin_vector_convolution_instructions.h"
+    #include "absl/functional/bind_front.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    // vconv
+    aconv_vxv{: vs1, vs2, vs3 : vd},
+      disasm: "aconv.vxv", "%vd, %vs1, %vs2, %vs3",
+      semfunc: "&KelvinVConv";
   }
 }
