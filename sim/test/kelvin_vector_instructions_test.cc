@@ -105,29 +105,16 @@ class KelvinVectorInstructionsTest
   void KelvinVectorBinaryOpHelper(absl::string_view name) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
 
-    // Vector OP type vector-vector.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kNonScalar, kNonStripmine),
-        absl::StrCat(name_with_type, "VV"), kNonScalar, kNonStripmine,
-        F<TD, TS1, TS2>::Op);
-
-    // Vector OP type vector-vector stripmined.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kNonScalar, kIsStripmine),
-        absl::StrCat(name_with_type, "VVM"), kNonScalar, kIsStripmine,
-        F<TD, TS1, TS2>::Op);
-
-    // Vector OP type vector-scalar.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kIsScalar, kNonStripmine),
-        absl::StrCat(name_with_type, "VX"), kIsScalar, kNonStripmine,
-        F<TD, TS1, TS2>::Op);
-
-    // Vector OP type vector-scalar stripmined.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kIsScalar, kIsStripmine),
-        absl::StrCat(name_with_type, "VXM"), kIsScalar, kIsStripmine,
-        F<TD, TS1, TS2>::Op);
+    // Test [VV, VX].{M} variants
+    for (auto scalar : {kNonScalar, kIsScalar}) {
+      for (auto stripmine : {kNonStripmine, kIsStripmine}) {
+        auto op_name = absl::StrCat(name_with_type, "V", scalar ? "X" : "V",
+                                    stripmine ? "M" : "");
+        BinaryOpTestHelper<TD, TS1, TS2>(
+            absl::bind_front(F<TD, TS1, TS2>::KelvinOp, scalar, stripmine),
+            op_name, scalar, stripmine, F<TD, TS1, TS2>::Op);
+      }
+    }
   }
 
   template <template <typename, typename, typename> class F, typename TD,
@@ -276,29 +263,17 @@ class KelvinVectorInstructionsTest
   void KelvinShuffleOpHelper(absl::string_view name, bool widen_dst) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<T>());
 
-    // Vector OP type vector-vector.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T>::KelvinOp, kNonScalar, kNonStripmine),
-        absl::StrCat(name_with_type, "VV"), kNonScalar, kNonStripmine, F<T>::Op,
-        F<T>::kArgsGetter, kNonHalftypeOp, kNonVmvpOp, widen_dst);
-
-    // Vector OP type vector-vector stripmined.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T>::KelvinOp, kNonScalar, kIsStripmine),
-        absl::StrCat(name_with_type, "VVM"), kNonScalar, kIsStripmine, F<T>::Op,
-        F<T>::kArgsGetter, kNonHalftypeOp, kNonVmvpOp, widen_dst);
-
-    // Vector OP type vector-scalar.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T>::KelvinOp, kIsScalar, kNonStripmine),
-        absl::StrCat(name_with_type, "VX"), kIsScalar, kNonStripmine, F<T>::Op,
-        F<T>::kArgsGetter, kNonHalftypeOp, kNonVmvpOp, widen_dst);
-
-    // Vector OP type vector-scalar stripmined.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T>::KelvinOp, kIsScalar, kIsStripmine),
-        absl::StrCat(name_with_type, "VXM"), kIsScalar, kIsStripmine, F<T>::Op,
-        F<T>::kArgsGetter, kNonHalftypeOp, kNonVmvpOp, widen_dst);
+    // Test [VV, VX].{M} variants.
+    for (auto scalar : {kNonScalar, kIsScalar}) {
+      for (auto stripmine : {kNonStripmine, kIsStripmine}) {
+        auto op_name = absl::StrCat(name_with_type, "V", scalar ? "X" : "V",
+                                    stripmine ? "M" : "");
+        BinaryOpTestHelper<T, T, T>(
+            absl::bind_front(F<T>::KelvinOp, scalar, stripmine), op_name,
+            scalar, stripmine, F<T>::Op, F<T>::kArgsGetter, kNonHalftypeOp,
+            kNonVmvpOp, widen_dst);
+      }
+    }
   }
 
   template <template <typename> class F, typename T, typename TNext1,
