@@ -45,31 +45,55 @@ instruction group KelvinVectorShiftInst[32] : KelvinV2ArgsType {
 
   //vsha
   vsha_b_vv       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_b_vx       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_b_vv_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_b_vx_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b10;
   vsha_h_vv       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_h_vx       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_h_vv_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_h_vx_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b10;
   vsha_w_vv       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_w_vx       : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_w_vv_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_w_vx_m     : KelvinV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b10;
   vsha_b_r_vv     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_b_r_vx     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_b_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_b_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b10;
   vsha_h_r_vv     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_h_r_vx     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_h_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_h_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b10;
   vsha_w_r_vv     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b00;
+  vsha_w_r_vx     : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b10;
   vsha_w_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b00;
+  vsha_w_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b10;
 
   //vshl
   vshl_b_vv       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_b_vx       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_b_vv_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_b_vx_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b10;
   vshl_h_vv       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_h_vx       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_h_vv_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_h_vx_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b10;
   vshl_w_vv       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_w_vx       : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_w_vv_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_w_vx_m     : KelvinV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b10;
   vshl_b_r_vv     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_b_r_vx     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_b_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_b_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b01, func1 == 0b010, form == 0b10;
   vshl_h_r_vv     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_h_r_vx     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_h_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_h_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b01, func1 == 0b010, form == 0b10;
   vshl_w_r_vv     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b00;
+  vshl_w_r_vx     : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b00, func1 == 0b010, form == 0b10;
   vshl_w_r_vv_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b00;
+  vshl_w_r_vx_m   : KelvinV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b01, func1 == 0b010, form == 0b10;
 
   //vnot
   vnot_v          : KelvinV2ArgsType : func2 == 0b00'0011, vs2 == 0, m == 0b00, func1 == 0b001, form == 0b10;

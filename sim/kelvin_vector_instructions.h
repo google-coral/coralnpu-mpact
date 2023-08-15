@@ -108,7 +108,7 @@ template <typename T>
 void KelvinVSrl(bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
-void KelvinVShift(bool round, bool strip_mine, Instruction *inst);
+void KelvinVShift(bool round, bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
 void KelvinVNot(bool strip_mine, Instruction *inst);

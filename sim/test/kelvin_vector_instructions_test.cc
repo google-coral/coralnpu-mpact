@@ -204,29 +204,20 @@ class KelvinVectorInstructionsTest
   void KelvinVectorShiftBinaryOpHelper(absl::string_view name) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<T>());
 
-    // Vector OP vector-vector.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T, T, T>::KelvinOp, kNonRounding, kNonStripmine),
-        absl::StrCat(name_with_type, "VV"), kNonScalar, kNonStripmine,
-        absl::bind_front(F<T, T, T>::Op, kNonRounding));
-
-    // Vector OP vector-vector stripmined.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T, T, T>::KelvinOp, kNonRounding, kIsStripmine),
-        absl::StrCat(name_with_type, "VVM"), kNonScalar, kIsStripmine,
-        absl::bind_front(F<T, T, T>::Op, kNonRounding));
-
-    // Vector OP vector-vector with rounding.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T, T, T>::KelvinOp, kIsRounding, kNonStripmine),
-        absl::StrCat(name_with_type, "RVV"), kNonScalar, kNonStripmine,
-        absl::bind_front(F<T, T, T>::Op, kIsRounding));
-
-    // Vector OP vector-vector stripmined with rounding.
-    BinaryOpTestHelper<T, T, T>(
-        absl::bind_front(F<T, T, T>::KelvinOp, kIsRounding, kIsStripmine),
-        absl::StrCat(name_with_type, "RVVM"), kNonScalar, kIsStripmine,
-        absl::bind_front(F<T, T, T>::Op, kIsRounding));
+    // Test {R}.[VV, VX].{M} variants.
+    for (auto rounding : {kNonRounding, kIsRounding}) {
+      for (auto scalar : {kNonScalar, kIsScalar}) {
+        for (auto stripmine : {kNonStripmine, kIsStripmine}) {
+          auto op_name = absl::StrCat(name_with_type, rounding ? "R" : "", "V",
+                                      scalar ? "X" : "V", stripmine ? "M" : "");
+          BinaryOpTestHelper<T, T, T>(
+              absl::bind_front(F<T, T, T>::KelvinOp, rounding, scalar,
+                               stripmine),
+              op_name, scalar, stripmine,
+              absl::bind_front(F<T, T, T>::Op, rounding));
+        }
+      }
+    }
   }
 
   template <template <typename, typename, typename> class F, typename T,
@@ -1058,8 +1049,9 @@ struct VShiftOp {
     }
   }
 
-  static void KelvinOp(bool round, bool strip_mine, Instruction *inst) {
-    KelvinVShift<Vd>(round, strip_mine, inst);
+  static void KelvinOp(bool round, bool scalar, bool strip_mine,
+                       Instruction *inst) {
+    KelvinVShift<Vd>(round, scalar, strip_mine, inst);
   }
 };
 

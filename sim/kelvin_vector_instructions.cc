@@ -777,17 +777,17 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVShift(bool round, bool strip_mine, Instruction *inst) {
+void KelvinVShift(bool round, bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
-      inst, false /* scalar */, strip_mine,
+      inst, scalar, strip_mine,
       std::function<T(T, T)>(absl::bind_front(&KelvinVShiftHelper<T>, round)));
 }
-template void KelvinVShift<int8_t>(bool, bool, Instruction *);
-template void KelvinVShift<int16_t>(bool, bool, Instruction *);
-template void KelvinVShift<int32_t>(bool, bool, Instruction *);
-template void KelvinVShift<uint8_t>(bool, bool, Instruction *);
-template void KelvinVShift<uint16_t>(bool, bool, Instruction *);
-template void KelvinVShift<uint32_t>(bool, bool, Instruction *);
+template void KelvinVShift<int8_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<int16_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<int32_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<uint8_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<uint16_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<uint32_t>(bool, bool, bool, Instruction *);
 
 // Bitwise not.
 template <typename T>
