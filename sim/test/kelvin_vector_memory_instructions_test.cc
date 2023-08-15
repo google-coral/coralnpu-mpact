@@ -39,7 +39,8 @@ class KelvinVectorMemoryInstructionsTest
   void MemoryLoadStoreOpTestHelper(absl::string_view name, bool has_length,
                                    bool has_stride, bool strip_mine,
                                    bool post_increment, bool x_variant,
-                                   bool is_load, bool is_quad) {
+                                   bool is_load, bool is_quad,
+                                   bool is_uncached = false) {
     InstructionPtr child_instruction(
         new Instruction(next_instruction_address_, state_),
         [](Instruction *inst) { inst->DecRef(); });
@@ -123,8 +124,13 @@ class KelvinVectorMemoryInstructionsTest
         continue;
       }
       // Set input register values.
+      // The 31-bit of the address defines the cache invalidation. Set it to `1`
+      // when the cache invalidation is tested.
+      auto data_address =
+          is_uncached ? (kelvin::sim::test::kDataLoadAddress | 0x8000'0000U)
+                      : kelvin::sim::test::kDataLoadAddress;
       SetRegisterValues<uint32_t>(
-          {{kelvin::sim::test::kRs1Name, kelvin::sim::test::kDataLoadAddress}});
+          {{kelvin::sim::test::kRs1Name, data_address}});
 
       if (!x_variant) {
         SetRegisterValues<uint32_t>(
@@ -292,6 +298,13 @@ class KelvinVectorMemoryInstructionsTest
                                      kPostIncrement, kNotXVariant, is_load,
                                      kNotQuad);
     }
+
+    // Extra test for cache invalidation address
+    auto subname = absl::StrCat(name_with_type, "X");
+    MemoryLoadStoreOpTestHelper<T>(subname, kNoLength, kNoStride,
+                                   false /*strip_mine*/,
+                                   false /*post_increment*/, kXVariant, is_load,
+                                   kNotQuad, true /*is_uncached*/);
   }
 
   template <typename T>

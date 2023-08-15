@@ -67,6 +67,10 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
     }
     memory_->Store(kDataLoadAddress - 4096, db);
     db->DecRef();
+    // data_buffer has the size of 8192, while memory stores from
+    // kDataLoadAddress - 4096, the maximum address is at kDataLoadAddress +
+    // 4095.
+    state_->set_max_physical_address(kDataLoadAddress + 4095);
     for (int i = 1; i < 32; i++) {
       xreg_[i] = state_->GetRegister<RV32Register>(absl::StrCat("x", i)).first;
     }

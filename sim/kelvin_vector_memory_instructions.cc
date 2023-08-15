@@ -18,6 +18,14 @@ using mpact::sim::riscv::LoadContext;
 using mpact::sim::riscv::RV32VectorDestinationOperand;
 using mpact::sim::riscv::RV32VectorSourceOperand;
 
+// Kelvin HW reserves the 31st bit as the magic cache invalidation bit.
+// SW can update the load/store address to include that bit to trigger immediate
+// cache invalidation. The actual address should exclude that bit. In ISS the
+// invalidation is no-op and the actual address should be in the lower bits.
+//
+// Note the core supports up to 2GB memory (4MB is actually integrated in RTL).
+constexpr uint64_t kMemMask = 0x0000'0000'7fff'ffff;
+
 // Vector load instruction with optional data length, stride and address
 // register post-increment.
 template <typename T>
@@ -29,6 +37,14 @@ void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
 
   const auto num_ops = strip_mine ? 4 : 1;
   auto addr = GetInstructionSource<uint32_t>(inst, 0, 0);
+  // Check and exclude the cache invalidation bit. However, the semihost tests
+  // use the memory space greater than the kelvin HW configuration and do not
+  // comply to the magic bit setting. Exclude the check and mask for those
+  // tests.
+  if (state->max_physical_address() <=
+      kKelvinMaxMemoryAddress) {  // exclude semihost tests
+    addr &= kMemMask;
+  }
 
   uint32_t elts_to_load = num_ops * elts_per_register;
   if (has_length) {
@@ -146,6 +162,10 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
 
   const auto num_ops = strip_mine ? 4 : 1;
   auto mem_addr = GetInstructionSource<uint32_t>(inst, 1, 0);
+  if (state->max_physical_address() <=
+      kKelvinMaxMemoryAddress) {  // exclude semihost tests
+    mem_addr &= kMemMask;
+  }
   auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
 
   auto base_addr = mem_addr;
