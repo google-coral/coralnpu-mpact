@@ -1327,7 +1327,7 @@ TEST_F(KelvinVectorInstructionsTest, VMulhur) {
 template <typename T>
 T KelvinVDmulhHelper(bool round, bool round_neg, T vs1, T vs2) {
   constexpr int n = sizeof(T) * 8;
-  int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs1);
+  int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
   if (round) {
     int64_t rnd = 0x40000000ll >> (32 - n);
     if (result < 0 && round_neg) {
