@@ -1082,16 +1082,16 @@ slot kelvin_arith {
    //vpaddu
     vpadd_h_u_v{: vs1 : vd},
       disasm: "vpadd.h.u.v", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPadd<int16_t, int8_t>, /*strip_mine*/ false)";
+      semfunc: "absl::bind_front(&KelvinVPadd<uint16_t, uint8_t>, /*strip_mine*/ false)";
     vpadd_h_u_v_m{: vs1 : vd},
       disasm: "vpadd.h.u.v.m", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPadd<int16_t, int8_t>, /*strip_mine*/ true)";
+      semfunc: "absl::bind_front(&KelvinVPadd<uint16_t, uint8_t>, /*strip_mine*/ true)";
     vpadd_w_u_v{: vs1 : vd},
       disasm: "vpadd.w.u.v", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPadd<int32_t, int16_t>, /*strip_mine*/ false)";
+      semfunc: "absl::bind_front(&KelvinVPadd<uint32_t, uint16_t>, /*strip_mine*/ false)";
     vpadd_w_u_v_m{: vs1 : vd},
       disasm: "vpadd.w.u.v.m", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPadd<int32_t, int16_t>, /*strip_mine*/ true)";
+      semfunc: "absl::bind_front(&KelvinVPadd<uint32_t, uint16_t>, /*strip_mine*/ true)";
 
    //vpsub
     vpsub_h_v{: vs1 : vd},
@@ -1110,16 +1110,16 @@ slot kelvin_arith {
     //vpsubu
     vpsub_h_u_v{: vs1 : vd},
       disasm: "vpsub.h.u.v", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPsub<int16_t, int8_t>, /*strip_mine*/ false)";
+      semfunc: "absl::bind_front(&KelvinVPsub<uint16_t, uint8_t>, /*strip_mine*/ false)";
     vpsub_h_u_v_m{: vs1 : vd},
       disasm: "vpsub.h.u.v.m", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPsub<int16_t, int8_t>, /*strip_mine*/ true)";
+      semfunc: "absl::bind_front(&KelvinVPsub<uint16_t, uint8_t>, /*strip_mine*/ true)";
     vpsub_w_u_v{: vs1 : vd},
       disasm: "vpsub.w.u.v", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPsub<int32_t, int16_t>, /*strip_mine*/ false)";
+      semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ false)";
     vpsub_w_u_v_m{: vs1 : vd},
       disasm: "vpsub.w.u.v.m", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPsub<int32_t, int16_t>, /*strip_mine*/ true)";
+      semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ true)";
 
     //vhadd
     vhadd_b_vv{: vs1, vs2 : vd},
