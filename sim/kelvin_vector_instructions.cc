@@ -623,13 +623,13 @@ void KelvinVRev(bool strip_mine, Instruction *inst) {
       inst, true /* scalar */, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T {
         T r = vs1;
-        // TODO(leonidl): revisit after spec clarification.
-        // For now it's set to always use 5 lower bits, regardless of type.
         T count = vs2 & 0b11111;
         if (count & 1) r = ((r & 0x55555555) << 1) | ((r & 0xAAAAAAAA) >> 1);
         if (count & 2) r = ((r & 0x33333333) << 2) | ((r & 0xCCCCCCCC) >> 2);
         if (count & 4) r = ((r & 0x0F0F0F0F) << 4) | ((r & 0xF0F0F0F0) >> 4);
+        if (sizeof(T) == 1) return r;
         if (count & 8) r = ((r & 0x00FF00FF) << 8) | ((r & 0xFF00FF00) >> 8);
+        if (sizeof(T) == 2) return r;
         if (count & 16) r = ((r & 0x0000FFFF) << 16) | ((r & 0xFFFF0000) >> 16);
         return r;
       }));
