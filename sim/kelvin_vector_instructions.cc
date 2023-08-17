@@ -618,10 +618,9 @@ template void KelvinVXor<uint32_t>(bool, bool, Instruction *);
 
 // Generalized reverse using bit ladder.
 template <typename T>
-void KelvinVRev(bool strip_mine, Instruction *inst) {
+void KelvinVRev(bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
-      inst, true /* scalar */, strip_mine,
-      std::function<T(T, T)>([](T vs1, T vs2) -> T {
+      inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
         T r = vs1;
         T count = vs2 & 0b11111;
         if (count & 1) r = ((r & 0x55555555) << 1) | ((r & 0xAAAAAAAA) >> 1);
@@ -634,14 +633,14 @@ void KelvinVRev(bool strip_mine, Instruction *inst) {
         return r;
       }));
 }
-template void KelvinVRev<uint8_t>(bool, Instruction *);
-template void KelvinVRev<uint16_t>(bool, Instruction *);
-template void KelvinVRev<uint32_t>(bool, Instruction *);
+template void KelvinVRev<uint8_t>(bool, bool, Instruction *);
+template void KelvinVRev<uint16_t>(bool, bool, Instruction *);
+template void KelvinVRev<uint32_t>(bool, bool, Instruction *);
 
 // Cyclic rotation right using a bit ladder.
 template <typename T>
-void KelvinVRor(bool strip_mine, Instruction *inst) {
-  KelvinBinaryVectorOp(inst, true /* scalar */, strip_mine,
+void KelvinVRor(bool scalar, bool strip_mine, Instruction *inst) {
+  KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          T r = vs1;
                          T count = vs2 & static_cast<T>(sizeof(T) * 8 - 1);
@@ -652,9 +651,9 @@ void KelvinVRor(bool strip_mine, Instruction *inst) {
                          return r;
                        }));
 }
-template void KelvinVRor<uint8_t>(bool, Instruction *);
-template void KelvinVRor<uint16_t>(bool, Instruction *);
-template void KelvinVRor<uint32_t>(bool, Instruction *);
+template void KelvinVRor<uint8_t>(bool, bool, Instruction *);
+template void KelvinVRor<uint16_t>(bool, bool, Instruction *);
+template void KelvinVRor<uint32_t>(bool, bool, Instruction *);
 
 // Returns Arg1 as either vs1 or vs2 based on dst_reg_index.
 template <typename Vd, typename Vs1, typename Vs2>

@@ -90,10 +90,10 @@ template <typename T>
 void KelvinVXor(bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
-void KelvinVRev(bool strip_mine, Instruction *inst);
+void KelvinVRev(bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
-void KelvinVRor(bool strip_mine, Instruction *inst);
+void KelvinVRor(bool scalar, bool strip_mine, Instruction *inst);
 
 template <typename T>
 void KelvinVMvp(bool scalar, bool strip_mine, Instruction *inst);

@@ -885,15 +885,15 @@ struct VRevOp {
     if (count & 16) r = ((r & 0x0000FFFF) << 16) | ((r & 0xFFFF0000) >> 16);
     return r;
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
-    KelvinVRev<Vd>(strip_mine, inst);
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+    KelvinVRev<Vd>(scalar, strip_mine, inst);
   }
 };
 
 TEST_F(KelvinVectorInstructionsTest, VRev) {
-  KelvinVectorVXBinaryOpHelper<VRevOp, uint8_t, uint8_t, uint8_t, uint16_t,
-                               uint16_t, uint16_t, uint32_t, uint32_t,
-                               uint32_t>("VRevOp");
+  KelvinVectorBinaryOpHelper<VRevOp, uint8_t, uint8_t, uint8_t, uint16_t,
+                             uint16_t, uint16_t, uint32_t, uint32_t, uint32_t>(
+      "VRevOp");
 }
 
 // Cyclic rotation right using a bit ladder.
@@ -907,15 +907,15 @@ struct VRorOp {
     }
     return r;
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
-    KelvinVRor<Vd>(strip_mine, inst);
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+    KelvinVRor<Vd>(scalar, strip_mine, inst);
   }
 };
 
 TEST_F(KelvinVectorInstructionsTest, VRor) {
-  KelvinVectorVXBinaryOpHelper<VRorOp, uint8_t, uint8_t, uint8_t, uint16_t,
-                               uint16_t, uint16_t, uint32_t, uint32_t,
-                               uint32_t>("VRorOp");
+  KelvinVectorBinaryOpHelper<VRorOp, uint8_t, uint8_t, uint8_t, uint16_t,
+                             uint16_t, uint16_t, uint32_t, uint32_t, uint32_t>(
+      "VRorOp");
 }
 
 // Vector move pair.
