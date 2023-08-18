@@ -500,22 +500,15 @@ TEST_F(KelvinVectorInstructionsTest, VAdd3) {
 }
 
 // Vector saturated add.
-
-// Uses unsigned arithmetic for the addition to avoid signed overflow, which,
-// when compiled with --config=asan, will trigger an exception.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAddsOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    using UT = typename std::make_unsigned<Vd>::type;
-    UT uvs1 = static_cast<UT>(vs1);
-    UT uvs2 = static_cast<UT>(vs2);
-    UT usum = uvs1 + uvs2;
-    Vd sum = static_cast<Vd>(usum);
-    if (((vs1 ^ vs2) >= 0) && ((sum ^ vs1) < 0)) {
-      return vs1 > 0 ? std::numeric_limits<Vd>::max()
-                     : std::numeric_limits<Vd>::min();
-    }
-    return sum;
+    // typenames Vs1 and Vs2 can be up to int32_t. Promoting to int64_t to
+    // prevent overflow.
+    int64_t sum = static_cast<int64_t>(vs1) + static_cast<int64_t>(vs2);
+    return std::min<int64_t>(
+        std::max<int64_t>(std::numeric_limits<Vd>::min(), sum),
+        std::numeric_limits<Vd>::max());
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVAdds<Vd>(scalar, strip_mine, inst);
@@ -530,11 +523,8 @@ TEST_F(KelvinVectorInstructionsTest, VAdds) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAddsuOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    Vd sum = vs1 + vs2;
-    if (sum < vs1) {
-      sum = std::numeric_limits<Vd>::max();
-    }
-    return sum;
+    uint64_t sum = static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2);
+    return std::min<uint64_t>(std::numeric_limits<Vd>::max(), sum);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVAddsu<Vd>(scalar, strip_mine, inst);
@@ -546,22 +536,15 @@ TEST_F(KelvinVectorInstructionsTest, VAddsu) {
 }
 
 // Vector saturated sub.
-
-// Uses unsigned arithmetic for the addition to avoid signed overflow, which,
-// when compiled with --config=asan, will trigger an exception.
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSubsOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    using UT = typename std::make_unsigned<Vd>::type;
-    UT uvs1 = static_cast<UT>(vs1);
-    UT uvs2 = static_cast<UT>(vs2);
-    UT usub = uvs1 - uvs2;
-    Vd sub = static_cast<Vd>(usub);
-    if (((vs1 ^ vs2) < 0) && ((sub ^ vs2) >= 0)) {
-      return vs2 < 0 ? std::numeric_limits<Vd>::max()
-                     : std::numeric_limits<Vd>::min();
-    }
-    return sub;
+    // typenames Vs1 and Vs2 can be up to int32_t. Promoting to int64_t to
+    // prevent overflow.
+    int64_t sub = static_cast<int64_t>(vs1) - static_cast<int64_t>(vs2);
+    return std::min<int64_t>(
+        std::max<int64_t>(std::numeric_limits<Vd>::min(), sub),
+        std::numeric_limits<Vd>::max());
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVSubs<Vd>(scalar, strip_mine, inst);
