@@ -1,7 +1,11 @@
 #include "sim/kelvin_encoding.h"
 
+#include <cstdint>
+
+#include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
 #include "googletest/include/gtest/gtest.h"
+#include "riscv/riscv_register.h"
 
 namespace {
 
@@ -9,6 +13,8 @@ using kelvin::sim::KelvinState;
 using kelvin::sim::isa32::KelvinEncoding;
 using SlotEnum = kelvin::sim::isa32::SlotEnum;
 using OpcodeEnum = kelvin::sim::isa32::OpcodeEnum;
+using SourceOpEnum = kelvin::sim::isa32::SourceOpEnum;
+using RV32VectorSourceOperand = mpact::sim::riscv::RV32VectorSourceOperand;
 
 // RV32I
 constexpr uint32_t kLui = 0b0000000000000000000000000'0110111;
@@ -92,6 +98,15 @@ class KelvinEncodingTest : public testing::Test {
   ~KelvinEncodingTest() override {
     delete enc_;
     delete state_;
+  }
+
+  RV32VectorSourceOperand *VectorSourceEncodeHelper(
+      uint32_t inst_word, OpcodeEnum opcode, SourceOpEnum source_op) const {
+    enc_->ParseInstruction(inst_word);
+    EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), opcode);
+    auto source = enc_->GetSource(SlotEnum::kKelvin, 0, opcode, source_op, 0);
+    return reinterpret_cast<mpact::sim::riscv::RV32VectorSourceOperand *>(
+        source);
   }
 
   KelvinState *state_;
@@ -300,4 +315,41 @@ TEST_F(KelvinEncodingTest, RV32MOpcodes) {
   enc_->ParseInstruction(kRemu);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRemu);
 }
+
+TEST_F(KelvinEncodingTest, VsraxsWideningVs1) {
+  constexpr uint32_t kVSransBase = 0b010000'000001'000000'00'001000'0'010'00;
+  auto v_src = VectorSourceEncodeHelper(kVSransBase, OpcodeEnum::kVsransBVv,
+                                        SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 2);
+  delete v_src;
+
+  // Test vsrans.b.r.vv
+  v_src = VectorSourceEncodeHelper(kVSransBase | (1 << 27),
+                                   OpcodeEnum::kVsransBRVv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 2);
+  delete v_src;
+
+  // Test vsrans.h.vv
+  v_src = VectorSourceEncodeHelper(kVSransBase | (1 << 12),
+                                   OpcodeEnum::kVsransHVv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 2);
+  delete v_src;
+
+  // Test vsraqs.b.vv
+  v_src = VectorSourceEncodeHelper(kVSransBase | (1 << 29),
+                                   OpcodeEnum::kVsraqsBVv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 4);
+  delete v_src;
+
+  // Test vsraqs.b.r.vv
+  v_src = VectorSourceEncodeHelper(kVSransBase | (1 << 29) | (1 << 27),
+                                   OpcodeEnum::kVsraqsBRVv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 4);
+  delete v_src;
+
+  // Test illegal vsrans (vsrans.w.vv)
+  enc_->ParseInstruction(kVSransBase | (2 << 12));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kNone);
+}
+
 }  // namespace

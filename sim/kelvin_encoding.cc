@@ -402,14 +402,14 @@ int KelvinEncoding::GetSrc1WidenFactor() const {
     return 2;
   }
 
-  // Func1 0b010 VSrans[u][.r] also needs 2x src1 registers.
-  if ((func1 == 0b010) && (sz == 0) &&
+  // Func1 0b010 VSrans.[b,h].[u][.r] also needs 2x src1 registers.
+  if ((func1 == 0b010) && ((sz == 0) || (sz == 1)) &&
       (func2_ignore_unsigned == 0b010000 ||
        func2_ignore_unsigned == 0b010010)) {
     return 2;
   }
 
-  // Func1 0b010 VSraqs[u][.r] needs 4x src1 registers.
+  // Func1 0b010 VSraqs.b.[u][.r] needs 4x src1 registers.
   if ((func1 == 0b010) && (sz == 0) &&
       (func2_ignore_unsigned == 0b011000 ||
        func2_ignore_unsigned == 0b011010)) {
