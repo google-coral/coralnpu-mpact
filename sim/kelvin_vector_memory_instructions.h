@@ -19,6 +19,9 @@ void KelvinVSt(bool has_length, bool has_stride, bool strip_mine,
                Instruction *inst);
 
 template <typename T>
+void KelvinVDup(bool strip_mine, Instruction *inst);
+
+template <typename T>
 void KelvinVStQ(bool strip_mine, Instruction *inst);
 
 template <typename T>

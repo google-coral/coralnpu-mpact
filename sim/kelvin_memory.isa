@@ -481,6 +481,24 @@ slot kelvin_vector_memory {
     vstq_w_sp_xx_m{: vd, vs1, vs2 : vs1},
       disasm: "vstq.w.s.xx.m", "%vd, %vs1, %vs2",
       semfunc: "absl::bind_front(&KelvinVStQ<int32_t>, /*strip_mine*/ true)";
+    vdup_b_x{: vs2 : vd },
+      disasm: "vdup.b.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int8_t>, /*strip_mine*/ false)";
+    vdup_h_x{: vs2 : vd },
+      disasm: "vdup.h.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int16_t>, /*strip_mine*/ false)";
+    vdup_w_x{: vs2 : vd },
+      disasm: "vdup.w.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int32_t>, /*strip_mine*/ false)";
+    vdup_b_x_m{: vs2 : vd },
+      disasm: "vdup.b.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int8_t>, /*strip_mine*/ true)";
+    vdup_h_x_m{: vs2 : vd },
+      disasm: "vdup.h.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int16_t>, /*strip_mine*/ true)";
+    vdup_w_x_m{: vs2 : vd },
+      disasm: "vdup.w.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&KelvinVDup<int32_t>, /*strip_mine*/ true)";
 
     // vcget
     vcget{: : vd},

@@ -113,6 +113,14 @@ instruction group KelvinVectorMemoryInst[32] : KelvinV2ArgsType {
   vstq_h_sp_xx_m  : KelvinV2ArgsType : func2 == 0b01'1110, vs2 != 0, sz == 0b01, m == 0b01, func1 == 0b111, form == 0b11;
   vstq_w_sp_xx_m  : KelvinV2ArgsType : func2 == 0b01'1110, vs2 != 0, sz == 0b10, m == 0b01, func1 == 0b111, form == 0b11;
 
+  // vdup
+  vdup_b_x    : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b00, m == 0b00, func1 == 0b111, form == 0b11;
+  vdup_h_x    : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b01, m == 0b00, func1 == 0b111, form == 0b11;
+  vdup_w_x    : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b10, m == 0b00, func1 == 0b111, form == 0b11;
+  vdup_b_x_m  : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b00, m == 0b01, func1 == 0b111, form == 0b11;
+  vdup_h_x_m  : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b01, m == 0b01, func1 == 0b111, form == 0b11;
+  vdup_w_x_m  : KelvinV2ArgsType : func2 == 0b01'0000, vs1 == 0, sz == 0b10, m == 0b01, func1 == 0b111, form == 0b11;
+
   // vcget
   vcget           : KelvinV2ArgsType : func2 == 0b01'0100, vs2 == 0, vs1 == 0, vd == 48, func1 == 0b111, form == 0b11;
 

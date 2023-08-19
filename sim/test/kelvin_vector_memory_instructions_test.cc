@@ -27,6 +27,7 @@ using kelvin::sim::KelvinAcSet;
 using kelvin::sim::KelvinADwInit;
 using kelvin::sim::KelvinGetVl;
 using kelvin::sim::KelvinVcGet;
+using kelvin::sim::KelvinVDup;
 using kelvin::sim::KelvinVLd;
 using kelvin::sim::KelvinVLdRegWrite;
 using kelvin::sim::KelvinVSt;
@@ -339,6 +340,62 @@ class KelvinVectorMemoryInstructionsTest
     StoreQuadOpTestHelper<TNext1, TNext...>(name);
   }
 
+  template <typename T>
+  void VdupOpTestHelper() {
+    for (auto strip_mine : {false, true}) {
+      // Setup instruction and its operands.
+      auto instruction = CreateInstruction();
+      const auto name_with_type =
+          absl::StrCat('VDup', KelvinTestTypeSuffix<T>());
+      auto subname = absl::StrCat(name_with_type, strip_mine ? "M" : "");
+      const uint32_t num_ops = strip_mine ? 4 : 1;
+      AppendRegisterOperands(instruction.get(), {kelvin::sim::test::kRs1Name},
+                             {});
+      AppendVectorRegisterOperands(
+          instruction.get(), num_ops, 1 /* src1_widen_factor */, {}, {},
+          false /* widen_dst */, {kelvin::sim::test::kVd});
+
+      instruction->set_semantic_function(
+          absl::bind_front(&KelvinVDup<T>, strip_mine));
+
+      // Sets operand scalar register value.
+      constexpr uint32_t value = 0x12345678;
+      SetRegisterValues<uint32_t>({{kelvin::sim::test::kRs1Name, value}});
+
+      // Fills vector registers with random values.
+      const uint32_t vector_length_in_bytes = state_->vector_length() / 8;
+      const uint32_t vd_size = vector_length_in_bytes / sizeof(T);
+      std::vector<T> vd_value(vector_length_in_bytes / sizeof(T) * num_ops);
+      auto vd_span = absl::Span<T>(vd_value);
+      FillArrayWithRandomValues<T>(vd_span);
+      for (int i = 0; i < num_ops; i++) {
+        auto vd_name = absl::StrCat("v", kelvin::sim::test::kVd + i);
+        SetVectorRegisterValues<T>(
+            {{vd_name, vd_span.subspan(vd_size * i, vd_size)}});
+      }
+
+      instruction->Execute();
+
+      // Verifies all register elements is equal to scalar value.
+      for (int op_num = 0; op_num < num_ops; op_num++) {
+        auto vreg_num = kelvin::sim::test::kVd + op_num;
+        auto test_vreg = vreg_[vreg_num];
+        auto vreg_span = test_vreg->data_buffer()->Get<T>();
+        for (int element_index = 0; element_index < vd_size; element_index++) {
+          EXPECT_EQ(static_cast<T>(value), vreg_span[element_index])
+              << absl::StrCat(subname, ": vreg[", vreg_num, "][", element_index,
+                              "] mismatch");
+        }
+      }
+    }
+  }
+
+  template <typename T1, typename TNext1, typename... TNext>
+  void VdupOpTestHelper() {
+    VdupOpTestHelper<T1>();
+    VdupOpTestHelper<TNext1, TNext...>();
+  }
+
  protected:
   template <typename T>
   T GetDefaultMemoryValue(int address) {
@@ -372,6 +429,10 @@ TEST_F(KelvinVectorMemoryInstructionsTest, VSt) {
 
 TEST_F(KelvinVectorMemoryInstructionsTest, VStQ) {
   StoreQuadOpTestHelper<int8_t, int16_t, int32_t>("VStQ");
+}
+
+TEST_F(KelvinVectorMemoryInstructionsTest, VDup) {
+  VdupOpTestHelper<int8_t, int16_t, int32_t>();
 }
 
 class KelvinGetVlInstructionTest

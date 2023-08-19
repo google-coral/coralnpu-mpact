@@ -257,6 +257,34 @@ template void KelvinVSt<int8_t>(bool, bool, bool, Instruction *);
 template void KelvinVSt<int16_t>(bool, bool, bool, Instruction *);
 template void KelvinVSt<int32_t>(bool, bool, bool, Instruction *);
 
+// Duplicate a scalar value into a vector register.
+template <typename T>
+void KelvinVDup(bool strip_mine, Instruction *inst) {
+  auto *state = static_cast<KelvinState *>(inst->state());
+  const int vector_size_in_bytes = state->vector_length() / 8;
+  const uint32_t elts_per_register = vector_size_in_bytes / sizeof(T);
+  const auto num_ops = strip_mine ? 4 : 1;
+
+  // Gets destination register and scalar value.
+  auto *vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto value = GetInstructionSource<T>(inst, 0);
+
+  // Fill destination buffer and write to register.
+  for (int op_index = 0; op_index < num_ops; ++op_index) {
+    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    absl::Span<T> dest_span = dest_db->template Get<T>();
+    for (int dst_element_index = 0; dst_element_index < elts_per_register;
+         ++dst_element_index) {
+      dest_span[dst_element_index] = value;
+    }
+    dest_db->Submit();
+  }
+}
+
+template void KelvinVDup<int8_t>(bool, Instruction *);
+template void KelvinVDup<int16_t>(bool, Instruction *);
+template void KelvinVDup<int32_t>(bool, Instruction *);
+
 template <typename T>
 void KelvinVStQ(bool strip_mine, Instruction *inst) {
   VectorStoreHelper<T>(/*has_length=*/false, /*has_stride=*/true, strip_mine,
