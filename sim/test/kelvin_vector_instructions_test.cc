@@ -164,6 +164,31 @@ class KelvinVectorInstructionsTest
 
   template <template <typename, typename, typename> class F, typename TD,
             typename TS1, typename TS2>
+  void KelvinPairwiseVectorBinaryOpHelper(absl::string_view name) {
+    const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
+
+    // Vector OP single vector.
+    BinaryOpTestHelper<TD, TS1, TS2>(
+        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kNonStripmine),
+        absl::StrCat(name_with_type, "VV"), kNonScalar, kNonStripmine,
+        F<TD, TS1, TS2>::Op, F<TD, TS1, TS2>::kArgsGetter, false, false, true);
+
+    // Vector OP single vector stripmined.
+    BinaryOpTestHelper<TD, TS1, TS2>(
+        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kIsStripmine),
+        absl::StrCat(name_with_type, "VVM"), kNonScalar, kIsStripmine,
+        F<TD, TS1, TS2>::Op, F<TD, TS1, TS2>::kArgsGetter, false, false, true);
+  }
+
+  template <template <typename, typename, typename> class F, typename TD,
+            typename TS1, typename TS2, typename TNext1, typename... TNext>
+  void KelvinPairwiseVectorBinaryOpHelper(absl::string_view name) {
+    KelvinPairwiseVectorBinaryOpHelper<F, TD, TS1, TS2>(name);
+    KelvinPairwiseVectorBinaryOpHelper<F, TNext1, TNext...>(name);
+  }
+
+  template <template <typename, typename, typename> class F, typename TD,
+            typename TS1, typename TS2>
   void KelvinVectorVXBinaryOpHelper(absl::string_view name) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
 
@@ -633,6 +658,22 @@ TEST_F(KelvinVectorInstructionsTest, VAccu) {
                              uint32_t, uint16_t>("VAccuOp");
 }
 
+// Selects pairs from register
+template <typename T>
+static std::pair<T, T> PairwiseOpArgsGetter(
+    int num_ops, int op_num, int dest_reg_sub_index, int element_index,
+    int vd_size, bool widen_dst, int src1_widen_factor, int vs1_size,
+    const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
+    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    bool vmvp_op) {
+  int start_index = (op_num * vs1_size) + (2 * element_index);
+  if (dest_reg_sub_index == 0) {
+    return {vs1_value[start_index], vs1_value[start_index + 1]};
+  }
+
+  return {vs2_value[start_index], vs2_value[start_index + 1]};
+}
+
 // Vector packed add
 template <typename Vd, typename Vs1, typename Vs2>
 struct VPaddOp {
@@ -642,6 +683,7 @@ struct VPaddOp {
   static void KelvinOp(bool strip_mine, Instruction *inst) {
     KelvinVPadd<Vd, Vs2>(strip_mine, inst);
   }
+  static constexpr auto kArgsGetter = PairwiseOpArgsGetter<Vs1>;
 };
 
 TEST_F(KelvinVectorInstructionsTest, VPadd) {
@@ -652,6 +694,16 @@ TEST_F(KelvinVectorInstructionsTest, VPadd) {
 TEST_F(KelvinVectorInstructionsTest, VPaddu) {
   KelvinHalftypeVectorBinaryOpHelper<VPaddOp, uint16_t, uint8_t, uint8_t,
                                      uint32_t, uint16_t, uint16_t>("VPaddOp");
+}
+
+TEST_F(KelvinVectorInstructionsTest, VPaddVV) {
+  KelvinPairwiseVectorBinaryOpHelper<VPaddOp, int16_t, int8_t, int8_t, int32_t,
+                                     int16_t, int16_t>("VPaddVVOp");
+}
+
+TEST_F(KelvinVectorInstructionsTest, VPadduVV) {
+  KelvinPairwiseVectorBinaryOpHelper<VPaddOp, uint16_t, uint8_t, uint8_t,
+                                     uint32_t, uint16_t, uint16_t>("VPaddVVOp");
 }
 
 // Vector packed sub

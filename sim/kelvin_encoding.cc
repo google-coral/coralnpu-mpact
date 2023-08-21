@@ -384,8 +384,16 @@ bool KelvinEncoding::IsWidenDestinationRegisterOp() const {
   }
 
   // Func1 0b110 VEvnodd and VZip needs 2x destination registers.
-  if ((func1 == 0b110) && (func2 == 0b011010 || func2 == 0b011100)) {
+  if ((func1 == 0b110) && (func2 == 0b011100 || func2 == 0b011010)) {
     return true;
+  }
+
+  // Func1 VPadd with ".vv" form needs 2x destination registers.
+  if ((func1 == 0b100) && (func2_ignore_unsigned == 0b001100)) {
+    auto form = encoding::kelvin_v2_args_type::ExtractForm(inst_word_);
+    if (form == 0b00) {
+      return true;
+    }
   }
 
   return false;
