@@ -397,7 +397,7 @@ int KelvinEncoding::GetSrc1WidenFactor() const {
   auto sz = encoding::kelvin_v2_args_type::ExtractSz(inst_word_);
   auto func2_ignore_unsigned = func2 & (~(1u << 0));
 
-  // Func1 0b100 VAcc[u] needs 2x src1 registers.
+  // Func1 0b100 VAcc.[h,w].[u] needs 2x src1 registers.
   if ((func1 == 0b100) && (func2_ignore_unsigned == 0b1010)) {
     return 2;
   }

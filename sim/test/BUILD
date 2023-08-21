@@ -21,6 +21,7 @@ cc_test(
         "//sim:kelvin_state",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
     ],
 )
 
