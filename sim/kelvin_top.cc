@@ -102,9 +102,13 @@ void KelvinTop::Initialize() {
   // Register instruction counter.
   CHECK_OK(AddCounter(&counter_num_instructions_))
       << "Failed to register counter";
+
+  // Always return 4-byte breakpoint instruction size
   rv_bp_manager_ = new mpact::sim::riscv::RiscVBreakpointManager(
-      memory_, absl::bind_front(&mpact::sim::generic::DecodeCache::Invalidate,
-                                decode_cache_));
+      memory_,
+      absl::bind_front(&mpact::sim::generic::DecodeCache::Invalidate,
+                       decode_cache_),
+      [](uint64_t, uint32_t) -> int { return 4; });
   // Make sure the architectural and abi register aliases are added.
   std::string reg_name;
   for (int i = 0; i < 32; i++) {
