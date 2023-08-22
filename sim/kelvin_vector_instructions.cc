@@ -527,13 +527,24 @@ template void KelvinVPadd<uint32_t, uint16_t>(bool, Instruction *);
 template <typename Td, typename Ts>
 void KelvinVPsub(bool strip_mine, Instruction *inst) {
   // Subtracts lane pairs.
-  KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts, Ts>(
-      inst, false /* scalar */, strip_mine,
-      std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
-        return static_cast<Td>(vs1) - static_cast<Td>(vs2);
-      }),
-      SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
-      SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
+  if (inst->SourcesSize() == 2) {  // .vv
+    KelvinBinaryVectorOp<true /* halftype */, true /* widen_dst */, Td, Ts, Ts>(
+        inst, false /* scalar */, strip_mine,
+        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
+          return static_cast<Td>(vs1) - static_cast<Td>(vs2);
+        }),
+        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
+        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
+  } else {
+    KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts,
+                         Ts>(
+        inst, false /* scalar */, strip_mine,
+        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
+          return static_cast<Td>(vs1) - static_cast<Td>(vs2);
+        }),
+        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
+        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
+  }
 }
 template void KelvinVPsub<int16_t, int8_t>(bool, Instruction *);
 template void KelvinVPsub<int32_t, int16_t>(bool, Instruction *);

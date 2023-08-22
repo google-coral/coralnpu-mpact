@@ -473,6 +473,20 @@ TEST_F(KelvinEncodingTest, KelvinWideningVd) {
   EXPECT_EQ(v_dest->size(), 2);
   delete v_dest;
 
+  // Test vpadd.w.vv
+  constexpr uint32_t kVPAdd = 0b001100'000001'000000'10'001000'0'100'00;
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(kVPAdd, OpcodeEnum::kVpaddWVv,
+                                                 DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 2);
+  delete v_dest;
+
+  // Test vpsub.h.u.vv
+  constexpr uint32_t kVPSub = 0b001111'000001'000000'01'001000'0'100'00;
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(kVPSub, OpcodeEnum::kVpsubHUVv,
+                                                 DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 2);
+  delete v_dest;
+
   // Test vzip.h.vv
   v_dest = EncodeOpHelper<RV32VectorDestOperand>(
       SetSz(kVEvnoddBase, 0b1) | (0b100 << 26 /* vzip */), OpcodeEnum::kVzipHVv,
