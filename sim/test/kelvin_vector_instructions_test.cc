@@ -745,10 +745,10 @@ struct VHaddOp {
     if (std::is_signed<Vd>::value) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) + static_cast<int64_t>(vs2)) >> 1);
-    } else {
-      return static_cast<Vd>(
-          (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2)) >> 1);
     }
+
+    return static_cast<Vd>(
+        (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2)) >> 1);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVHadd<Vd>(scalar, strip_mine, false /* round */, inst);
@@ -770,10 +770,10 @@ struct VHaddrOp {
     if (std::is_signed<Vd>::value) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) + static_cast<int64_t>(vs2) + 1) >> 1);
-    } else {
-      return static_cast<Vd>(
-          (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2) + 1) >> 1);
     }
+
+    return static_cast<Vd>(
+        (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2) + 1) >> 1);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVHadd<Vd>(scalar, strip_mine, true /* round */, inst);
@@ -795,10 +795,10 @@ struct VHsubOp {
     if (std::is_signed<Vd>::value) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) - static_cast<int64_t>(vs2)) >> 1);
-    } else {
-      return static_cast<Vd>(
-          (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2)) >> 1);
     }
+
+    return static_cast<Vd>(
+        (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2)) >> 1);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVHsub<Vd>(scalar, strip_mine, false /* round */, inst);
@@ -820,10 +820,10 @@ struct VHsubrOp {
     if (std::is_signed<Vd>::value) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) - static_cast<int64_t>(vs2) + 1) >> 1);
-    } else {
-      return static_cast<Vd>(
-          (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2) + 1) >> 1);
     }
+
+    return static_cast<Vd>(
+        (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2) + 1) >> 1);
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVHsub<Vd>(scalar, strip_mine, true /* round */, inst);
@@ -1019,57 +1019,61 @@ template <typename Vd, typename Vs1, typename Vs2>
 struct VShiftOp {
   static Vd Op(bool round, Vs1 vs1, Vs2 vs2) {
     if (std::is_signed<Vd>::value == true) {
-      constexpr int n = sizeof(Vd) * 8;
+      constexpr int kMaxShiftBit = sizeof(Vd) * 8;
       int shamt = 0;
       if (sizeof(Vd) == 1) shamt = static_cast<int8_t>(vs2);
       if (sizeof(Vd) == 2) shamt = static_cast<int16_t>(vs2);
       if (sizeof(Vd) == 4) shamt = static_cast<int32_t>(vs2);
-      int64_t s = vs1;
+      int64_t shift = vs1;
       if (!vs1) {
         return 0;
-      } else if (vs1 < 0 && shamt >= n) {
-        s = -1 + round;
-      } else if (vs1 > 0 && shamt >= n) {
-        s = 0;
+      } else if (vs1 < 0 && shamt >= kMaxShiftBit) {
+        shift = -1 + round;
+      } else if (vs1 > 0 && shamt >= kMaxShiftBit) {
+        shift = 0;
       } else if (shamt > 0) {
-        s = (static_cast<int64_t>(vs1) + (round ? (1ll << (shamt - 1)) : 0)) >>
+        shift =
+            (static_cast<int64_t>(vs1) + (round ? (1ll << (shamt - 1)) : 0)) >>
             shamt;
       } else {  // shamt < 0
-        uint32_t ushamt = static_cast<uint32_t>(-shamt <= n ? -shamt : n);
-        s = static_cast<int64_t>(static_cast<uint64_t>(vs1) << ushamt);
+        uint32_t ushamt = static_cast<uint32_t>(
+            -shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
+        shift = static_cast<int64_t>(static_cast<uint64_t>(vs1) << ushamt);
       }
-      int64_t neg_max = (-1ull) << (n - 1);
-      int64_t pos_max = (1ll << (n - 1)) - 1;
-      bool neg_sat = vs1 < 0 && (shamt <= -n || s < neg_max);
-      bool pos_sat = vs1 > 0 && (shamt <= -n || s > pos_max);
+      int64_t neg_max = (-1ull) << (kMaxShiftBit - 1);
+      int64_t pos_max = (1ll << (kMaxShiftBit - 1)) - 1;
+      bool neg_sat = vs1 < 0 && (shamt <= -kMaxShiftBit || shift < neg_max);
+      bool pos_sat = vs1 > 0 && (shamt <= -kMaxShiftBit || shift > pos_max);
       if (neg_sat) return neg_max;
       if (pos_sat) return pos_max;
-      return s;
-    } else {
-      constexpr int n = sizeof(Vd) * 8;
-      int shamt = 0;
-      if (sizeof(Vd) == 1) shamt = static_cast<int8_t>(vs2);
-      if (sizeof(Vd) == 2) shamt = static_cast<int16_t>(vs2);
-      if (sizeof(Vd) == 4) shamt = static_cast<int32_t>(vs2);
-      uint64_t s = vs1;
-      if (!vs1) {
-        return 0;
-      } else if (shamt > n) {
-        s = 0;
-      } else if (shamt > 0) {
-        s = (static_cast<uint64_t>(vs1) +
-             (round ? (1ull << (shamt - 1)) : 0)) >>
-            shamt;
-      } else {
-        using UT = typename std::make_unsigned<Vd>::type;
-        UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
-        s = static_cast<uint64_t>(vs1) << (ushamt);
-      }
-      uint64_t pos_max = (1ull << n) - 1;
-      bool pos_sat = vs1 && (shamt < -n || s >= (1ull << n));
-      if (pos_sat) return pos_max;
-      return s;
+      return shift;
     }
+
+    constexpr int kMaxShiftBit = sizeof(Vd) * 8;
+    int shamt = 0;
+    if (sizeof(Vd) == 1) shamt = static_cast<int8_t>(vs2);
+    if (sizeof(Vd) == 2) shamt = static_cast<int16_t>(vs2);
+    if (sizeof(Vd) == 4) shamt = static_cast<int32_t>(vs2);
+    uint64_t shift = vs1;
+    if (!vs1) {
+      return 0;
+    } else if (shamt > kMaxShiftBit) {
+      shift = 0;
+    } else if (shamt > 0) {
+      shift =
+          (static_cast<uint64_t>(vs1) + (round ? (1ull << (shamt - 1)) : 0)) >>
+          shamt;
+    } else {
+      using UT = typename std::make_unsigned<Vd>::type;
+      UT ushamt =
+          static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
+      shift = static_cast<uint64_t>(vs1) << (ushamt);
+    }
+    uint64_t pos_max = (1ull << kMaxShiftBit) - 1;
+    bool pos_sat =
+        vs1 && (shamt < -kMaxShiftBit || shift >= (1ull << kMaxShiftBit));
+    if (pos_sat) return pos_max;
+    return shift;
   }
 
   static void KelvinOp(bool round, bool scalar, bool strip_mine,
@@ -1250,10 +1254,10 @@ struct VMulOp {
     if (std::is_signed<Vd>::value) {
       return static_cast<Vd>(static_cast<int64_t>(vs1) *
                              static_cast<int64_t>(vs2));
-    } else {
-      return static_cast<Vd>(static_cast<uint64_t>(vs1) *
-                             static_cast<uint64_t>(vs2));
     }
+
+    return static_cast<Vd>(static_cast<uint64_t>(vs1) *
+                           static_cast<uint64_t>(vs2));
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVMul<Vd>(scalar, strip_mine, inst);
@@ -1273,11 +1277,11 @@ struct VMulsOp {
           static_cast<int64_t>(std::numeric_limits<Vd>::min()),
           std::min(static_cast<int64_t>(std::numeric_limits<Vd>::max()), m));
       return m;
-    } else {
-      uint64_t m = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
-      m = std::min(static_cast<uint64_t>(std::numeric_limits<Vd>::max()), m);
-      return m;
     }
+
+    uint64_t m = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
+    m = std::min(static_cast<uint64_t>(std::numeric_limits<Vd>::max()), m);
+    return m;
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVMuls<Vd>(scalar, strip_mine, inst);
@@ -1321,10 +1325,10 @@ struct VMulhOp {
     if (std::is_signed<Vs1>::value) {
       int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
       return static_cast<uint64_t>(result) >> n;
-    } else {
-      uint64_t result = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
-      return result >> n;
     }
+
+    uint64_t result = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
+    return result >> n;
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVMulh<Vd>(scalar, strip_mine, false /* round */, inst);
@@ -1349,11 +1353,11 @@ struct VMulhrOp {
       int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
       result += 1ll << (n - 1);
       return static_cast<uint64_t>(result) >> n;
-    } else {
-      uint64_t result = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
-      result += 1ull << (n - 1);
-      return result >> n;
     }
+
+    uint64_t result = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
+    result += 1ull << (n - 1);
+    return result >> n;
   }
   static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
     KelvinVMulh<Vd>(scalar, strip_mine, true /* round */, inst);

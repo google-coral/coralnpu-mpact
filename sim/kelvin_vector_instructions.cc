@@ -736,58 +736,59 @@ template <typename T>
 T KelvinVShiftHelper(bool round, T vs1, T vs2) {
   using WT = typename mpact::sim::riscv::WideType<T>::type;
   if (std::is_signed<T>::value == true) {
-    constexpr int n = sizeof(T) * 8;
+    constexpr int kMaxShiftBit = sizeof(T) * 8;
     int shamt = vs2;
-    WT s = vs1;
+    WT shift = vs1;
     if (!vs1) {
       return 0;
-    } else if (vs1 < 0 && shamt >= n) {
-      s = -1 + round;
-    } else if (vs1 > 0 && shamt >= n) {
-      s = 0;
+    } else if (vs1 < 0 && shamt >= kMaxShiftBit) {
+      shift = -1 + round;
+    } else if (vs1 > 0 && shamt >= kMaxShiftBit) {
+      shift = 0;
     } else if (shamt > 0) {
-      s = (static_cast<WT>(vs1) +
-           (round ? static_cast<WT>(1ll << (shamt - 1)) : 0)) >>
-          shamt;
+      shift = (static_cast<WT>(vs1) +
+               (round ? static_cast<WT>(1ll << (shamt - 1)) : 0)) >>
+              shamt;
     } else {  // shamt < 0
       using UT = typename std::make_unsigned<T>::type;
-      UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
-      CHECK_LE(ushamt, n);
+      UT ushamt =
+          static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
+      CHECK_LE(ushamt, kMaxShiftBit);
       CHECK_GE(ushamt, 0);
       // Use unsigned WideType to prevent undefined negative shift.
       using UWT = typename mpact::sim::riscv::WideType<UT>::type;
-      s = static_cast<WT>(static_cast<UWT>(vs1) << ushamt);
+      shift = static_cast<WT>(static_cast<UWT>(vs1) << ushamt);
     }
     T neg_max = std::numeric_limits<T>::min();
     T pos_max = std::numeric_limits<T>::max();
-    bool neg_sat = vs1 < 0 && (shamt <= -n || s < neg_max);
-    bool pos_sat = vs1 > 0 && (shamt <= -n || s > pos_max);
+    bool neg_sat = vs1 < 0 && (shamt <= -kMaxShiftBit || shift < neg_max);
+    bool pos_sat = vs1 > 0 && (shamt <= -kMaxShiftBit || shift > pos_max);
     if (neg_sat) return neg_max;
     if (pos_sat) return pos_max;
-    return s;
-  } else {
-    constexpr int n = sizeof(T) * 8;
-    // Shift can be positive/negative.
-    int shamt = static_cast<typename std::make_signed<T>::type>(vs2);
-    WT s = vs1;
-    if (!vs1) {
-      return 0;
-    } else if (shamt > n) {
-      s = 0;
-    } else if (shamt > 0) {
-      s = (static_cast<WT>(vs1) +
-           (round ? static_cast<WT>(1ull << (shamt - 1)) : 0)) >>
-          shamt;
-    } else {
-      using UT = typename std::make_unsigned<T>::type;
-      UT ushamt = static_cast<UT>(-shamt <= n ? -shamt : n);
-      s = static_cast<WT>(vs1) << (ushamt);
-    }
-    T pos_max = std::numeric_limits<T>::max();
-    bool pos_sat = vs1 && (shamt < -n || s > pos_max);
-    if (pos_sat) return pos_max;
-    return s;
+    return shift;
   }
+  // unsigned.
+  constexpr int kMaxShiftBit = sizeof(T) * 8;
+  // Shift can be positive/negative.
+  int shamt = static_cast<typename std::make_signed<T>::type>(vs2);
+  WT shift = vs1;
+  if (!vs1) {
+    return 0;
+  } else if (shamt > kMaxShiftBit) {
+    shift = 0;
+  } else if (shamt > 0) {
+    shift = (static_cast<WT>(vs1) +
+             (round ? static_cast<WT>(1ull << (shamt - 1)) : 0)) >>
+            shamt;
+  } else {
+    using UT = typename std::make_unsigned<T>::type;
+    UT ushamt = static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
+    shift = static_cast<WT>(vs1) << (ushamt);
+  }
+  T pos_max = std::numeric_limits<T>::max();
+  bool pos_sat = vs1 && (shamt < -kMaxShiftBit || shift > pos_max);
+  if (pos_sat) return pos_max;
+  return shift;
 }
 
 template <typename T>
@@ -939,11 +940,11 @@ void KelvinVMuls(bool scalar, bool strip_mine, Instruction *inst) {
               static_cast<WT>(std::numeric_limits<T>::min()),
               std::min(static_cast<WT>(std::numeric_limits<T>::max()), result));
           return result;
-        } else {
-          result =
-              std::min(static_cast<WT>(std::numeric_limits<T>::max()), result);
-          return result;
         }
+
+        result =
+            std::min(static_cast<WT>(std::numeric_limits<T>::max()), result);
+        return result;
       }));
 }
 template void KelvinVMuls<int8_t>(bool, bool, Instruction *);
@@ -1318,9 +1319,9 @@ T VZipOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
 
   if (dst_element_index & 1) {
     return GetInstructionSource<T>(inst, 1, scalar ? 0 : src_element_index);
-  } else {
-    return GetInstructionSource<T>(inst, 0, src_element_index);
   }
+
+  return GetInstructionSource<T>(inst, 0, src_element_index);
 }
 
 template <typename T>
