@@ -336,7 +336,7 @@ void KelvinVcGet(const mpact::sim::generic::Instruction *inst) {
     absl::Span<uint32_t> dest_span = dest_db->Get<uint32_t>();
     auto *acc_vec = state->acc_vec(op_index);
     for (int i = 0; i < dest_span.size(); ++i) {
-      dest_span[i] = acc_vec->data()[i];
+      dest_span[i] = (*acc_vec)[i];
     }
     acc_vec->fill(0);
     dest_db->Submit();
@@ -357,10 +357,10 @@ void KelvinAcSet(bool is_transpose,
     for (int i = 0; i < source_span.size(); ++i) {
       if (is_transpose) {
         auto *acc_vec = state->acc_vec(i);
-        acc_vec->at(op_index) = source_span[i];
+        (*acc_vec)[op_index] = source_span[i];
       } else {
         auto *acc_vec = state->acc_vec(op_index);
-        acc_vec->at(i) = source_span[i];
+        (*acc_vec)[i] = source_span[i];
       }
     }
   }

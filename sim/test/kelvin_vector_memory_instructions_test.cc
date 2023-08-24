@@ -540,9 +540,8 @@ class KelvinAccumulateInstructionTest
       auto vd_name = absl::StrCat("v", kVd + i);
       auto vs_name = absl::StrCat("v", kVs + i);
       SetVectorRegisterValues<uint32_t>(
-          {{vd_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
-      SetVectorRegisterValues<uint32_t>(
-          {{vs_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
+          {{vd_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)},
+           {vs_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
     }
     auto instruction = CreateInstruction();
     AppendVectorRegisterOperands(instruction.get(), kVLenInWord,
@@ -560,12 +559,12 @@ class KelvinAccumulateInstructionTest
            element_index++) {
         if (is_transpose) {
           auto *acc_vec = state_->acc_vec(element_index);
-          EXPECT_EQ(vreg_span[element_index], acc_vec->at(i))
+          EXPECT_EQ(vreg_span[element_index], (*acc_vec)[i])
               << absl::StrCat("vreg[", vreg_num, "][", element_index,
                               "] != acc[", element_index, "][", i, "]");
         } else {
           auto *acc_vec = state_->acc_vec(i);
-          EXPECT_EQ(vreg_span[element_index], acc_vec->at(element_index))
+          EXPECT_EQ(vreg_span[element_index], (*acc_vec)[element_index])
               << absl::StrCat("vreg[", vreg_num, "][", element_index,
                               "] != acc[", i, "][", element_index, "]");
         }

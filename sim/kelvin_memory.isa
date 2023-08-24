@@ -503,7 +503,7 @@ slot kelvin_vector_memory {
     // vcget
     vcget{: : vd},
       disasm: "vcget", "%vd",
-      semfunc: "absl::bind_front(&KelvinVcGet)";
+      semfunc: "&KelvinVcGet";
 
     // acset/actr/adwinit
     acset{: vs1 : vd},
