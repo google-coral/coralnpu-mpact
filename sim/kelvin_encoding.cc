@@ -14,6 +14,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "riscv/riscv_register.h"
+#include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/immediate_operand.h"
 #include "mpact/sim/generic/literal_operand.h"
@@ -162,24 +163,24 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       [this]() -> SourceOperandInterface * {
         int num = encoding::r_type::ExtractRs1(inst_word_);
         if (num == 0)
-          return new mpact::sim::generic::IntLiteralOperand<0>({1},
-                                                               xreg_alias_[0]);
+          return new mpact::sim::generic::IntLiteralOperand<0>(
+              {1}, mpact::sim::riscv::kXRegisterAliases[0]);
         return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
             state_,
             absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, num),
-            xreg_alias_[num]);
+            mpact::sim::riscv::kXRegisterAliases[num]);
       }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs2),
       [this]() -> SourceOperandInterface * {
         int num = encoding::r_type::ExtractRs2(inst_word_);
         if (num == 0)
-          return new mpact::sim::generic::IntLiteralOperand<0>({1},
-                                                               xreg_alias_[0]);
+          return new mpact::sim::generic::IntLiteralOperand<0>(
+              {1}, mpact::sim::riscv::kXRegisterAliases[0]);
         return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
             state_,
             absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, num),
-            xreg_alias_[num]);
+            mpact::sim::riscv::kXRegisterAliases[num]);
       }));
   source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kSImm12), [this]() {
@@ -201,7 +202,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
         if (form == 3) {
           if (reg_num == 0) {
             return new mpact::sim::generic::IntLiteralOperand<0>(
-                {1}, xreg_alias_[0]);
+                {1}, mpact::sim::riscv::kXRegisterAliases[0]);
           }
           // `vs1` is stored in bit[19:14], but scalar xs1 is in bit[19:15]
           // (same as the regular riscv32 encoding)
@@ -209,7 +210,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
           return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
               state_,
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
-              xreg_alias_[reg_num]);
+              mpact::sim::riscv::kXRegisterAliases[reg_num]);
         }
         if (opcode_ == OpcodeEnum::kAdwinit) {
           // Borrow the strip_mine setting to set 4x registers.
@@ -228,7 +229,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
         if (form == 2 || form == 3 || opcode_ == OpcodeEnum::kAconvVxv) {
           if (reg_num == 0) {
             return new mpact::sim::generic::IntLiteralOperand<0>(
-                {1}, xreg_alias_[0]);
+                {1}, mpact::sim::riscv::kXRegisterAliases[0]);
           }
           // `vs2` is stored in bit[26:20], but scalar xs2 is in bit[25:20]
           // (same as in the regular riscv32 encoding)
@@ -236,7 +237,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
           return GetRegisterSourceOp<mpact::sim::riscv::RV32Register>(
               state_,
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
-              xreg_alias_[reg_num]);
+              mpact::sim::riscv::kXRegisterAliases[reg_num]);
         }
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
             state_, reg_num, strip_mine, 1 /* widen_factor */);
@@ -282,11 +283,11 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
         int num = encoding::r_type::ExtractRd(inst_word_);
         if (num == 0) {
           return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
-              state_, "X0Dest", 0, xreg_alias_[0]);
+              state_, "X0Dest", 0, mpact::sim::riscv::kXRegisterAliases[0]);
         } else {
-          return GetRegisterDestinationOp<mpact::sim::riscv::RVFpRegister>(
+          return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
               state_, absl::StrCat(KelvinState::kXregPrefix, num), latency,
-              xreg_alias_[num]);
+              mpact::sim::riscv::kXRegisterAliases[num]);
         }
       }));
   dest_op_getters_.emplace(
@@ -312,14 +313,14 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
         // to "vs1" register. And it has to be a scalar register in that case.
         if (reg_num == 0) {
           return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
-              state_, "X0Dest", 0, xreg_alias_[0]);
+              state_, "X0Dest", 0, mpact::sim::riscv::kXRegisterAliases[0]);
         } else {
           // `vs1` is stored in bit[19:14], but scalar xs1 is in bit[19:15]
           // (same as the regular riscv32 encoding)
           reg_num >>= 1;
-          return GetRegisterDestinationOp<mpact::sim::riscv::RVFpRegister>(
+          return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
               state_, absl::StrCat(KelvinState::kXregPrefix, reg_num), latency,
-              xreg_alias_[reg_num]);
+              mpact::sim::riscv::kXRegisterAliases[reg_num]);
         }
       }));
   dest_op_getters_.insert(std::make_pair(static_cast<int>(DestOpEnum::kNone),
@@ -351,7 +352,7 @@ DestinationOperandInterface *KelvinEncoding::GetDestination(SlotEnum, int,
   auto iter = dest_op_getters_.find(index);
   if (iter == dest_op_getters_.end()) {
     LOG(ERROR) << absl::StrCat("No getter for destination op enum value ",
-                               index, "for instruction ",
+                               index, " for instruction ",
                                kOpcodeNames[static_cast<int>(opcode)]);
     return nullptr;
   }

@@ -18,11 +18,11 @@ using SlotEnum = kelvin::sim::isa32::SlotEnum;
 using OpcodeEnum = kelvin::sim::isa32::OpcodeEnum;
 using SourceOpEnum = kelvin::sim::isa32::SourceOpEnum;
 using RV32VectorSourceOperand = mpact::sim::riscv::RV32VectorSourceOperand;
-using RV32SourceOperand = mpact::sim::generic::RegisterSourceOperand<uint64_t>;
+using RV32SourceOperand = mpact::sim::generic::RegisterSourceOperand<uint32_t>;
 using DestOpEnum = kelvin::sim::isa32::DestOpEnum;
 using RV32VectorDestOperand = mpact::sim::riscv::RV32VectorDestinationOperand;
 using RV32DestOperand =
-    mpact::sim::generic::RegisterDestinationOperand<uint64_t>;
+    mpact::sim::generic::RegisterDestinationOperand<uint32_t>;
 
 // RV32I
 constexpr uint32_t kLui = 0b0000000000000000000000000'0110111;
@@ -68,7 +68,6 @@ constexpr uint32_t kEbreak = 0b000000000001'00000'000'00000'1110011;
 constexpr uint32_t kMpause = 0b000010000000'00000'000'00000'1110011;
 // Kelvin Memory ops
 constexpr uint32_t kFlushall = 0b001001100000'00000'000'00000'1110111;
-constexpr uint32_t kFlushat = 0b001001100000'00000'000'00000'1110111;
 // RV32 Zifencei
 constexpr uint32_t kFencei = 0b000000000000'00000'001'00000'0001111;
 // RV32 Zicsr
@@ -96,6 +95,10 @@ constexpr uint32_t kFLog = 0b011'1100'00000'00000'000'00000'111'0111;
 
 // Kelvin VLd
 constexpr uint32_t kVld = 0b000000'000000'000000'00'000000'0'111'11;
+
+// Kelvin vector ops
+constexpr uint32_t kVAddBase = 0b000000'000000'000001'00'000010'0'000'00;
+constexpr uint32_t kAconvBase = 0b001000'000001'010000'10'110000'0'00'101;
 
 class KelvinEncodingTest : public testing::Test {
  protected:
@@ -244,7 +247,7 @@ TEST_F(KelvinEncodingTest, RV32IOpcodes) {
 TEST_F(KelvinEncodingTest, KelvinMemoryOpcodes) {
   enc_->ParseInstruction(kFlushall);
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kFlushall);
-  enc_->ParseInstruction(SetRs1(kFlushat, kRdValue));
+  enc_->ParseInstruction(SetRs1(kFlushall, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kFlushat);
 }
 
@@ -325,13 +328,38 @@ TEST_F(KelvinEncodingTest, RV32MOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRemu);
 }
 
+TEST_F(KelvinEncodingTest, NoSourceDest) {
+  enc_->ParseInstruction(kVld);
+  auto *src = enc_->GetSource(SlotEnum::kKelvin, 0, OpcodeEnum::kVldBX,
+                              SourceOpEnum::kNone, 0);
+  EXPECT_EQ(src, nullptr);
+  auto *src_op = enc_->GetSource(SlotEnum::kKelvin, 0, OpcodeEnum::kVldBX,
+                                 SourceOpEnum::kPastMaxValue, 0);
+  EXPECT_EQ(src_op, nullptr);
+
+  auto *dest = enc_->GetDestination(SlotEnum::kKelvin, 0, OpcodeEnum::kVldBX,
+                                    DestOpEnum::kNone, 0, /*latency=*/0);
+  EXPECT_EQ(dest, nullptr);
+
+  auto *dest_op =
+      enc_->GetDestination(SlotEnum::kKelvin, 0, OpcodeEnum::kVldBX,
+                           DestOpEnum::kPastMaxValue, 0, /*latency=*/0);
+  EXPECT_EQ(dest_op, nullptr);
+}
+
 TEST_F(KelvinEncodingTest, KelvinVldEncodeXs1Xs2) {
   enc_->ParseInstruction(SetRs1(kVld, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kVldBX);
   enc_->ParseInstruction(SetSz(SetRs1(kVld, kRdValue), 0b1));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kVldHX);
+  // Test vld.b.x (x = x0)
+  auto *src = EncodeOpHelper<RV32SourceOperand>(kVld, OpcodeEnum::kVldBX,
+                                                SourceOpEnum::kVs1);
+  EXPECT_EQ(src->AsString(), "0");
+  delete src;
+
   // Test vld.w.l.xx
-  auto *src = EncodeOpHelper<RV32SourceOperand>(
+  src = EncodeOpHelper<RV32SourceOperand>(
       SetSz(SetRs1(kVld, kRdValue), 0b10) | (0b10 << 20 /* xs2 */) |
           (0b1 << 26 /* length */),
       OpcodeEnum::kVldWLXx, SourceOpEnum::kVs1);
@@ -353,8 +381,14 @@ TEST_F(KelvinEncodingTest, KelvinVstEncodeXs1Xs2Vd) {
   EXPECT_EQ(v_src->AsString(), "v0");
   delete v_src;
 
+  // Test xs1 as x0
+  auto *dest = EncodeOpHelper<RV32DestOperand>(kVstBase, OpcodeEnum::kVstBX,
+                                               DestOpEnum::kVs1);
+  EXPECT_EQ(dest->AsString(), "zero");
+  delete dest;
+
   // Test xs1 in vst.w.l.xx as destination
-  auto *dest = EncodeOpHelper<RV32DestOperand>(
+  dest = EncodeOpHelper<RV32DestOperand>(
       SetSz(SetRs1(kVstBase, kRdValue), 0b10) | (0b10 << 20 /* xs2 */) |
           (1 << 26 /* length */),
       OpcodeEnum::kVstWLXx, DestOpEnum::kVs1);
@@ -442,10 +476,15 @@ TEST_F(KelvinEncodingTest, KelvinWideningVs1) {
   delete v_src;
 
   // Test aconv.vxv
-  constexpr uint32_t kAVConvBase = 0b001000'000001'010000'10'110000'0'00'101;
   v_src = EncodeOpHelper<RV32VectorSourceOperand>(
-      kAVConvBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs1);
+      kAconvBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs1);
   EXPECT_EQ(v_src->size(), 8);
+  delete v_src;
+
+  // No widening for vadd.b.vv
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kVAddBase, OpcodeEnum::kVaddBVv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 1);
   delete v_src;
 }
 
@@ -536,12 +575,24 @@ TEST_F(KelvinEncodingTest, KelvinWideningVd) {
 }
 
 TEST_F(KelvinEncodingTest, KelvinEncodeVs3) {
-  constexpr uint32_t kACovBase = 0b001000'000001'010000'10'110000'0'00'101;
   auto *v_src = EncodeOpHelper<RV32VectorSourceOperand>(
-      kACovBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs3);
+      kAconvBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs3);
   EXPECT_EQ(v_src->AsString(), "v8");
   EXPECT_EQ(v_src->size(), 8);
   delete v_src;
+}
+
+TEST_F(KelvinEncodingTest, KelvinEncodeVs2) {
+  auto *v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kVAddBase, OpcodeEnum::kVaddBVv, SourceOpEnum::kVs2);
+  EXPECT_EQ(v_src->size(), 1);
+  EXPECT_EQ(v_src->AsString(), "v0");
+  delete v_src;
+
+  auto *src = EncodeOpHelper<RV32SourceOperand>(
+      kVAddBase | 0b10, OpcodeEnum::kVaddBVx, SourceOpEnum::kVs2);
+  EXPECT_EQ(src->AsString(), "0");
+  delete src;
 }
 
 }  // namespace
