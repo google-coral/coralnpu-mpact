@@ -211,6 +211,10 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
               xreg_alias_[reg_num]);
         }
+        if (opcode_ == OpcodeEnum::kAdwinit) {
+          // Borrow the strip_mine setting to set 4x registers.
+          strip_mine = true;
+        }
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
             state_, reg_num, strip_mine, GetSrc1WidenFactor());
       });
@@ -220,8 +224,8 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVs2(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
         auto form = encoding::kelvin_v2_args_type::ExtractForm(inst_word_);
-        // .vx or .xx forms are using scalar xs2.
-        if (form == 2 || form == 3) {
+        // .vx or .xx forms are using scalar xs2, also for aconv op
+        if (form == 2 || form == 3 || opcode_ == OpcodeEnum::kAconvVxv) {
           if (reg_num == 0) {
             return new mpact::sim::generic::IntLiteralOperand<0>(
                 {1}, xreg_alias_[0]);
@@ -238,7 +242,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
             state_, reg_num, strip_mine, 1 /* widen_factor */);
       });
   source_op_getters_.emplace(
-      // vst and vstq use `vd` field as the source for the vector store.
+      // `vst` and `vstq` use `vd` field as the source for the vector store.
       // convolution instructions also use `vd` as one of the sources.
       static_cast<int>(SourceOpEnum::kVd),
       [this]() -> SourceOperandInterface * {
@@ -252,8 +256,9 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       static_cast<int>(SourceOpEnum::kVs3),
       [this]() -> SourceOperandInterface * {
         auto reg_num = encoding::kelvin_v3_args_type::ExtractVs3(inst_word_);
+        int widen_factor = opcode_ == OpcodeEnum::kAconvVxv ? 8 : 4;
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
-            state_, reg_num, false /* strip_mine */, 1 /* widen_factor */);
+            state_, reg_num, false /* strip_mine */, widen_factor);
       });
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kNone), []() { return nullptr; }));
@@ -289,6 +294,11 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
       [this](int latency) -> DestinationOperandInterface * {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
+        if (opcode_ == OpcodeEnum::kVcget || opcode_ == OpcodeEnum::kAdwinit) {
+          // Borrow the strip_mine setting to set 4x/8x registers although it is
+          // not part of the encoding.
+          strip_mine = true;
+        }
         return GetVectorRegisterDestinationOp<
             mpact::sim::riscv::RVVectorRegister>(state_, reg_num, strip_mine,
                                                  IsWidenDestinationRegisterOp(),
@@ -397,6 +407,11 @@ bool KelvinEncoding::IsWidenDestinationRegisterOp() const {
     }
   }
 
+  // `vcget` needs `vd` group size of 8. Use stripmine and widening to set it.
+  if (opcode_ == OpcodeEnum::kVcget) {
+    return true;
+  }
+
   return false;
 }
 
@@ -423,6 +438,12 @@ int KelvinEncoding::GetSrc1WidenFactor() const {
       (func2_ignore_unsigned == 0b011000 ||
        func2_ignore_unsigned == 0b011010)) {
     return 4;
+  }
+
+  // Convolution related ops has 8x src1 registers.
+  if (opcode_ == OpcodeEnum::kAconvVxv || opcode_ == OpcodeEnum::kAcset ||
+      opcode_ == OpcodeEnum::kActr) {
+    return 8;
   }
 
   return 1;

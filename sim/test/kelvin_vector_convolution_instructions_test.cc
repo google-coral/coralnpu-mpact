@@ -70,13 +70,13 @@ class KelvinVectorConvolutionInstructionsTest
                                  false /* widen_dst*/, {});
 
     instructions[1]->set_semantic_function(KelvinVConv);
-    AppendVectorRegisterOperands(instructions[1].get(), kVLenInWord,
-                                 1 /* src1_widen_factor*/, kVs3, {},
+    AppendVectorRegisterOperands(instructions[1].get(), 1,
+                                 kVLenInWord /* src1_widen_factor*/, kVs3, {},
                                  false /* widen_dst*/, {kVd});
     AppendRegisterOperands(instructions[1].get(), {kelvin::sim::test::kRs2Name},
                            {});
-    AppendVectorRegisterOperands(instructions[1].get(), kVLenInWord,
-                                 1 /* src3_widen_factor*/, kVs1, {},
+    AppendVectorRegisterOperands(instructions[1].get(), 1,
+                                 kVLenInWord /* src3_widen_factor*/, kVs1, {},
                                  false /* widen_dst*/, {});
     execution_fail_ = false;
     state_->set_on_trap(trap_call_back_);

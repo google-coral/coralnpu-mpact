@@ -511,9 +511,9 @@ class KelvinAccumulateInstructionTest
           {{vd_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
     }
     auto instruction = CreateInstruction();
-    AppendVectorRegisterOperands(instruction.get(), kVLenInWord,
+    AppendVectorRegisterOperands(instruction.get(), kVLenInWord / 2,
                                  1 /* src1_widen_factor */, {}, {},
-                                 false /* widen_dst */, {kVd});
+                                 true /* widen_dst */, {kVd});
     instruction->set_semantic_function(&KelvinVcGet);
     instruction->Execute();
     // Resulting v48..55 should all have 0 values
@@ -544,8 +544,8 @@ class KelvinAccumulateInstructionTest
            {vs_name, vd_span.subspan(kVLenInWord * i, kVLenInWord)}});
     }
     auto instruction = CreateInstruction();
-    AppendVectorRegisterOperands(instruction.get(), kVLenInWord,
-                                 1 /* src1_widen_factor */, kVs, {},
+    AppendVectorRegisterOperands(instruction.get(), 1,
+                                 kVLenInWord /* src1_widen_factor */, kVs, {},
                                  false /* widen_dst */, {kVd});
     instruction->set_semantic_function(
         absl::bind_front(&KelvinAcSet, is_transpose));
@@ -603,7 +603,7 @@ TEST_F(KelvinAccumulateInstructionTest, ADwInit) {
          {vd_name, vd_span.subspan(kVLenInByte * i, kVLenInByte)}});
   }
   auto instruction = CreateInstruction();
-  AppendVectorRegisterOperands(instruction.get(), kVLenInByte,
+  AppendVectorRegisterOperands(instruction.get(), kInitLength,
                                1 /* src1_widen_factor */, kVs, {},
                                false /* widen_dst */, {kVd});
   instruction->set_semantic_function(&KelvinADwInit);

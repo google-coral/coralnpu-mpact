@@ -1,4 +1,4 @@
 instruction group KelvinVectorConvInst[32] : KelvinV3ArgsType {
   // vconv
-  aconv_vxv      : KelvinV3ArgsType : func3_hi == 0b10, func3_lo == 0b00, vd == 48, vs1_low3 == 0, vs2 != 0, vs3_low3 == 0, m == 0, form == 0b101;
+  aconv_vxv      : KelvinV3ArgsType : func3_hi == 0b10, func3_lo == 0b00, vd == 48, vs1_low4 == 0, vs2 != 0, vs3_low3 == 0, m == 0, form == 0b101;
 };

@@ -421,6 +421,32 @@ TEST_F(KelvinEncodingTest, KelvinWideningVs1) {
       SourceOpEnum::kVs1);
   EXPECT_EQ(v_src->size(), 2);
   delete v_src;
+
+  // Test acset.v, actr.v, adwinit.v
+  constexpr uint32_t kACSetVBase = 0b010000'000000'010000'00'110000'0'001'10;
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kACSetVBase, OpcodeEnum::kAcset, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 8);
+  delete v_src;
+
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kACSetVBase | (1 << 26 /* actr */), OpcodeEnum::kActr,
+      SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 8);
+  delete v_src;
+
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kACSetVBase | (1 << 27 /* adwinit */), OpcodeEnum::kAdwinit,
+      SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 4);
+  delete v_src;
+
+  // Test aconv.vxv
+  constexpr uint32_t kAVConvBase = 0b001000'000001'010000'10'110000'0'00'101;
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kAVConvBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 8);
+  delete v_src;
 }
 
 TEST_F(KelvinEncodingTest, KelvinWideningVd) {
@@ -493,6 +519,29 @@ TEST_F(KelvinEncodingTest, KelvinWideningVd) {
       DestOpEnum::kVd);
   EXPECT_EQ(v_dest->size(), 2);
   delete v_dest;
+
+  // Test adwinit.v
+  constexpr uint32_t kAdwinitVBase = 0b010010'000000'010000'00'110000'0'001'10;
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(
+      kAdwinitVBase, OpcodeEnum::kAdwinit, DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 4);
+  delete v_dest;
+
+  // Test vcget
+  constexpr uint32_t kVCGet = 0b010100'000000'000000'00'110000'0'111'11;
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(kVCGet, OpcodeEnum::kVcget,
+                                                 DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 8);
+  delete v_dest;
+}
+
+TEST_F(KelvinEncodingTest, KelvinEncodeVs3) {
+  constexpr uint32_t kACovBase = 0b001000'000001'010000'10'110000'0'00'101;
+  auto *v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kACovBase, OpcodeEnum::kAconvVxv, SourceOpEnum::kVs3);
+  EXPECT_EQ(v_src->AsString(), "v8");
+  EXPECT_EQ(v_src->size(), 8);
+  delete v_src;
 }
 
 }  // namespace
