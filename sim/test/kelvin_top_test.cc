@@ -2,12 +2,15 @@
 
 #include <cstdint>
 #include <string>
+#include <tuple>
 
+#include "sim/kelvin_state.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "googletest/include/gtest/gtest.h"
 #include "absl/flags/flag.h"
 #include "absl/log/check.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
@@ -333,15 +336,6 @@ TEST_F(KelvinTopTest, RegisterNames) {
     EXPECT_OK(result.status());
     word_value = result.value();
     EXPECT_OK(kelvin_top_->WriteRegister(name, word_value));
-  }
-  // Test d-names and numbers.
-  uint64_t dword_value;
-  for (int i = 0; i < 32; i++) {
-    std::string name = absl::StrCat("f", i);
-    auto result = kelvin_top_->ReadRegister(name);
-    EXPECT_OK(result.status());
-    dword_value = result.value();
-    EXPECT_OK(kelvin_top_->WriteRegister(name, dword_value));
   }
   // Not found.
   EXPECT_EQ(kelvin_top_->ReadRegister("x32").status().code(),

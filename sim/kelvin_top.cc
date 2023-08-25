@@ -117,12 +117,6 @@ void KelvinTop::Initialize() {
     (void)state_->AddRegisterAlias<mpact::sim::riscv::RV32Register>(
         reg_name, mpact::sim::riscv::kXRegisterAliases[i]);
   }
-  for (int i = 0; i < 32; i++) {
-    reg_name = absl::StrCat(sim::KelvinState::kFregPrefix, i);
-    (void)state_->AddRegister<mpact::sim::riscv::RVFpRegister>(reg_name);
-    (void)state_->AddRegisterAlias<mpact::sim::riscv::RVFpRegister>(
-        reg_name, mpact::sim::riscv::kFRegisterAliases[i]);
-  }
 
   semihost_ = new mpact::sim::riscv::RiscVArmSemihost(
       mpact::sim::riscv::RiscVArmSemihost::BitWidth::kWord32, memory_, memory_);

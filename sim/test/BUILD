@@ -68,10 +68,12 @@ cc_test(
         "testfiles/rv32uf_fadd.elf",
     ],
     deps = [
+        "//sim:kelvin_state",
         "//sim:kelvin_top",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/util/memory",
