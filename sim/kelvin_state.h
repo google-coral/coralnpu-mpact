@@ -20,6 +20,8 @@ using Instruction = ::mpact::sim::generic::Instruction;
 // https://spacebeaker.googlesource.com/shodan/hw/kelvin/+/refs/heads/master/hdl/chisel/src/kelvin/Parameters.scala#13.
 inline constexpr uint32_t kVectorLengthInBits = 256;
 
+inline constexpr int kNumVregs = 64;
+
 constexpr uint64_t kKelvinMaxMemoryAddress = 0x3f'ffffULL;  // 4MB
 
 template <typename T>

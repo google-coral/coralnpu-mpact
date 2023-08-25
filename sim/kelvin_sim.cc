@@ -1,16 +1,24 @@
 #include <signal.h>
 
+#include <cstdint>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "sim/kelvin_state.h"
 #include "sim/kelvin_top.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "riscv/debug_command_shell.h"
+#include "riscv/riscv_register_aliases.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
+#include "re2/re2.h"
 
 // Flags for specifying interactive mode.
 ABSL_FLAG(bool, i, false, "Interactive mode");
@@ -27,6 +35,67 @@ static void sim_sigint_handler(int arg) {
   } else {
     exit(-1);
   }
+}
+
+// Custom debug command to print all the scalar register values.
+static bool PrintRegisters(
+    absl::string_view input,
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
+    std::string &output) {
+  LazyRE2 xreg_info_re{R"(\s*reg\s+info\s*)"};
+  if (!RE2::FullMatch(input, *xreg_info_re)) {
+    return false;
+  }
+  std::string output_str;
+  for (int i = 0; i < 32; ++i) {
+    std::string reg_name = absl::StrCat("x", i);
+    auto result = core_access.debug_interface->ReadRegister(reg_name);
+    if (!result.ok()) {
+      // Skip the register if error occurs.
+      continue;
+    }
+    output_str +=
+        absl::StrCat(mpact::sim::riscv::kXRegisterAliases[i], "\t = [",
+                     absl::Hex(result.value(), absl::kZeroPad8), "]\n");
+  }
+  output = output_str;
+  return true;
+}
+
+// Custom debug command to print all the assigned vector register values.
+static bool PrintVectorRegisters(
+    absl::string_view input,
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
+    std::string &output) {
+  LazyRE2 vreg_info_re{R"(\s*vreg\s+info\s*)"};
+  if (!RE2::FullMatch(input, *vreg_info_re)) {
+    return false;
+  }
+  std::string output_str;
+  for (int i = 0; i < kelvin::sim::kNumVregs; ++i) {
+    std::string reg_name = absl::StrCat("v", i);
+    auto result = core_access.debug_interface->GetRegisterDataBuffer(reg_name);
+    if (!result.ok()) {
+      // Skip the register if error occurs.
+      continue;
+    }
+    auto *db = result.value();
+    if (db == nullptr) {
+      // Skip the register if the data buffer is not available.
+      continue;
+    }
+    std::string data_str;
+    std::string sep;
+    for (int j = 0; j < kelvin::sim::kVectorLengthInBits / 32; ++j) {
+      auto value = db->Get<uint32_t>(j);
+      data_str += sep + absl::StrFormat("%08x", value);
+      sep = ":";
+    }
+    output_str += absl::StrCat("v", i, "\t = [", data_str, "]\n");
+  }
+
+  output = output_str;
+  return true;
 }
 
 int main(int argc, char **argv) {
@@ -71,6 +140,13 @@ int main(int argc, char **argv) {
   if (interactive) {
     mpact::sim::riscv::DebugCommandShell cmd_shell(
         {{&kelvin_top, &elf_loader}});
+    // Add custom commands to interactive debug command shell.
+    cmd_shell.AddCommand(
+        "    reg info                       - print all scalar regs",
+        PrintRegisters);
+    cmd_shell.AddCommand(
+        "    vreg info                      - print assigned vector regs",
+        PrintVectorRegisters);
     cmd_shell.Run(std::cin, std::cout);
     std::cout << "Total cycles: " << kelvin_top.GetCycleCount() << std::endl;
   } else {

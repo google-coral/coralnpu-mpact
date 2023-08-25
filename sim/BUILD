@@ -162,12 +162,17 @@ cc_binary(
         "//sim/test:testfiles/rv32soft_fp.elf",
     ],
     deps = [
+        ":kelvin_state",
         ":kelvin_top",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/flags:usage",
         "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_mpact-riscv//riscv:debug_command_shell",
+        "@com_google_mpact-riscv//riscv:riscv_state",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
