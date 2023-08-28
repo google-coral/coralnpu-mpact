@@ -1,7 +1,13 @@
 #include "sim/kelvin_top.h"
 
+#include <sys/stat.h>
+
+#include <cerrno>
 #include <cstdint>
 #include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <ios>
 #include <iostream>
 #include <string>
 #include <thread>  // NOLINT(build/c++11): built with c++17
@@ -31,13 +37,17 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 
 ABSL_FLAG(bool, use_semihost, false, "Use semihost in the simulation");
+ABSL_FLAG(bool, trace, false, "Dump executed instruction trace");
+ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.txt",
+          "Path to save trace");
 
 namespace kelvin::sim {
 
 constexpr char kKelvinName[] = "Kelvin";
 
 // Local helper function used to execute instructions.
-static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst) {
+static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst,
+                                      std::fstream *trace = nullptr) {
   for (auto *resource : inst->ResourceHold()) {
     if (!resource->IsFree()) {
       return false;
@@ -46,9 +56,12 @@ static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst) {
   for (auto *resource : inst->ResourceAcquire()) {
     resource->Acquire();
   }
-  // Comment out instruction logging during execution.
-  // LOG(INFO) << "[" << std::hex << inst->address() << "] " <<
-  // inst->AsString();
+  if (trace != nullptr) {
+    // TODO(hcindyl): Use protobuf to store the serialized trace.
+    *trace << "["
+           << "0x" << std::setfill('0') << std::setw(8) << std::hex
+           << inst->address() << "] " << inst->AsString() << std::endl;
+  }
 
   inst->Execute(nullptr);
   return true;
@@ -326,6 +339,22 @@ absl::Status KelvinTop::Run() {
     // be executed.
     uint64_t next_pc = pc_operand->AsUint64(0);
     uint64_t next_seq_pc;
+
+    std::fstream trace_file;
+    if (absl::GetFlag(FLAGS_trace)) {
+      std::string trace_path = absl::GetFlag(FLAGS_trace_path);
+      std::string trace_dir =
+          trace_path.substr(0, trace_path.find_last_of('/'));
+      int res = mkdir(trace_dir.c_str(), 0777);
+      if (res == 0 || errno == EEXIST) {
+        trace_file.open(absl::GetFlag(FLAGS_trace_path), std::ios_base::out);
+        std::cout << "Dump trace file at " << absl::GetFlag(FLAGS_trace_path)
+                  << std::endl;
+      } else {
+        std::cerr << "Failed to create " << trace_dir << std::endl;
+      }
+    }
+
     while (!halted_) {
       pc = next_pc;
       auto *inst = decode_cache_->GetDecodedInstruction(pc);
@@ -334,8 +363,9 @@ absl::Status KelvinTop::Run() {
       // executed will overwrite this.
       SetPc(next_seq_pc);
       bool executed = false;
+      std::fstream *trace_ptr = trace_file.is_open() ? &trace_file : nullptr;
       do {
-        executed = ExecuteInstruction(inst);
+        executed = ExecuteInstruction(inst, trace_ptr);
         counter_num_cycles_.Increment(1);
         state_->AdvanceDelayLines();
       } while (!executed);
@@ -355,6 +385,10 @@ absl::Status KelvinTop::Run() {
       SetPc(next_pc);
     }
     run_status_ = RunStatus::kHalted;
+
+    if (trace_file.is_open()) {
+      trace_file.close();
+    }
     // Notify that the run has completed.
     run_halted_->Notify();
   }).detach();
