@@ -482,7 +482,7 @@ Vs1 PackedBinaryOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs1);
   auto src_element_index = op_index * elts_per_register +
                            dst_element_index * sizeof(Vd) / sizeof(Vs1);
-  return GetInstructionSource<Vs1>(inst, dst_reg_index, src_element_index);
+  return GetInstructionSource<Vs1>(inst, 0, src_element_index);
 }
 
 template <typename Vd, typename Vs1, typename Vs2>
@@ -494,30 +494,19 @@ Vs2 PackedBinaryOpGetArg2(const Instruction *inst, bool scalar, int num_ops,
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs2);
   auto src_element_index = op_index * elts_per_register +
                            dst_element_index * sizeof(Vd) / sizeof(Vs2) + 1;
-  return GetInstructionSource<Vs2>(inst, dst_reg_index, src_element_index);
+  return GetInstructionSource<Vs2>(inst, 0, src_element_index);
 }
 
 template <typename Td, typename Ts>
 void KelvinVPadd(bool strip_mine, Instruction *inst) {
   // Adds lane pairs.
-  if (inst->SourcesSize() == 2) {  // .vv
-    KelvinBinaryVectorOp<true /* halftype */, true /* widen_dst */, Td, Ts, Ts>(
-        inst, false /* scalar */, strip_mine,
-        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
-          return static_cast<Td>(vs1) + static_cast<Td>(vs2);
-        }),
-        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
-        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
-  } else {
-    KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts,
-                         Ts>(
-        inst, false /* scalar */, strip_mine,
-        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
-          return static_cast<Td>(vs1) + static_cast<Td>(vs2);
-        }),
-        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
-        SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
-  }
+  KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts, Ts>(
+      inst, false /* scalar */, strip_mine,
+      std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
+        return static_cast<Td>(vs1) + static_cast<Td>(vs2);
+      }),
+      SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
+      SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
 }
 template void KelvinVPadd<int16_t, int8_t>(bool, Instruction *);
 template void KelvinVPadd<int32_t, int16_t>(bool, Instruction *);

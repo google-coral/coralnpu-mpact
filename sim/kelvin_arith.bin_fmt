@@ -401,20 +401,12 @@ instruction group KelvinVectorArithInst[32] : KelvinV2ArgsType {
   vpadd_h_v_m   : KelvinV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b01, m == 0b01, func1 == 0b100, form == 0b10;
   vpadd_w_v     : KelvinV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b10, m == 0b00, func1 == 0b100, form == 0b10;
   vpadd_w_v_m   : KelvinV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b10, m == 0b01, func1 == 0b100, form == 0b10;
-  vpadd_h_vv     : KelvinV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b00, func1 == 0b100, form == 0b00;
-  vpadd_h_vv_m   : KelvinV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b01, func1 == 0b100, form == 0b00;
-  vpadd_w_vv     : KelvinV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b00, func1 == 0b100, form == 0b00;
-  vpadd_w_vv_m   : KelvinV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b01, func1 == 0b100, form == 0b00;
 
   //vpaddu
   vpadd_h_u_v     : KelvinV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b01, m == 0b00, func1 == 0b100, form == 0b10;
   vpadd_h_u_v_m   : KelvinV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b01, m == 0b01, func1 == 0b100, form == 0b10;
   vpadd_w_u_v     : KelvinV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b10, m == 0b00, func1 == 0b100, form == 0b10;
   vpadd_w_u_v_m   : KelvinV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b10, m == 0b01, func1 == 0b100, form == 0b10;
-  vpadd_h_u_vv     : KelvinV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b00, func1 == 0b100, form == 0b00;
-  vpadd_h_u_vv_m   : KelvinV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b01, func1 == 0b100, form == 0b00;
-  vpadd_w_u_vv     : KelvinV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b00, func1 == 0b100, form == 0b00;
-  vpadd_w_u_vv_m   : KelvinV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b01, func1 == 0b100, form == 0b00;
 
   //vpsub
   vpsub_h_v     : KelvinV2ArgsType : func2 == 0b00'1110, vs2 == 0, sz == 0b01, m == 0b00, func1 == 0b100, form == 0b10;

@@ -164,31 +164,6 @@ class KelvinVectorInstructionsTest
 
   template <template <typename, typename, typename> class F, typename TD,
             typename TS1, typename TS2>
-  void KelvinPairwiseVectorBinaryOpHelper(absl::string_view name) {
-    const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
-
-    // Vector OP single vector.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kNonStripmine),
-        absl::StrCat(name_with_type, "VV"), kNonScalar, kNonStripmine,
-        F<TD, TS1, TS2>::Op, F<TD, TS1, TS2>::kArgsGetter, false, false, true);
-
-    // Vector OP single vector stripmined.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kIsStripmine),
-        absl::StrCat(name_with_type, "VVM"), kNonScalar, kIsStripmine,
-        F<TD, TS1, TS2>::Op, F<TD, TS1, TS2>::kArgsGetter, false, false, true);
-  }
-
-  template <template <typename, typename, typename> class F, typename TD,
-            typename TS1, typename TS2, typename TNext1, typename... TNext>
-  void KelvinPairwiseVectorBinaryOpHelper(absl::string_view name) {
-    KelvinPairwiseVectorBinaryOpHelper<F, TD, TS1, TS2>(name);
-    KelvinPairwiseVectorBinaryOpHelper<F, TNext1, TNext...>(name);
-  }
-
-  template <template <typename, typename, typename> class F, typename TD,
-            typename TS1, typename TS2>
   void KelvinVectorVXBinaryOpHelper(absl::string_view name) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
 
@@ -694,16 +669,6 @@ TEST_F(KelvinVectorInstructionsTest, VPadd) {
 TEST_F(KelvinVectorInstructionsTest, VPaddu) {
   KelvinHalftypeVectorBinaryOpHelper<VPaddOp, uint16_t, uint8_t, uint8_t,
                                      uint32_t, uint16_t, uint16_t>("VPaddOp");
-}
-
-TEST_F(KelvinVectorInstructionsTest, VPaddVV) {
-  KelvinPairwiseVectorBinaryOpHelper<VPaddOp, int16_t, int8_t, int8_t, int32_t,
-                                     int16_t, int16_t>("VPaddVVOp");
-}
-
-TEST_F(KelvinVectorInstructionsTest, VPadduVV) {
-  KelvinPairwiseVectorBinaryOpHelper<VPaddOp, uint16_t, uint8_t, uint8_t,
-                                     uint32_t, uint16_t, uint16_t>("VPaddVVOp");
 }
 
 // Vector packed sub
