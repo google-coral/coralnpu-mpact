@@ -1130,18 +1130,6 @@ slot kelvin_arith {
     vpsub_w_v_m{: vs1 : vd},
       disasm: "vpsub.w.v.m", "%vd, %vs1",
       semfunc: "absl::bind_front(&KelvinVPsub<int32_t, int16_t>, /*strip_mine*/ true)";
-    vpsub_h_vv{: vs1, vs2 : vd},
-      disasm: "vpsub.h.vv", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<int16_t, int8_t>, /*strip_mine*/ false)";
-    vpsub_h_vv_m{: vs1, vs2 : vd},
-      disasm: "vpsub.h.vv.m", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<int16_t, int8_t>, /*strip_mine*/ true)";
-    vpsub_w_vv{: vs1, vs2 : vd},
-      disasm: "vpsub.w.vv", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<int32_t, int16_t>, /*strip_mine*/ false)";
-    vpsub_w_vv_m{: vs1, vs2 : vd},
-      disasm: "vpsub.w.vv.m", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<int32_t, int16_t>, /*strip_mine*/ true)";
 
     //vpsubu
     vpsub_h_u_v{: vs1 : vd},
@@ -1155,18 +1143,6 @@ slot kelvin_arith {
       semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ false)";
     vpsub_w_u_v_m{: vs1 : vd},
       disasm: "vpsub.w.u.v.m", "%vd, %vs1",
-      semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ true)";
-    vpsub_h_u_vv{: vs1, vs2 : vd},
-      disasm: "vpsub.h.u.vv", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<uint16_t, uint8_t>, /*strip_mine*/ false)";
-    vpsub_h_u_vv_m{: vs1, vs2 : vd},
-      disasm: "vpsub.h.u.vv.m", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<uint16_t, uint8_t>, /*strip_mine*/ true)";
-    vpsub_w_u_vv{: vs1, vs2 : vd},
-      disasm: "vpsub.w.u.vv", "%vd, %vs1, %vs2",
-      semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ false)";
-    vpsub_w_u_vv_m{: vs1, vs2 : vd},
-      disasm: "vpsub.w.u.vv.m", "%vd, %vs1, %vs2",
       semfunc: "absl::bind_front(&KelvinVPsub<uint32_t, uint16_t>, /*strip_mine*/ true)";
 
     //vhadd

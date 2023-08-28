@@ -715,7 +715,6 @@ struct VPsubOp {
   static void KelvinOp(bool strip_mine, Instruction *inst) {
     KelvinVPsub<Vd, Vs2>(strip_mine, inst);
   }
-  static constexpr auto kArgsGetter = PairwiseOpArgsGetter<Vs1>;
 };
 
 TEST_F(KelvinVectorInstructionsTest, VPsub) {
@@ -725,16 +724,6 @@ TEST_F(KelvinVectorInstructionsTest, VPsub) {
 
 TEST_F(KelvinVectorInstructionsTest, VPsubu) {
   KelvinHalftypeVectorBinaryOpHelper<VPsubOp, uint16_t, uint8_t, uint8_t,
-                                     uint32_t, uint16_t, uint16_t>("VPsubOp");
-}
-
-TEST_F(KelvinVectorInstructionsTest, VPsubVV) {
-  KelvinPairwiseVectorBinaryOpHelper<VPsubOp, int16_t, int8_t, int8_t, int32_t,
-                                     int16_t, int16_t>("VPsubOp");
-}
-
-TEST_F(KelvinVectorInstructionsTest, VPsubuVV) {
-  KelvinPairwiseVectorBinaryOpHelper<VPsubOp, uint16_t, uint8_t, uint8_t,
                                      uint32_t, uint16_t, uint16_t>("VPsubOp");
 }
 
