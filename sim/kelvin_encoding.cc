@@ -384,6 +384,11 @@ bool KelvinEncoding::IsWidenDestinationRegisterOp() const {
     return true;
   }
 
+  // Func1 0b100 VAcc.[h,w].[u] needs 2x destination registers.
+  if ((func1 == 0b100) && (func2_ignore_unsigned == 0b1010)) {
+    return true;
+  }
+
   // Func1 0b001 VMvp also needs 2x destination registers.
   if ((func1 == 0b001) && (func2 == 0b1101)) {
     return true;

@@ -97,6 +97,7 @@ constexpr uint32_t kFLog = 0b011'1100'00000'00000'000'00000'111'0111;
 constexpr uint32_t kVld = 0b000000'000000'000000'00'000000'0'111'11;
 
 // Kelvin vector ops
+constexpr uint32_t kVAccsBase = 0b001010'000001'000000'00'001000'0'100'00;
 constexpr uint32_t kVAddBase = 0b000000'000000'000001'00'000010'0'000'00;
 constexpr uint32_t kAconvBase = 0b001000'000001'010000'10'110000'0'00'101;
 
@@ -443,7 +444,6 @@ TEST_F(KelvinEncodingTest, KelvinWideningVs1) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kNone);
 
   // Test vacc.h.vv
-  constexpr uint32_t kVAccsBase = 0b001010'000001'000000'00'001000'0'100'00;
   v_src = EncodeOpHelper<RV32VectorSourceOperand>(
       SetSz(kVAccsBase, 0b1), OpcodeEnum::kVaccHVv, SourceOpEnum::kVs1);
   EXPECT_EQ(v_src->size(), 2);
@@ -507,6 +507,25 @@ TEST_F(KelvinEncodingTest, KelvinWideningVd) {
       SetSz(kVAddwBase, 0b10) | (0b11 << 26 /* vsubw.u */),
       OpcodeEnum::kVsubwWUVv, DestOpEnum::kVd);
   EXPECT_EQ(v_dest->size(), 2);
+  delete v_dest;
+
+  // Test vacc.h.vv
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(
+      SetSz(kVAccsBase, 0b1), OpcodeEnum::kVaccHVv, DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 2);
+  delete v_dest;
+
+  // Test vacc.w.u.vv
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(
+      SetSz(kVAccsBase, 0b10) | (1 << 26), OpcodeEnum::kVaccWUVv,
+      DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 2);
+  delete v_dest;
+
+  // Test no-widening of vle(same func2 as vacc, func1 == 000)
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(
+      kVAccsBase & ~(1 << 4), OpcodeEnum::kVleBVv, DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 1);
   delete v_dest;
 
   // Test vmvp.vv
