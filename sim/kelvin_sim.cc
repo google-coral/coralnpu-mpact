@@ -11,10 +11,11 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/flags/usage.h"
-#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "riscv/debug_command_shell.h"
 #include "riscv/riscv_register_aliases.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
@@ -148,9 +149,9 @@ int main(int argc, char **argv) {
         "    vreg info                      - print assigned vector regs",
         PrintVectorRegisters);
     cmd_shell.Run(std::cin, std::cout);
-    std::cout << "Total cycles: " << kelvin_top.GetCycleCount() << std::endl;
   } else {
-    std::cerr << "Starting simulation\n";
+    std::cout << "Starting simulation\n";
+    auto t0 = absl::Now();
 
     auto run_status = kelvin_top.Run();
     if (!run_status.ok()) {
@@ -161,7 +162,8 @@ int main(int argc, char **argv) {
     if (!wait_status.ok()) {
       std::cerr << wait_status.message() << std::endl;
     }
+    auto sec = absl::ToDoubleSeconds(absl::Now() - t0);
     std::cout << "Total cycles: " << kelvin_top.GetCycleCount() << std::endl;
-    std::cerr << "Simulation done\n";
+    std::cout << absl::StrFormat("Simulation done: %0.3f sec\n", sec);
   }
 }
