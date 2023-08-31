@@ -1654,8 +1654,9 @@ static std::pair<T, T> ZipOpArgsGetter(
     const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
     const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
-  auto src_index =
-      op_num * vs1_size + element_index / 2 + dest_reg_sub_index * vs1_size / 2;
+  auto src_index = (op_num * vs1_size + element_index +
+                    dest_reg_sub_index * vs1_size * num_ops) /
+                   2;
 
   T arg1;
   if (element_index & 1) {

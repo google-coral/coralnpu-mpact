@@ -1283,17 +1283,20 @@ template void KelvinVEvnodd<int16_t>(bool, bool, Instruction *);
 template void KelvinVEvnodd<int32_t>(bool, bool, Instruction *);
 
 // Interleave even/odd lanes of two operands.
-// Returns odd elements of concatenated registers.
+// Returns even elements of concatenated registers.
 template <typename T>
 T VZipOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
                 int dst_element_index, int dst_reg_index) {
   auto state = static_cast<KelvinState *>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const int elts_per_register = vector_size_in_bytes / sizeof(T);
+  const int half_elts_per_register = elts_per_register / 2;
 
-  auto src_element_index = op_index * elts_per_register +
+  // Only takes the even elements. For the stripmine version, the offset are
+  // counted as half of the register size.
+  auto src_element_index = op_index * half_elts_per_register +
                            dst_element_index / 2 +
-                           dst_reg_index * elts_per_register / 2;
+                           dst_reg_index * half_elts_per_register * num_ops;
 
   if (dst_element_index & 1) {
     return GetInstructionSource<T>(inst, 1, scalar ? 0 : src_element_index);
