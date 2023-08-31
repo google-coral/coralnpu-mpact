@@ -160,9 +160,9 @@ TEST_F(KelvinLogInstructionsTest, PrintCharacterStream) {
 }
 
 TEST_F(KelvinLogInstructionsTest, PrintTwoArguments) {
-  constexpr char kFormatString[] = "%s World %d\n";
+  constexpr char kFormatString[] = "%s World %x\n";
   constexpr uint32_t kCharStream = 0x00006948;  // "Hi"
-  constexpr uint32_t kPrintNum = 1337;
+  constexpr uint32_t kPrintNum = 0xbaddecaf;
 
   // Initialize memory.
   auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
@@ -207,7 +207,7 @@ TEST_F(KelvinLogInstructionsTest, PrintTwoArguments) {
     instructions[i]->Execute(nullptr);
   }
   const std::string stdout_str = testing::internal::GetCapturedStdout();
-  EXPECT_EQ("Hi World 1337\n", stdout_str);
+  EXPECT_EQ("Hi World baddecaf\n", stdout_str);
 }
 
 }  // namespace

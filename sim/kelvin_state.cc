@@ -8,6 +8,7 @@
 #include <string>
 
 #include "absl/log/check.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 
 namespace kelvin::sim {
@@ -47,6 +48,7 @@ void KelvinState::MPause(const Instruction *inst) {
 // Print the logging message based on log_args_.
 void KelvinState::PrintLog(absl::string_view format_string) {
   char *print_ptr = const_cast<char *>(format_string.data());
+  std::string log_string = "";
   while (*print_ptr) {
     if (*print_ptr == '%') {
       CHECK_GT(log_args_.size(), 0)
@@ -54,15 +56,17 @@ void KelvinState::PrintLog(absl::string_view format_string) {
       if (log_args_[0].type() == typeid(uint32_t)) {
         switch (print_ptr[1]) {
           case 'u':
-            std::cout << std::dec << std::any_cast<uint32_t>(log_args_[0]);
+            log_string +=
+                absl::StrFormat("%u", std::any_cast<uint32_t>(log_args_[0]));
             break;
           case 'd':
-            std::cout << std::dec
-                      << static_cast<int32_t>(
-                             std::any_cast<uint32_t>(log_args_[0]));
+            log_string += absl::StrFormat(
+                "%d",
+                static_cast<int32_t>(std::any_cast<uint32_t>(log_args_[0])));
             break;
           case 'x':
-            std::cout << std::hex << std::any_cast<uint32_t>(log_args_[0]);
+            log_string +=
+                absl::StrFormat("%x", std::any_cast<uint32_t>(log_args_[0]));
             break;
           default:
             std::cerr << "incorrect format" << std::endl;
@@ -71,17 +75,18 @@ void KelvinState::PrintLog(absl::string_view format_string) {
       }
       if (log_args_[0].type() == typeid(std::string)) {
         if (print_ptr[1] == 's') {
-          std::cout << std::any_cast<std::string>(log_args_[0]);
+          log_string += std::any_cast<std::string>(log_args_[0]);
         } else {
           std::cerr << "incorrect format" << std::endl;
         }
       }
       log_args_.erase(log_args_.begin());
       print_ptr += 2;  // skip the format specifier too.
-    } else {
-      std::cout << *print_ptr++;
+    } else {  // Default. Just append the character from the format string.
+      log_string += *print_ptr++;
     }
   }
+  std::cout << log_string;
   // Flush log_args_
   log_args_.clear();
 }
