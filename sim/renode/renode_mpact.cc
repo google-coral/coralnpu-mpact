@@ -1,9 +1,6 @@
 #include "sim/renode/renode_mpact.h"
 
-#include <cstddef>
 #include <cstdint>
-#include <fstream>
-#include <ios>
 #include <limits>
 #include <string>
 
@@ -211,35 +208,11 @@ int32_t RenodeAgent::LoadImage(int32_t id, const char *file_name,
     return -1;
   }
   auto *dbg = dbg_iter->second;
-  // Open up the image file.
-  std::ifstream image_file;
-  image_file.open(file_name, std::ios::in | std::ios::binary);
-  if (!image_file.good()) {
-    LOG(ERROR) << "LoadImage: Input file not in good state";
+  auto res = dbg->LoadImage(std::string(file_name), address);
+  if (!res.ok()) {
+    LOG(ERROR) << "Failed to load image: " << res.message();
     return -1;
   }
-  char buffer[kBufferSize];
-  size_t gcount = 0;
-  uint64_t load_address = address;
-  do {
-    // Fill buffer.
-    image_file.read(buffer, kBufferSize);
-    // Get the number of bytes that was read.
-    gcount = image_file.gcount();
-    // Write to the simulator memory.
-    auto res = dbg->WriteMemory(load_address, buffer, gcount);
-    // Check that the write succeeded, increment address if it did.
-    if (!res.ok()) {
-      LOG(ERROR) << "LoadImage: Memory write failed";
-      return -1;
-    }
-    if (res.value() != gcount) {
-      LOG(ERROR) << "LoadImage: Memory write failed to write all the bytes";
-      return -1;
-    }
-    load_address += gcount;
-  } while (image_file.good() && (gcount > 0));
-  image_file.close();
   return 0;
 }
 

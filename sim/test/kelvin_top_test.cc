@@ -26,6 +26,7 @@ using ::mpact::sim::util::ElfProgramLoader;
 using ::mpact::sim::util::FlatDemandMemory;
 
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
+constexpr char kMpauseBinaryFileName[] = "hello_world_mpause.bin";
 constexpr char kMpauseElfFileName[] = "hello_world_mpause.elf";
 constexpr char kRV32imfElfFileName[] = "hello_world_rv32imf.elf";
 constexpr char kRV32iElfFileName[] = "rv32i.elf";
@@ -39,6 +40,8 @@ constexpr char kDepotPath[] = "sim/test/";
 
 // Maximum memory size used by riscv programs build for userspace.
 constexpr uint64_t kRiscv32MaxAddress = 0x3'ffff'ffffULL;
+
+constexpr uint64_t kBinaryAddress = 0;
 
 class KelvinTopTest : public testing::Test {
  protected:
@@ -129,6 +132,70 @@ TEST_F(KelvinTopTest, RunHelloMpauseProgram) {
   LoadFile(kMpauseElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+  EXPECT_OK(kelvin_top_->Run());
+  EXPECT_OK(kelvin_top_->Wait());
+  auto halt_result = kelvin_top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(static_cast<int>(halt_result.value()),
+            static_cast<int>(HaltReason::kUserRequest));
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits properly\n", stdout_str);
+}
+
+TEST_F(KelvinTopTest, LoadImageFailed) {
+  const std::string input_file_name =
+      absl::StrCat(kDepotPath, "testfiles/", kMpauseBinaryFileName);
+  auto result = kelvin_top_->LoadImage("wrong_file", kBinaryAddress);
+  EXPECT_FALSE(result.ok());
+  // Set the memory to be smaller than the loaded image
+  kelvin_top_->state()->set_max_physical_address(0);
+  result = kelvin_top_->LoadImage(input_file_name, kBinaryAddress);
+  EXPECT_FALSE(result.ok());
+  kelvin_top_->state()->set_max_physical_address(0xf);
+  result = kelvin_top_->LoadImage(input_file_name, kBinaryAddress);
+  EXPECT_FALSE(result.ok());
+}
+
+// Directly read/write to memory addresses that are out-of-bound
+TEST_F(KelvinTopTest, ReadWriteOutOfBoundMemory) {
+  // Set the machine to have 16-byte physical memory
+  constexpr uint64_t kTestMemerySize = 0x10;
+  kelvin_top_->state()->set_max_physical_address(kTestMemerySize - 1);
+  uint8_t mem_bytes[kTestMemerySize + 4] = {0};
+  // Read the memory with the length greater than the physical memory size. The
+  // read operation is successful within the physical memory size range.
+  auto result =
+      kelvin_top_->ReadMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), kTestMemerySize);
+  // Read the memory with the staring address out of the physical memory range.
+  // The read operation returns error.
+  result = kelvin_top_->ReadMemory(kTestMemerySize + 4, mem_bytes,
+                                   sizeof(mem_bytes));
+  EXPECT_FALSE(result.ok());
+
+  // Write the memory with the length greater than the physical memory size. The
+  // write operation is successful within the physical memory size range.
+  result =
+      kelvin_top_->WriteMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
+  EXPECT_OK(result);
+  EXPECT_EQ(result.value(), kTestMemerySize);
+  // Write the memory with the staring address out of the physical memory range.
+  // The write operation returns error.
+  result = kelvin_top_->WriteMemory(kTestMemerySize + 4, mem_bytes,
+                                    sizeof(mem_bytes));
+  EXPECT_FALSE(result.ok());
+}
+
+// Runs the binary program from beginning to end
+TEST_F(KelvinTopTest, RunHelloMpauseBinaryProgram) {
+  const std::string input_file_name =
+      absl::StrCat(kDepotPath, "testfiles/", kMpauseBinaryFileName);
+  constexpr uint32_t kBinaryEntryPoint = 0;
+  testing::internal::CaptureStdout();
+  auto result = kelvin_top_->LoadImage(input_file_name, kBinaryAddress);
+  CHECK_OK(result);
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", kBinaryEntryPoint));
   EXPECT_OK(kelvin_top_->Run());
   EXPECT_OK(kelvin_top_->Wait());
   auto halt_result = kelvin_top_->GetLastHaltReason();

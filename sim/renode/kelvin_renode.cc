@@ -97,6 +97,11 @@ absl::StatusOr<std::string> KelvinRenode::GetDisassembly(uint64_t address) {
   return kelvin_top_->GetDisassembly(address);
 }
 
+absl::Status KelvinRenode::LoadImage(const std::string &image_path,
+                                     uint64_t start_address) {
+  return kelvin_top_->LoadImage(image_path, start_address);
+}
+
 absl::StatusOr<uint64_t> KelvinRenode::ReadRegister(uint32_t reg_id) {
   auto ptr = RiscVDebugInfo::Instance()->debug_register_map().find(reg_id);
   if (ptr == RiscVDebugInfo::Instance()->debug_register_map().end()) {

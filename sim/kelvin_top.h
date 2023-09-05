@@ -79,6 +79,8 @@ class KelvinTop : public mpact::sim::generic::Component,
   void RequestHalt(HaltReason halt_reason,
                    const mpact::sim::generic::Instruction *inst);
 
+  // Load a binary image of the SW program.
+  absl::Status LoadImage(const std::string &image_path, uint64_t start_address);
   // Accessors.
   sim::KelvinState *state() const { return state_; }
   mpact::sim::util::MemoryInterface *memory() const { return memory_; }

@@ -2,6 +2,7 @@
 #define LEARNING_BRAIN_RESEARCH_KELVIN_SIM_RENODE_RENODE_DEBUG_INTERFACE_H_
 
 #include <cstdint>
+#include <string>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -34,6 +35,9 @@ class RenodeDebugInterface : public mpact::sim::generic::CoreDebugInterface {
   virtual absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len,
                                              char *name,
                                              RenodeCpuRegister &info) = 0;
+
+  virtual absl::Status LoadImage(const std::string &image_path,
+                                 uint64_t start_address) = 0;
 };
 
 }  // namespace kelvin::sim::renode

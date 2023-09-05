@@ -75,6 +75,9 @@ class KelvinRenode : public renode::RenodeDebugInterface {
   absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len, char *name,
                                      RenodeCpuRegister &info) override;
 
+  absl::Status LoadImage(const std::string &image_path,
+                         uint64_t start_address) override;
+
  private:
   KelvinTop *kelvin_top_ = nullptr;
 };

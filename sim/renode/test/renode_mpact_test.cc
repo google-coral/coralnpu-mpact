@@ -111,6 +111,16 @@ TEST_F(RenodeMpactTest, ReadWriteMem) {
   EXPECT_EQ(mem_bytes[0], kBytes[4]);
   res = read_memory(sim_id_, 0x100, reinterpret_cast<char *>(mem_bytes), 8);
   for (int i = 0; i < 8; i++) EXPECT_EQ(kBytes[i], mem_bytes[i]);
+
+  // Read memory from out of bound address
+  constexpr uint64_t kOutOfBoundAddress = 0x3'FFFF'FFFFULL;
+  res = read_memory(sim_id_, kOutOfBoundAddress,
+                    reinterpret_cast<char *>(mem_bytes), 1);
+  EXPECT_EQ(res, 0);
+  // Write to out of bound memory address
+  res = write_memory(sim_id_, kOutOfBoundAddress,
+                     reinterpret_cast<const char *>(mem_bytes), 1);
+  EXPECT_EQ(res, 0);
 }
 
 TEST_F(RenodeMpactTest, LoadImage) {

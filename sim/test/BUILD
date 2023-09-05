@@ -59,6 +59,7 @@ cc_test(
         "kelvin_top_test.cc",
     ],
     data = [
+        "testfiles/hello_world_mpause.bin",
         "testfiles/hello_world_mpause.elf",
         "testfiles/hello_world_rv32imf.elf",
         "testfiles/kelvin_vldvst.elf",

@@ -1,9 +1,6 @@
 #include "sim/renode/kelvin_renode.h"
 
-#include <cstddef>
 #include <cstdint>
-#include <fstream>
-#include <ios>
 #include <string>
 
 #include "sim/kelvin_top.h"
@@ -13,7 +10,6 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "riscv/riscv_debug_info.h"
-#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 namespace {
@@ -82,26 +78,11 @@ TEST_F(KelvinRenodeTest, RunElfProgram) {
 
 TEST_F(KelvinRenodeTest, RunBinProgram) {
   std::string file_name = absl::StrCat(kDepotPath, "testfiles/", kBinFileName);
-  constexpr uint32_t kBufferSize = 1024;
   constexpr uint64_t kBinFileAddress = 0x0;
   constexpr uint64_t kBinFileEntryPoint = 0x0;
 
-  char buffer[kBufferSize];
-  size_t gcount = 0;
-  uint64_t load_address = kBinFileAddress;
-  std::ifstream image_file;
-  image_file.open(file_name, std::ios::in | std::ios::binary);
-  EXPECT_TRUE(image_file.good());
-  do {
-    image_file.read(buffer, kBufferSize);
-    gcount = image_file.gcount();
-    auto result = top_->WriteMemory(load_address, buffer, gcount);
-    EXPECT_TRUE(result.ok());
-    EXPECT_EQ(result.value(), gcount);
-    load_address += gcount;
-  } while (image_file.good() && (gcount > 0));
-  image_file.close();
-
+  auto res = top_->LoadImage(file_name, kBinFileAddress);
+  EXPECT_TRUE(res.ok());
   // Run the program.
   testing::internal::CaptureStdout();
   EXPECT_TRUE(top_->WriteRegister("pc", kBinFileEntryPoint).ok());

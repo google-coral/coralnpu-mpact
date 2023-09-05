@@ -2,7 +2,9 @@
 
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <cerrno>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
@@ -520,6 +522,11 @@ absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("ReadMemory: Core must be halted");
   }
+  if (address >= state_->max_physical_address()) {
+    return absl::InvalidArgumentError("Memory address invalid");
+  }
+  length =
+      std::min<size_t>(length, state_->max_physical_address() - address + 1);
   auto *db = db_factory_.Allocate(length);
   // Load bypassing any watch points/semihosting.
   state_->memory()->Load(address, db, nullptr, nullptr);
@@ -534,6 +541,11 @@ absl::StatusOr<size_t> KelvinTop::WriteMemory(uint64_t address,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("WriteMemory: Core must be halted");
   }
+  if (address >= state_->max_physical_address()) {
+    return absl::InvalidArgumentError("Memory address invalid");
+  }
+  length =
+      std::min<size_t>(length, state_->max_physical_address() - address + 1);
   auto *db = db_factory_.Allocate(length);
   std::memcpy(db->raw_ptr(), buffer, length);
   // Store bypassing any watch points/semihosting.
@@ -618,6 +630,37 @@ absl::StatusOr<std::string> KelvinTop::GetDisassembly(uint64_t address) {
   inst = decode_cache_->GetDecodedInstruction(address);
   auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
   return disasm;
+}
+
+absl::Status KelvinTop::LoadImage(const std::string &image_path,
+                                  uint64_t start_address) {
+  std::ifstream image_file;
+  constexpr size_t kBufferSize = 4096;
+  image_file.open(image_path, std::ios::in | std::ios::binary);
+  char buffer[kBufferSize];
+  size_t gcount = 0;
+  uint64_t load_address = start_address;
+  if (!image_file.good()) {
+    return absl::Status(absl::StatusCode::kInternal, "Failed to open file");
+  }
+  do {
+    // Fill buffer.
+    image_file.read(buffer, kBufferSize);
+    // Get the number of bytes that was read.
+    gcount = image_file.gcount();
+    // Write to the simulator memory.
+    auto res = WriteMemory(load_address, buffer, gcount);
+    // Check that the write succeeded, increment address if it did.
+    if (!res.ok()) {
+      return absl::InternalError("Memory write failed");
+    }
+    if (res.value() != gcount) {
+      return absl::InternalError("Failed to write all the bytes");
+    }
+    load_address += gcount;
+  } while (image_file.good() && (gcount > 0));
+  image_file.close();
+  return absl::OkStatus();
 }
 
 void KelvinTop::RequestHalt(HaltReason halt_reason,
