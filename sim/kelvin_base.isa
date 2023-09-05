@@ -18,6 +18,14 @@ slot riscv32i {
       resources: TwoOp,
       disasm: "addi", "%rd, %rs1, %I_imm12",
       semfunc: "&mpact::sim::riscv::RV32::RiscVIAdd";
+    li{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "li", "%rd, %I_imm12",
+      semfunc: "&mpact::sim::riscv::RV32::RiscVIAdd";
+    mv{: rs1, I_imm12 : rd},
+      resources: TwoOp,
+      disasm: "mv", "%rd, %rs1",
+      semfunc: "&mpact::sim::riscv::RV32::RiscVIAdd";
     slti{: rs1, I_imm12 : rd},
       resources: TwoOp,
       disasm: "slti", "%rd, %rs1, %I_imm12",
@@ -119,6 +127,10 @@ slot riscv32i {
     jr{: rs1, J_imm12 : next_pc, rd},
       resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
       disasm: "jr", "%rs1, %J_imm12",
+      semfunc: "&mpact::sim::riscv::RV32::RiscVIJalr";
+    ret{: rs1, J_imm12 : next_pc, rd},
+      resources: { next_pc, rs1 : next_pc[0..], rd[0..]},
+      disasm: "ret",
       semfunc: "&mpact::sim::riscv::RV32::RiscVIJalr";
     beq{: rs1, rs2, B_imm12 : next_pc},
       resources: { next_pc, rs1, rs2 : next_pc[0..]},

@@ -167,6 +167,10 @@ TEST_F(KelvinEncodingTest, RV32IOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kAuipc);
   enc_->ParseInstruction(SetRd(kJal, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kJal);
+  enc_->ParseInstruction(SetRs1(kJalr, kRdValue));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRet);
+  enc_->ParseInstruction(SetRs1(kJalr, 0x2));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kJr);
   enc_->ParseInstruction(SetRd(kJalr, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kJalr);
   enc_->ParseInstruction(kBeq);
@@ -197,7 +201,14 @@ TEST_F(KelvinEncodingTest, RV32IOpcodes) {
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kSh);
   enc_->ParseInstruction(SetRd(kSw, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kSw);
+  enc_->ParseInstruction(kAddi);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kNop);
   enc_->ParseInstruction(SetRd(kAddi, kRdValue));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kLi);
+  enc_->ParseInstruction(SetRs1(SetRd(kAddi, kRdValue), 0x2));
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kMv);
+  enc_->ParseInstruction(SetRs1(SetRd(kAddi, kRdValue), 0x2) |
+                         (0b1 << 20 /*imm12*/));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kAddi);
   enc_->ParseInstruction(SetRd(kSlti, kRdValue));
   EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kSlti);
