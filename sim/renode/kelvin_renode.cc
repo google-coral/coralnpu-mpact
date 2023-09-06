@@ -23,7 +23,8 @@ kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string name) {
 
 namespace kelvin::sim {
 
-using HaltReason = mpact::sim::generic::CoreDebugInterface::HaltReason;
+using HaltReasonValueType =
+    mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 using RunStatus = mpact::sim::generic::CoreDebugInterface::RunStatus;
 using Instruction = mpact::sim::generic::Instruction;
 using RiscVDebugInfo = mpact::sim::riscv::RiscVDebugInfo;
@@ -43,7 +44,7 @@ absl::Status KelvinRenode::Wait() { return kelvin_top_->Wait(); }
 absl::StatusOr<RunStatus> KelvinRenode::GetRunStatus() {
   return kelvin_top_->GetRunStatus();
 }
-absl::StatusOr<HaltReason> KelvinRenode::GetLastHaltReason() {
+absl::StatusOr<HaltReasonValueType> KelvinRenode::GetLastHaltReason() {
   return kelvin_top_->GetLastHaltReason();
 }
 

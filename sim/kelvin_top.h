@@ -39,6 +39,8 @@ class KelvinTop : public mpact::sim::generic::Component,
  public:
   using RunStatus = mpact::sim::generic::CoreDebugInterface::RunStatus;
   using HaltReason = mpact::sim::generic::CoreDebugInterface::HaltReason;
+  using HaltReasonValueType =
+      mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 
   explicit KelvinTop(std::string name);
   ~KelvinTop() override;
@@ -50,7 +52,7 @@ class KelvinTop : public mpact::sim::generic::Component,
   absl::Status Wait() override;
 
   absl::StatusOr<RunStatus> GetRunStatus() override;
-  absl::StatusOr<HaltReason> GetLastHaltReason() override;
+  absl::StatusOr<HaltReasonValueType> GetLastHaltReason() override;
 
   // Register access by register name.
   absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
@@ -76,6 +78,8 @@ class KelvinTop : public mpact::sim::generic::Component,
   absl::StatusOr<std::string> GetDisassembly(uint64_t address) override;
 
   // Called when a halt is requested.
+  void RequestHalt(HaltReasonValueType halt_reason,
+                   const mpact::sim::generic::Instruction *inst);
   void RequestHalt(HaltReason halt_reason,
                    const mpact::sim::generic::Instruction *inst);
 
@@ -100,7 +104,8 @@ class KelvinTop : public mpact::sim::generic::Component,
   mpact::sim::generic::DataBufferFactory db_factory_;
   // Current status and last halt reasons.
   RunStatus run_status_ = RunStatus::kHalted;
-  HaltReason halt_reason_ = HaltReason::kNone;
+  HaltReasonValueType halt_reason_ =
+      static_cast<HaltReasonValueType>(HaltReason::kNone);
   // Halting flag. This is set to true when execution must halt.
   bool halted_ = false;
   absl::Notification *run_halted_;

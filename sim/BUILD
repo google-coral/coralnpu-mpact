@@ -113,6 +113,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
@@ -148,6 +149,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:counters",
         "@com_google_mpact-sim//mpact/sim/generic:decode_cache",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )

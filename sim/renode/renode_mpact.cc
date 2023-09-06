@@ -8,6 +8,7 @@
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "mpact/sim/generic/core_debug_interface.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 // This function must be defined in the library.
@@ -242,7 +243,8 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
   // If the previous halt reason was a semihost halt request, then we shouldn't
   // step any further. Just return with "waiting for interrupt" code.
   using HaltReason = RenodeDebugInterface::HaltReason;
-  if (halt_res.value() == HaltReason::kSemihostHaltRequest) {
+  using mpact::sim::riscv::operator*;  // NOLINT: used below.
+  if (halt_res.value() == *HaltReason::kSemihostHaltRequest) {
     if (status != nullptr) {
       *status = static_cast<int32_t>(ExecutionResult::kAborted);
     }
@@ -270,17 +272,17 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
       return total_executed;
     }
     switch (halt_res.value()) {
-      case HaltReason::kSemihostHaltRequest:
+      case *HaltReason::kSemihostHaltRequest:
         return total_executed;
         break;
-      case HaltReason::kSoftwareBreakpoint:
-      case HaltReason::kHardwareBreakpoint:
+      case *HaltReason::kSoftwareBreakpoint:
+      case *HaltReason::kHardwareBreakpoint:
         if (status != nullptr) {
           *status = static_cast<int32_t>(ExecutionResult::kStoppedAtBreakpoint);
         }
         return total_executed;
         break;
-      case HaltReason::kUserRequest:
+      case *HaltReason::kUserRequest:
         if (status != nullptr) {
           *status = static_cast<int32_t>(ExecutionResult::kOk);
         }
@@ -332,18 +334,19 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t *status) {
   }
   // Map the halt status appropriately.
   using HaltReason = RenodeDebugInterface::HaltReason;
+  using mpact::sim::riscv::operator*;  // NOLINT: used below.
   if (status != nullptr) {
     switch (halt_res.value()) {
-      case HaltReason::kSemihostHaltRequest:
+      case *HaltReason::kSemihostHaltRequest:
         *status = static_cast<int32_t>(ExecutionResult::kAborted);
         break;
-      case HaltReason::kSoftwareBreakpoint:
+      case *HaltReason::kSoftwareBreakpoint:
         *status = static_cast<int32_t>(ExecutionResult::kStoppedAtBreakpoint);
         break;
-      case HaltReason::kUserRequest:
+      case *HaltReason::kUserRequest:
         *status = static_cast<int32_t>(ExecutionResult::kInterrupted);
         break;
-      case HaltReason::kNone:
+      case *HaltReason::kNone:
         *status = static_cast<int32_t>(ExecutionResult::kOk);
         break;
       default:

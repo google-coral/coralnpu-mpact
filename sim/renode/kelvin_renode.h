@@ -24,7 +24,7 @@ namespace kelvin::sim {
 
 class KelvinRenode : public renode::RenodeDebugInterface {
  public:
-  using mpact::sim::generic::CoreDebugInterface::HaltReason;
+  using mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
   using mpact::sim::generic::CoreDebugInterface::RunStatus;
   using RenodeCpuRegister = kelvin::sim::renode::RenodeCpuRegister;
 
@@ -45,7 +45,7 @@ class KelvinRenode : public renode::RenodeDebugInterface {
   // Returns the current run status.
   absl::StatusOr<RunStatus> GetRunStatus() override;
   // Returns the reason for the most recent halt.
-  absl::StatusOr<HaltReason> GetLastHaltReason() override;
+  absl::StatusOr<HaltReasonValueType> GetLastHaltReason() override;
   // Read/write the named registers.
   absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
   absl::Status WriteRegister(const std::string &name, uint64_t value) override;

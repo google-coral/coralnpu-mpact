@@ -36,6 +36,7 @@
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/resource_operand_interface.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 
 ABSL_FLAG(bool, use_semihost, false, "Use semihost in the simulation");
@@ -44,6 +45,8 @@ ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.txt",
           "Path to save trace");
 
 namespace kelvin::sim {
+
+using ::mpact::sim::riscv::operator*;  // NOLINT: clang-tidy false positive.
 
 constexpr char kKelvinName[] = "Kelvin";
 
@@ -209,7 +212,7 @@ absl::Status KelvinTop::Halt() {
     return absl::FailedPreconditionError(
         "KelvinTop::Halt: Core is not running");
   }
-  halt_reason_ = HaltReason::kUserRequest;
+  halt_reason_ = *HaltReason::kUserRequest;
   halted_ = true;
   return absl::OkStatus();
 }
@@ -256,8 +259,8 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
   halted_ = false;
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = HaltReason::kNone;
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
+    halt_reason_ = *HaltReason::kNone;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
     count++;
@@ -295,7 +298,7 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
     next_pc = pc_operand->AsUint64(0);
   }
   // Update the pc register, now that it can be read.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
     // If at a breakpoint, keep the pc at the current value.
     SetPc(pc);
   } else {
@@ -304,7 +307,7 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
   }
   // If there is no halt request, there is no specific halt reason.
   if (!halted_) {
-    halt_reason_ = HaltReason::kNone;
+    halt_reason_ = *HaltReason::kNone;
   }
   run_status_ = RunStatus::kHalted;
   return count;
@@ -318,8 +321,8 @@ absl::Status KelvinTop::Run() {
   }
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = HaltReason::kNone;
+  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
+    halt_reason_ = *HaltReason::kNone;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
   }
@@ -379,7 +382,7 @@ absl::Status KelvinTop::Run() {
     }
     // Update the pc register, now that it can be read (since we are not
     // running).
-    if (halt_reason_ == HaltReason::kSoftwareBreakpoint) {
+    if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
       // If at a breakpoint, keep the pc at the current value.
       SetPc(pc);
     } else {
@@ -413,7 +416,7 @@ absl::StatusOr<KelvinTop::RunStatus> KelvinTop::GetRunStatus() {
   return run_status_;
 }
 
-absl::StatusOr<KelvinTop::HaltReason> KelvinTop::GetLastHaltReason() {
+absl::StatusOr<KelvinTop::HaltReasonValueType> KelvinTop::GetLastHaltReason() {
   return halt_reason_;
 }
 
@@ -478,8 +481,8 @@ absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
 
   // If stopped at a software breakpoint and the pc is changed, change the
   // halt reason, since the next instruction won't be where we stopped.
-  if ((name == "pc") && (halt_reason_ == HaltReason::kSoftwareBreakpoint)) {
-    halt_reason_ = HaltReason::kNone;
+  if ((name == "pc") && (halt_reason_ == *HaltReason::kSoftwareBreakpoint)) {
+    halt_reason_ = *HaltReason::kNone;
   }
 
   auto *db = (iter->second)->data_buffer();
@@ -663,10 +666,17 @@ absl::Status KelvinTop::LoadImage(const std::string &image_path,
   return absl::OkStatus();
 }
 
-void KelvinTop::RequestHalt(HaltReason halt_reason,
+void KelvinTop::RequestHalt(HaltReasonValueType halt_reason,
                             const mpact::sim::generic::Instruction *inst) {
   // First set the halt_reason_, then the half flag.
   halt_reason_ = halt_reason;
+  halted_ = true;
+}
+
+void KelvinTop::RequestHalt(HaltReason halt_reason,
+                            const mpact::sim::generic::Instruction *inst) {
+  // First set the halt_reason_, then the half flag.
+  halt_reason_ = static_cast<HaltReasonValueType>(halt_reason);
   halted_ = true;
 }
 
