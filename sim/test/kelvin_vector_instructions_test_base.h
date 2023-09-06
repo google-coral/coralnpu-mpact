@@ -202,7 +202,7 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
       SetRegisterValues<RV32Register::ValueType>({{kRs1Name, rs2_reg_value}});
       // Cast the value to the appropriate width, sign-extending if needed.
       rs2_value = static_cast<Ts2>(
-          static_cast<typename mpact::sim::riscv::SameSignedType<
+          static_cast<typename mpact::sim::generic::SameSignedType<
               RV32Register::ValueType, Ts2>::type>(rs2_reg_value));
     } else if (!halftype_op) {
       // Use the value slightly greater than min so VShift won't complain

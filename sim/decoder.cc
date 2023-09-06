@@ -1,6 +1,10 @@
 #include "sim/decoder.h"
 
+#include "mpact/sim/generic/type_helpers.h"
+
 namespace kelvin::sim {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 KelvinDecoder::KelvinDecoder(KelvinState *state,
                              mpact::sim::util::MemoryInterface *memory)

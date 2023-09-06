@@ -4,8 +4,13 @@
 #include <string>
 
 #include "sim/kelvin_state.h"
+#include "riscv/riscv_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 namespace kelvin::sim {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 void KelvinIllegalInstruction(mpact::sim::generic::Instruction *inst) {
   auto *state = static_cast<KelvinState *>(inst->state());

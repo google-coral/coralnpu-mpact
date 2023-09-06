@@ -46,7 +46,7 @@ ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.txt",
 
 namespace kelvin::sim {
 
-using ::mpact::sim::riscv::operator*;  // NOLINT: clang-tidy false positive.
+using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 constexpr char kKelvinName[] = "Kelvin";
 

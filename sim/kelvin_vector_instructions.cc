@@ -18,6 +18,7 @@
 
 namespace kelvin::sim {
 
+using ::mpact::sim::generic::operator*;
 using mpact::sim::generic::DataBuffer;
 using mpact::sim::generic::GetInstructionSource;
 using mpact::sim::riscv::RV32VectorDestinationOperand;
@@ -532,7 +533,7 @@ template void KelvinVPsub<uint32_t, uint16_t>(bool, Instruction *);
 // Halving addition with optional rounding bit.
 template <typename T>
 T KelvinVHaddHelper(bool round, T vs1, T vs2) {
-  using WT = typename mpact::sim::riscv::WideType<T>::type;
+  using WT = typename mpact::sim::generic::WideType<T>::type;
   return static_cast<T>(
       (static_cast<WT>(vs1) + static_cast<WT>(vs2) + (round ? 1 : 0)) >> 1);
 }
@@ -553,7 +554,7 @@ template void KelvinVHadd<uint32_t>(bool, bool, bool, Instruction *);
 // Halving subtraction with optional rounding bit.
 template <typename T>
 T KelvinVHsubHelper(bool round, T vs1, T vs2) {
-  using WT = typename mpact::sim::riscv::WideType<T>::type;
+  using WT = typename mpact::sim::generic::WideType<T>::type;
   return static_cast<T>(
       (static_cast<WT>(vs1) - static_cast<WT>(vs2) + (round ? 1 : 0)) >> 1);
 }
@@ -712,7 +713,7 @@ template void KelvinVSrl<uint32_t>(bool, bool, Instruction *);
 // result.
 template <typename T>
 T KelvinVShiftHelper(bool round, T vs1, T vs2) {
-  using WT = typename mpact::sim::riscv::WideType<T>::type;
+  using WT = typename mpact::sim::generic::WideType<T>::type;
   if (std::is_signed<T>::value == true) {
     constexpr int kMaxShiftBit = sizeof(T) * 8;
     int shamt = vs2;
@@ -734,7 +735,7 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
       CHECK_LE(ushamt, kMaxShiftBit);
       CHECK_GE(ushamt, 0);
       // Use unsigned WideType to prevent undefined negative shift.
-      using UWT = typename mpact::sim::riscv::WideType<UT>::type;
+      using UWT = typename mpact::sim::generic::WideType<UT>::type;
       shift = static_cast<WT>(static_cast<UWT>(vs1) << ushamt);
     }
     T neg_max = std::numeric_limits<T>::min();
@@ -863,7 +864,7 @@ Td KelvinVSransHelper(bool round, Ts vs1, Td vs2) {
   static_assert(2 * sizeof(Td) == sizeof(Ts) || 4 * sizeof(Td) == sizeof(Ts));
   constexpr int src_bits = sizeof(Ts) * 8;
   vs2 &= (src_bits - 1);
-  using WTs = typename mpact::sim::riscv::WideType<Ts>::type;
+  using WTs = typename mpact::sim::generic::WideType<Ts>::type;
   WTs res = (static_cast<WTs>(vs1) +
              (vs2 && round ? static_cast<WTs>(1ll << (vs2 - 1)) : 0)) >>
             vs2;
@@ -897,7 +898,7 @@ template <typename T>
 void KelvinVMul(bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
-        using WT = typename mpact::sim::riscv::WideType<T>::type;
+        using WT = typename mpact::sim::generic::WideType<T>::type;
 
         return static_cast<T>(static_cast<WT>(vs1) * static_cast<WT>(vs2));
       }));
@@ -911,7 +912,7 @@ template <typename T>
 void KelvinVMuls(bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
-        using WT = typename mpact::sim::riscv::WideType<T>::type;
+        using WT = typename mpact::sim::generic::WideType<T>::type;
         WT result = static_cast<WT>(vs1) * static_cast<WT>(vs2);
         if (std::is_signed<T>::value) {
           result = std::max(
@@ -949,7 +950,7 @@ template void KelvinVMulw<uint32_t, uint16_t>(bool, bool, Instruction *);
 // Returns high half.
 template <typename T>
 T KelvinVMulhHelper(bool round, T vs1, T vs2) {
-  using WT = typename mpact::sim::riscv::WideType<T>::type;
+  using WT = typename mpact::sim::generic::WideType<T>::type;
   constexpr int n = sizeof(T) * 8;
 
   WT result = static_cast<WT>(vs1) * static_cast<WT>(vs2);
@@ -975,7 +976,7 @@ template void KelvinVMulh<uint32_t>(bool, bool, bool, Instruction *);
 template <typename T>
 T KelvinVDmulhHelper(bool round, bool round_neg, T vs1, T vs2) {
   constexpr int n = sizeof(T) * 8;
-  using WT = typename mpact::sim::riscv::WideType<T>::type;
+  using WT = typename mpact::sim::generic::WideType<T>::type;
   WT result = static_cast<WT>(vs1) * static_cast<WT>(vs2);
   if (round) {
     WT rnd = static_cast<WT>(0x40000000ll >> (32 - n));
@@ -1008,7 +1009,7 @@ void KelvinVMacc(bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
-        using WT = typename mpact::sim::riscv::WideType<T>::type;
+        using WT = typename mpact::sim::generic::WideType<T>::type;
         return static_cast<WT>(vd) +
                static_cast<WT>(vs1) * static_cast<WT>(vs2);
       }));
@@ -1023,7 +1024,7 @@ void KelvinVMadd(bool scalar, bool strip_mine, Instruction *inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
-        using WT = typename mpact::sim::riscv::WideType<T>::type;
+        using WT = typename mpact::sim::generic::WideType<T>::type;
         return static_cast<WT>(vs1) +
                static_cast<WT>(vd) * static_cast<WT>(vs2);
       }));

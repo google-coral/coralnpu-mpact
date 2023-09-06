@@ -10,8 +10,11 @@
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/type_helpers.h"
 
 namespace kelvin::sim {
+
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
 using mpact::sim::generic::GetInstructionSource;
 using mpact::sim::riscv::RV32VectorSourceOperand;

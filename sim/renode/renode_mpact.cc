@@ -243,7 +243,7 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
   // If the previous halt reason was a semihost halt request, then we shouldn't
   // step any further. Just return with "waiting for interrupt" code.
   using HaltReason = RenodeDebugInterface::HaltReason;
-  using mpact::sim::riscv::operator*;  // NOLINT: used below.
+  using mpact::sim::generic::operator*;  // NOLINT: used below.
   if (halt_res.value() == *HaltReason::kSemihostHaltRequest) {
     if (status != nullptr) {
       *status = static_cast<int32_t>(ExecutionResult::kAborted);
@@ -334,7 +334,7 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t *status) {
   }
   // Map the halt status appropriately.
   using HaltReason = RenodeDebugInterface::HaltReason;
-  using mpact::sim::riscv::operator*;  // NOLINT: used below.
+  using mpact::sim::generic::operator*;  // NOLINT: used below.
   if (status != nullptr) {
     switch (halt_res.value()) {
       case *HaltReason::kSemihostHaltRequest:

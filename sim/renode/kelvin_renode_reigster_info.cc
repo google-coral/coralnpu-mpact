@@ -4,6 +4,8 @@
 
 namespace kelvin::sim {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: used below (clange error).
+
 KelvinRenodeRegisterInfo *KelvinRenodeRegisterInfo::instance_ = nullptr;
 
 void KelvinRenodeRegisterInfo::InitializeRenodeRegisterInfo() {
