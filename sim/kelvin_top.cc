@@ -525,7 +525,7 @@ absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("ReadMemory: Core must be halted");
   }
-  if (address >= state_->max_physical_address()) {
+  if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Memory address invalid");
   }
   length =
@@ -544,7 +544,7 @@ absl::StatusOr<size_t> KelvinTop::WriteMemory(uint64_t address,
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("WriteMemory: Core must be halted");
   }
-  if (address >= state_->max_physical_address()) {
+  if (address > state_->max_physical_address()) {
     return absl::InvalidArgumentError("Memory address invalid");
   }
   length =
