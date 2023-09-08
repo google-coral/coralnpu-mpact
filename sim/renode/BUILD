@@ -14,6 +14,7 @@ cc_library(
     ],
     deps = [
         ":renode_debug_interface",
+        "//sim:kelvin_top",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",

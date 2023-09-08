@@ -26,6 +26,7 @@ using ::mpact::sim::util::ElfProgramLoader;
 using ::mpact::sim::util::FlatDemandMemory;
 
 using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
+constexpr char kEbreakElfFileName[] = "kelvin_ebreak.elf";
 constexpr char kMpauseBinaryFileName[] = "hello_world_mpause.bin";
 constexpr char kMpauseElfFileName[] = "hello_world_mpause.elf";
 constexpr char kRV32imfElfFileName[] = "hello_world_rv32imf.elf";
@@ -95,16 +96,14 @@ TEST_F(KelvinTopTest, RunProgramExceedDefaultMemory) {
 
 // Runs the program from has ebreak (from syscall).
 TEST_F(KelvinTopTest, RunEbreakProgram) {
-  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
-  LoadFile(kRV32imfElfFileName);
+  LoadFile(kEbreakElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
   EXPECT_OK(kelvin_top_->Run());
   EXPECT_OK(kelvin_top_->Wait());
   auto halt_result = kelvin_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
-  EXPECT_EQ(static_cast<int>(halt_result.value()),
-            static_cast<int>(HaltReason::kUserRequest));
+  EXPECT_EQ(halt_result.value(), kelvin::sim::kHaltAbort);
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits with fault\n", stdout_str);
 }
@@ -289,8 +288,7 @@ TEST_F(KelvinTopTest, RunIllegalRV32FProgram) {
 
 // Steps through the program from beginning to end.
 TEST_F(KelvinTopTest, StepProgram) {
-  LoadFile(kRV32imfElfFileName);
-  kelvin_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
+  LoadFile(kEbreakElfFileName);
   testing::internal::CaptureStdout();
   EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
 
@@ -298,8 +296,7 @@ TEST_F(KelvinTopTest, StepProgram) {
   EXPECT_OK(res.status());
   auto halt_result = kelvin_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
-  EXPECT_EQ(static_cast<int>(halt_result.value()),
-            static_cast<int>(HaltReason::kUserRequest));
+  EXPECT_EQ(halt_result.value(), kelvin::sim::kHaltAbort);
 
   EXPECT_EQ("Program exits with fault\n",
             testing::internal::GetCapturedStdout());

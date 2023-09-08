@@ -19,6 +19,7 @@ using kelvin::sim::renode::RenodeDebugInterface;
 
 constexpr char kFileName[] = "hello_world_mpause.elf";
 constexpr char kBinFileName[] = "hello_world_mpause.bin";
+constexpr char kEbreakFileName[] = "kelvin_ebreak.elf";
 // The depot path to the test directory.
 constexpr char kDepotPath[] = "sim/test/";
 constexpr char kTopName[] = "test";
@@ -72,6 +73,30 @@ TEST_F(KelvinRenodeTest, RunElfProgram) {
             static_cast<int>(KelvinTop::HaltReason::kUserRequest));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits properly\n", stdout_str);
+  // Clean up.
+  delete loader;
+}
+
+TEST_F(KelvinRenodeTest, RunEbreakElfProgram) {
+  std::string file_name =
+      absl::StrCat(kDepotPath, "testfiles/", kEbreakFileName);
+  // Load the program.
+  auto *loader = new mpact::sim::util::ElfProgramLoader(top_);
+  auto result = loader->LoadProgram(file_name);
+  CHECK_OK(result);
+  auto entry_point = result.value();
+  // Run the program.
+  testing::internal::CaptureStdout();
+  EXPECT_TRUE(top_->WriteRegister("pc", entry_point).ok());
+  EXPECT_TRUE(top_->Run().ok());
+  EXPECT_TRUE(top_->Wait().ok());
+  // Check the results.
+  auto halt_result = top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(static_cast<int>(halt_result.value()),
+            static_cast<int>(kelvin::sim::kHaltAbort));
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits with fault\n", stdout_str);
   // Clean up.
   delete loader;
 }

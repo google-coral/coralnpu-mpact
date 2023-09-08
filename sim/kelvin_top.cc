@@ -150,7 +150,7 @@ void KelvinTop::Initialize() {
             RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
           } else {  // The default Kelvin simulation mode.
             std::cout << "Program exits with fault" << std::endl;
-            RequestHalt(HaltReason::kUserRequest, inst);
+            RequestHalt(kHaltAbort, inst);
           }
           return true;
         }

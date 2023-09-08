@@ -4,6 +4,7 @@
 #include <limits>
 #include <string>
 
+#include "sim/kelvin_top.h"
 #include "sim/renode/renode_debug_interface.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
@@ -242,7 +243,6 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
   }
   // If the previous halt reason was a semihost halt request, then we shouldn't
   // step any further. Just return with "waiting for interrupt" code.
-  using HaltReason = RenodeDebugInterface::HaltReason;
   using mpact::sim::generic::operator*;  // NOLINT: used below.
   if (halt_res.value() == *HaltReason::kSemihostHaltRequest) {
     if (status != nullptr) {
@@ -285,6 +285,12 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
       case *HaltReason::kUserRequest:
         if (status != nullptr) {
           *status = static_cast<int32_t>(ExecutionResult::kOk);
+        }
+        return total_executed;
+        break;
+      case kHaltAbort:  // `ebreak` custom halt reason
+        if (status != nullptr) {
+          *status = static_cast<int32_t>(ExecutionResult::kAborted);
         }
         return total_executed;
         break;
@@ -333,7 +339,6 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t *status) {
     return -1;
   }
   // Map the halt status appropriately.
-  using HaltReason = RenodeDebugInterface::HaltReason;
   using mpact::sim::generic::operator*;  // NOLINT: used below.
   if (status != nullptr) {
     switch (halt_res.value()) {
@@ -348,6 +353,9 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t *status) {
         break;
       case *HaltReason::kNone:
         *status = static_cast<int32_t>(ExecutionResult::kOk);
+        break;
+      case kelvin::sim::kHaltAbort:
+        *status = static_cast<int32_t>(ExecutionResult::kAborted);
         break;
       default:
         break;

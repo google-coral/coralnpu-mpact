@@ -30,6 +30,12 @@ ABSL_DECLARE_FLAG(bool, use_semihost);
 namespace kelvin::sim {
 
 using ::mpact::sim::generic::DataBuffer;
+using HaltReason = mpact::sim::generic::CoreDebugInterface::HaltReason;
+using HaltReasonValueType =
+    mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
+
+// Custom HaltReason for `ebreak`
+const HaltReasonValueType kHaltAbort = *HaltReason::kUserSpecifiedMin + 1;
 
 // Top level class for the Kelvin simulator. This is the main interface for
 // interacting and controlling execution of programs running on the simulator.
@@ -38,9 +44,6 @@ class KelvinTop : public mpact::sim::generic::Component,
                   public mpact::sim::generic::CoreDebugInterface {
  public:
   using RunStatus = mpact::sim::generic::CoreDebugInterface::RunStatus;
-  using HaltReason = mpact::sim::generic::CoreDebugInterface::HaltReason;
-  using HaltReasonValueType =
-      mpact::sim::generic::CoreDebugInterface::HaltReasonValueType;
 
   explicit KelvinTop(std::string name);
   ~KelvinTop() override;

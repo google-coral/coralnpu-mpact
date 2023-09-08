@@ -18,6 +18,7 @@ namespace {
 using kelvin::sim::renode::ExecutionResult;
 using mpact::sim::riscv::DebugRegisterEnum;
 
+constexpr char kEbreakExecutableFileName[] = "kelvin_ebreak.elf";
 constexpr char kExecutableFileName[] = "hello_world_mpause.elf";
 constexpr char kBinFileName[] = "hello_world_mpause.bin";
 constexpr uint64_t kBinFileAddress = 0x0;
@@ -194,6 +195,27 @@ TEST_F(RenodeMpactTest, StepExecutableProgram) {
   EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kOk));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits properly\n", stdout_str);
+}
+
+TEST_F(RenodeMpactTest, StepEbreakExecutableProgram) {
+  testing::internal::CaptureStdout();
+  const std::string input_file_name =
+      absl::StrCat(kDepotPath, "testfiles/", kEbreakExecutableFileName);
+  int32_t status;
+  (void)load_executable(sim_id_, input_file_name.c_str(), &status);
+  CHECK_EQ(status, 0);
+  constexpr uint64_t kStepCount = 500;
+  uint64_t count;
+  while (true) {
+    count = step(sim_id_, kStepCount, &status);
+    if (count != kStepCount) break;
+    EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kOk));
+  }
+  // Execution should now have completed and the program has printed the fault
+  // exit message.
+  EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kAborted));
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits with fault\n", stdout_str);
 }
 
 TEST_F(RenodeMpactTest, StepImageProgram) {

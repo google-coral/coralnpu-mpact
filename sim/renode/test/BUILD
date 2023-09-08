@@ -8,6 +8,7 @@ cc_test(
     data = [
         "//sim/test:testfiles/hello_world_mpause.bin",
         "//sim/test:testfiles/hello_world_mpause.elf",
+        "//sim/test:testfiles/kelvin_ebreak.elf",
     ],
     deps = [
         "//sim/renode:kelvin_renode",
@@ -26,6 +27,7 @@ cc_test(
     data = [
         "//sim/test:testfiles/hello_world_mpause.bin",
         "//sim/test:testfiles/hello_world_mpause.elf",
+        "//sim/test:testfiles/kelvin_ebreak.elf",
     ],
     deps = [
         "//sim:kelvin_top",
