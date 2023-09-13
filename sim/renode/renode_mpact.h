@@ -14,6 +14,14 @@ extern "C" {
 // Construct a debug instance connected to a simulator. Returns the non-zero
 // id of the created instance. A return value of zero indicates an error.
 int32_t construct(int32_t max_name_length);
+// Construct a debug instance connected to a simulator with memory passed from
+// renode. Returns the non-zero id of the created instance. A return value of
+// zero indicates an error. Note the pointer array needs to be the last argument
+// to comply with renode's import binding signature.
+int32_t construct_with_memory(int32_t max_name_length,
+                              uint64_t memory_block_size_bytes,
+                              uint64_t memory_size_bytes,
+                              uint8_t **mem_block_ptr_list);
 // Destruct the given debug instance. A negative return value indicates an
 // error.
 int32_t destruct(int32_t id);
@@ -74,6 +82,8 @@ class RenodeAgent {
   }
   // These methods correspond to the C methods defined above.
   int32_t Construct(int32_t max_name_length);
+  int32_t Construct(int32_t max_name_length, uint64_t memory_block_size_bytes,
+                    uint64_t memory_size_bytes, uint8_t **mem_block_ptr_list);
   int32_t Destroy(int32_t id);
   int32_t Reset(int32_t id);
   int32_t GetRegisterInfoSize(int32_t id) const;

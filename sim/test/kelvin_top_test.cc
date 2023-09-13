@@ -1,6 +1,8 @@
 #include "sim/kelvin_top.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #include <tuple>
 
@@ -443,6 +445,115 @@ TEST_F(KelvinTopTest, RunKelvinVectorProgram) {
             static_cast<int>(HaltReason::kUserRequest));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_THAT(stdout_str, testing::HasSubstr("vld_vst test passed!"));
+}
+
+constexpr int kMemoryBlockSize = 256 * 1024;  // 256KB
+// Default max memory address is 4MB - 1. Round up to find the number of memory
+// blocks.
+constexpr int kNumMemoryBlocks =
+    (kelvin::sim::kKelvinMaxMemoryAddress + kMemoryBlockSize) /
+    kMemoryBlockSize;
+
+class KelvinTopExternalMemoryTest : public testing::Test {
+ protected:
+  KelvinTopExternalMemoryTest()
+      : memory_size_(kMemoryBlockSize * kNumMemoryBlocks) {
+    // Set the memory blocks outside of KelvinTop.
+    for (int i = 0; i < kNumMemoryBlocks; ++i) {
+      memory_blocks_[i] = new uint8_t[kMemoryBlockSize];
+      memset(memory_blocks_[i], 0, kMemoryBlockSize);
+    }
+    kelvin_top_ =
+        new KelvinTop("Kelvin", kMemoryBlockSize, memory_size_, memory_blocks_);
+    // Set up the elf loader.
+    loader_ = new ElfProgramLoader(kelvin_top_->memory());
+  }
+
+  ~KelvinTopExternalMemoryTest() override {
+    delete loader_;
+    delete kelvin_top_;
+    for (int i = 0; i < kNumMemoryBlocks; ++i) {
+      delete[] memory_blocks_[i];
+    }
+  }
+
+  void LoadFile(const std::string file_name) {
+    const std::string input_file_name =
+        absl::StrCat(kDepotPath, "testfiles/", file_name);
+    auto result = loader_->LoadProgram(input_file_name);
+    CHECK_OK(result);
+    entry_point_ = result.value();
+  }
+
+  uint32_t entry_point_;
+  KelvinTop *kelvin_top_ = nullptr;
+  ElfProgramLoader *loader_ = nullptr;
+  uint8_t *memory_blocks_[kNumMemoryBlocks] = {nullptr};
+  uint64_t memory_size_;
+};
+
+// Run a vector program from beginning to end.
+TEST_F(KelvinTopExternalMemoryTest, RunKelvinVectorProgram) {
+  LoadFile(kKelvinVldVstFileName);
+  testing::internal::CaptureStdout();
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+
+  EXPECT_OK(kelvin_top_->Run());
+  EXPECT_OK(kelvin_top_->Wait());
+  auto halt_result = kelvin_top_->GetLastHaltReason();
+  CHECK_OK(halt_result);
+  EXPECT_EQ(halt_result.value(), *HaltReason::kUserRequest);
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_THAT(stdout_str, testing::HasSubstr("vld_vst test passed!"));
+}
+
+// Step a regular program from beginning to end.
+TEST_F(KelvinTopExternalMemoryTest, StepMPauseProgram) {
+  LoadFile(kMpauseElfFileName);
+  testing::internal::CaptureStdout();
+  EXPECT_OK(kelvin_top_->WriteRegister("pc", entry_point_));
+
+  constexpr int kStep = 2000;
+  absl::StatusOr<kelvin::sim::HaltReasonValueType> halt_result;
+  do {
+    auto res = kelvin_top_->Step(kStep);
+    EXPECT_OK(res.status());
+    halt_result = kelvin_top_->GetLastHaltReason();
+    EXPECT_OK(halt_result);
+  } while (halt_result.value() == *HaltReason::kNone);
+
+  EXPECT_EQ(halt_result.value(), *HaltReason::kUserRequest);
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits properly\n", stdout_str);
+}
+
+// Read/Write memory
+TEST_F(KelvinTopExternalMemoryTest, AccessMemory) {
+  constexpr uint64_t kTestMemerySize = 8;
+  const uint64_t test_access_address[] = {
+      0x1000, kMemoryBlockSize - 4, kMemoryBlockSize + 4,
+      kelvin::sim::kKelvinMaxMemoryAddress - 4};
+  uint8_t mem_bytes[kTestMemerySize] = {1, 2, 3, 4, 5, 6, 7, 8};
+  uint8_t mem_bytes_return[kTestMemerySize] = {0};
+
+  // Write new values to the memory.
+  for (int i = 0; i < sizeof(test_access_address) / sizeof(uint64_t); ++i) {
+    auto result = kelvin_top_->WriteMemory(test_access_address[i], mem_bytes,
+                                           sizeof(mem_bytes));
+    uint64_t expected_length =
+        std::min(kTestMemerySize, memory_size_ - test_access_address[i]);
+    EXPECT_OK(result);
+    EXPECT_EQ(result.value(), expected_length);
+    // Read back the content from the external memory.
+    result = kelvin_top_->ReadMemory(test_access_address[i], mem_bytes_return,
+                                     sizeof(mem_bytes_return));
+    EXPECT_OK(result);
+    EXPECT_EQ(result.value(), expected_length);
+    for (int i = 0; i < result.value(); ++i) {
+      EXPECT_EQ(mem_bytes[i], mem_bytes_return[i]);
+    }
+    memset(mem_bytes_return, 0, sizeof(mem_bytes_return));
+  }
 }
 
 }  // namespace

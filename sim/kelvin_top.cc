@@ -18,6 +18,7 @@
 #include "sim/decoder.h"
 #include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
+#include "sim/renode/kelvin_renode_memory.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/check.h"
@@ -78,6 +79,18 @@ KelvinTop::KelvinTop(std::string name)
       counter_num_cycles_{"num_cycles", 0} {
   // Using a single flat memory for this core.
   memory_ = new mpact::sim::util::FlatDemandMemory(0);
+  Initialize();
+}
+
+KelvinTop::KelvinTop(std::string name, uint64_t memory_block_size_bytes,
+                     uint64_t memory_size_bytes,
+                     uint8_t **memory_block_ptr_list)
+    : Component(std::move(name)),
+      counter_num_instructions_{"num_instructions", 0},
+      counter_num_cycles_{"num_cycles", 0} {
+  // Use Kelvin renode memory for this core.
+  memory_ = new renode::KelvinRenodeMemory(
+      memory_block_size_bytes, memory_size_bytes, memory_block_ptr_list);
   Initialize();
 }
 

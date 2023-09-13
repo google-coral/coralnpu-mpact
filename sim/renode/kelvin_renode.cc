@@ -21,6 +21,14 @@ kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string name) {
   return top;
 }
 
+kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
+    std::string name, uint64_t memory_block_size_bytes,
+    uint64_t memory_size_bytes, uint8_t **block_ptr_list) {
+  auto *top = new kelvin::sim::KelvinRenode(name, memory_block_size_bytes,
+                                            memory_size_bytes, block_ptr_list);
+  return top;
+}
+
 namespace kelvin::sim {
 
 using HaltReasonValueType =
@@ -31,6 +39,13 @@ using RiscVDebugInfo = mpact::sim::riscv::RiscVDebugInfo;
 
 KelvinRenode::KelvinRenode(std::string name) {
   kelvin_top_ = new KelvinTop(name);
+}
+
+KelvinRenode::KelvinRenode(std::string name, uint64_t memory_block_size_bytes,
+                           uint64_t memory_size_bytes,
+                           uint8_t **block_ptr_list) {
+  kelvin_top_ = new KelvinTop(name, memory_block_size_bytes, memory_size_bytes,
+                              block_ptr_list);
 }
 
 KelvinRenode::~KelvinRenode() { delete kelvin_top_; }

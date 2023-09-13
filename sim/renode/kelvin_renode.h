@@ -20,6 +20,10 @@
 extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
     std::string name);
 
+extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
+    std::string name, uint64_t memory_block_size_bytes,
+    uint64_t memory_size_bytes, uint8_t **block_ptr_list);
+
 namespace kelvin::sim {
 
 class KelvinRenode : public renode::RenodeDebugInterface {
@@ -29,6 +33,9 @@ class KelvinRenode : public renode::RenodeDebugInterface {
   using RenodeCpuRegister = kelvin::sim::renode::RenodeCpuRegister;
 
   explicit KelvinRenode(std::string name);
+  explicit KelvinRenode(std::string name, uint64_t memory_block_size_bytes,
+                        uint64_t memory_size_bytes, uint8_t **block_ptr_list);
+
   ~KelvinRenode() override;
 
   // Request that core stop running override;

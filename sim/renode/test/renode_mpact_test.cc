@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <fstream>
 #include <ios>
 #include <string>
@@ -241,6 +242,54 @@ TEST_F(RenodeMpactTest, StepImageProgram) {
   EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kOk));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits properly\n", stdout_str);
+}
+
+// Test stepping over a binary image program with external memory.
+TEST_F(RenodeMpactTest, StepImageProgramWithExternalMemory) {
+  const std::string input_file_name =
+      absl::StrCat(kDepotPath, "testfiles/", kBinFileName);
+
+  // Setup the external memory.
+  constexpr uint64_t kMemoryBlockSize = 0x40000;  // 256KB
+  constexpr uint64_t kNumBlock = 16;              // 4MB / 256KB
+  uint8_t *memory_block[kNumBlock] = {nullptr};
+  // Allocate memory blocks.
+  for (int i = 0; i < kNumBlock; ++i) {
+    memory_block[i] = new uint8_t[kMemoryBlockSize];
+    memset(memory_block[i], 0, kMemoryBlockSize);
+  }
+
+  // Reset the simulator with the external memory.
+  destruct(sim_id_);
+  sim_id_ = construct_with_memory(1, kMemoryBlockSize,
+                                  kNumBlock * kMemoryBlockSize, memory_block);
+  EXPECT_GE(sim_id_, 1) << sim_id_;  // the agent count keeps incrementing.
+
+  testing::internal::CaptureStdout();
+  auto ret = load_image(sim_id_, input_file_name.c_str(), kBinFileAddress);
+  EXPECT_EQ(ret, 0);
+  auto xreg = static_cast<uint32_t>(DebugRegisterEnum::kPc);
+  auto error = write_register(sim_id_, xreg, kBinFileEntryPoint);
+  EXPECT_EQ(error, 0);
+  constexpr uint64_t kStepCount = 1000;
+  int32_t status;
+  int32_t count;
+  while (true) {
+    count = step(sim_id_, kStepCount, &status);
+    if (count != kStepCount) break;
+    EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kOk));
+  }
+  // Execution should now have completed and the program has printed the proper
+  // exit message.
+  EXPECT_GT(kStepCount, count);
+  EXPECT_EQ(status, static_cast<int32_t>(ExecutionResult::kOk));
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits properly\n", stdout_str);
+
+  // Release the memory blocks.
+  for (int i = 0; i < kNumBlock; ++i) {
+    delete[] memory_block[i];
+  }
 }
 
 }  // namespace

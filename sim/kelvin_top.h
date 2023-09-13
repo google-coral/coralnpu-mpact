@@ -46,6 +46,9 @@ class KelvinTop : public mpact::sim::generic::Component,
   using RunStatus = mpact::sim::generic::CoreDebugInterface::RunStatus;
 
   explicit KelvinTop(std::string name);
+  KelvinTop(std::string name, uint64_t memory_block_size_bytes,
+            uint64_t memory_size_bytes, uint8_t **memory_block_ptr_list);
+
   ~KelvinTop() override;
 
   // Methods inherited from CoreDebugInterface.

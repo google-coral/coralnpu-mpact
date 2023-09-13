@@ -36,6 +36,24 @@ cc_library(
 )
 
 cc_library(
+    name = "kelvin_renode_memory",
+    srcs = [
+        "kelvin_renode_memory.cc",
+    ],
+    hdrs = [
+        "kelvin_renode_memory.h",
+    ],
+    deps = [
+        "//sim:kelvin_state",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
     name = "kelvin_renode",
     srcs = [
         "kelvin_renode.cc",

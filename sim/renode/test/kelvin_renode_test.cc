@@ -1,6 +1,7 @@
 #include "sim/renode/kelvin_renode.h"
 
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "sim/kelvin_top.h"
@@ -10,12 +11,14 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "riscv/riscv_debug_info.h"
+#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 namespace {
 
 using kelvin::sim::KelvinTop;
 using kelvin::sim::renode::RenodeDebugInterface;
+using RunStatus = mpact::sim::generic::CoreDebugInterface::RunStatus;
 
 constexpr char kFileName[] = "hello_world_mpause.elf";
 constexpr char kBinFileName[] = "hello_world_mpause.bin";
@@ -114,12 +117,59 @@ TEST_F(KelvinRenodeTest, RunBinProgram) {
   EXPECT_TRUE(top_->Run().ok());
   EXPECT_TRUE(top_->Wait().ok());
   // Check the results.
+  auto run_status = top_->GetRunStatus();
+  EXPECT_TRUE(run_status.ok());
+  EXPECT_EQ(run_status.value(), RunStatus::kHalted);
   auto halt_result = top_->GetLastHaltReason();
-  CHECK_OK(halt_result);
+  EXPECT_TRUE(halt_result.ok());
   EXPECT_EQ(static_cast<int>(halt_result.value()),
             static_cast<int>(KelvinTop::HaltReason::kUserRequest));
   const std::string stdout_str = testing::internal::GetCapturedStdout();
   EXPECT_EQ("Program exits properly\n", stdout_str);
+}
+
+// Setup external memory to run a binary program
+TEST_F(KelvinRenodeTest, RunBinProgramWithExternalMemory) {
+  std::string file_name = absl::StrCat(kDepotPath, "testfiles/", kBinFileName);
+  constexpr uint64_t kBinFileAddress = 0x0;
+  constexpr uint64_t kBinFileEntryPoint = 0x0;
+
+  // Setup the external memory.
+  constexpr uint64_t kMemoryBlockSize = 0x40000;  // 256KB
+  constexpr uint64_t kNumBlock = 16;              // 4MB / 256KB
+  uint8_t *memory_block[kNumBlock] = {nullptr};
+  // Allocate memory blocks.
+  for (int i = 0; i < kNumBlock; ++i) {
+    memory_block[i] = new uint8_t[kMemoryBlockSize];
+    memset(memory_block[i], 0, kMemoryBlockSize);
+  }
+
+  // Reset top with external memory.
+  delete top_;
+  top_ = new kelvin::sim::KelvinRenode(
+      kTopName, kMemoryBlockSize, kNumBlock * kMemoryBlockSize, memory_block);
+
+  auto res = top_->LoadImage(file_name, kBinFileAddress);
+  EXPECT_TRUE(res.ok());
+  // Run the program.
+  testing::internal::CaptureStdout();
+  EXPECT_TRUE(top_->WriteRegister("pc", kBinFileEntryPoint).ok());
+  EXPECT_TRUE(top_->Run().ok());
+  EXPECT_TRUE(top_->Wait().ok());
+  // Check the results.
+  auto run_status = top_->GetRunStatus();
+  EXPECT_TRUE(run_status.ok());
+  EXPECT_EQ(run_status.value(), RunStatus::kHalted);
+  auto halt_result = top_->GetLastHaltReason();
+  EXPECT_TRUE(halt_result.ok());
+  EXPECT_EQ(halt_result.value(), *KelvinTop::HaltReason::kUserRequest);
+  const std::string stdout_str = testing::internal::GetCapturedStdout();
+  EXPECT_EQ("Program exits properly\n", stdout_str);
+
+  // Release the memory blocks.
+  for (int i = 0; i < kNumBlock; ++i) {
+    delete[] memory_block[i];
+  }
 }
 
 }  // namespace

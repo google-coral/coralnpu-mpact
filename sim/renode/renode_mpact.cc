@@ -8,12 +8,16 @@
 #include "sim/renode/renode_debug_interface.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
-#include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 // This function must be defined in the library.
 extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string);
+
+extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string,
+                                                                  uint64_t,
+                                                                  uint64_t,
+                                                                  uint8_t **);
 
 // External "C" functions visible to Renode.
 using kelvin::sim::renode::RenodeAgent;
@@ -24,6 +28,16 @@ using kelvin::sim::renode::RenodeCpuRegister;
 int32_t construct(int32_t max_name_length) {
   return RenodeAgent::Instance()->Construct(max_name_length);
 }
+
+int32_t construct_with_memory(int32_t max_name_length,
+                              uint64_t memory_block_size_bytes,
+                              uint64_t memory_size_bytes,
+                              uint8_t **mem_block_ptr_list) {
+  return RenodeAgent::Instance()->Construct(
+      max_name_length, memory_block_size_bytes, memory_size_bytes,
+      mem_block_ptr_list);
+}
+
 int32_t destruct(int32_t id) { return RenodeAgent::Instance()->Destroy(id); }
 int32_t reset(int32_t id) { return RenodeAgent::Instance()->Reset(id); }
 int32_t get_reg_info_size(int32_t id) {
@@ -71,6 +85,21 @@ uint32_t RenodeAgent::count_ = 0;
 int32_t RenodeAgent::Construct(int32_t max_name_length) {
   std::string name = absl::StrCat("renode", count_);
   auto *dbg = CreateKelvinSim(name);
+  if (dbg == nullptr) {
+    return -1;
+  }
+  core_dbg_instances_.emplace(RenodeAgent::count_, dbg);
+  name_length_map_.emplace(RenodeAgent::count_, max_name_length);
+  return RenodeAgent::count_++;
+}
+
+int32_t RenodeAgent::Construct(int32_t max_name_length,
+                               uint64_t memory_block_size_bytes,
+                               uint64_t memory_size_bytes,
+                               uint8_t **mem_block_ptr_list) {
+  std::string name = absl::StrCat("renode", count_);
+  auto *dbg = CreateKelvinSim(name, memory_block_size_bytes, memory_size_bytes,
+                              mem_block_ptr_list);
   if (dbg == nullptr) {
     return -1;
   }
