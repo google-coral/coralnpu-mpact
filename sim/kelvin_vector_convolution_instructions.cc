@@ -13,11 +13,17 @@
 #include "mpact/sim/generic/type_helpers.h"
 
 namespace kelvin::sim {
+namespace {
+constexpr int kVectorLenInByte = kVectorLengthInBits / 8;
+constexpr int kVectorLenInWord = kVectorLenInByte / sizeof(uint32_t);
+constexpr int kDwRegisterProducts = 3;
+}  // namespace
 
+using ::mpact::sim::generic::DataBuffer;
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
-
-using mpact::sim::generic::GetInstructionSource;
-using mpact::sim::riscv::RV32VectorSourceOperand;
+using ::mpact::sim::generic::GetInstructionSource;
+using ::mpact::sim::riscv::RV32VectorDestinationOperand;
+using ::mpact::sim::riscv::RV32VectorSourceOperand;
 
 // Implement the 3-arg vector convolution (im2col + matmul)
 // vs1 (narrow) represents the starting register of 8 vector registers
@@ -26,8 +32,6 @@ using mpact::sim::riscv::RV32VectorSourceOperand;
 // `vd` is not used in the op.
 void KelvinVConv(Instruction *inst) {
   auto state = static_cast<KelvinState *>(inst->state());
-  constexpr int kVectorLenInByte = kVectorLengthInBits / 8;
-  constexpr int kVectorLenInWord = kVectorLenInByte / sizeof(uint32_t);
 
   vconv_cmd_t conv_cmd;
   auto reg_data = GetInstructionSource<uint32_t>(inst, 1, 0);
@@ -108,6 +112,130 @@ void KelvinVConv(Instruction *inst) {
   for (int i = 0; i < state->acc_register().size(); ++i) {
     auto acc_array = state->acc_vec(i);
     *acc_array = accumulator[i];
+  }
+}
+
+// Implements accumulation of 3 32-element 8bit*8bit Hadamard products.
+// vs1 is the starting register of 9 vector activation registers, of which
+//     three are selected.
+// vs3 (wide) is the starting register of group of 3 vector registers.
+// xs2 stores the convolution command.
+// `vd` is used if |write_acc| is set to true.
+void KelvinVDwconv(bool write_acc, Instruction *inst) {
+  KelvinState *state = static_cast<KelvinState *>(inst->state());
+  uint32_t reg_data = GetInstructionSource<uint32_t>(inst, 1, 0);
+  vdwconv_u8_t dwconv_cmd;
+  memcpy(&dwconv_cmd, &reg_data, sizeof(dwconv_cmd));
+
+  int vs1_idx[3];
+  switch (dwconv_cmd.regbase) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      vs1_idx[0] = dwconv_cmd.regbase;
+      vs1_idx[1] = dwconv_cmd.regbase + 1;
+      vs1_idx[2] = dwconv_cmd.regbase + 2;
+      break;
+    case 7:
+      vs1_idx[0] = 1;
+      vs1_idx[1] = 0;
+      vs1_idx[2] = 2;
+      break;
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+      vs1_idx[0] = (2 * dwconv_cmd.regbase) - 15;
+      vs1_idx[1] = vs1_idx[0] + 1;
+      vs1_idx[2] = 0;
+      break;
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+      vs1_idx[0] = (2 * dwconv_cmd.regbase) - 22;
+      vs1_idx[1] = 0;
+      vs1_idx[2] = 1;
+      break;
+  }
+
+  auto vs1 = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  absl::Span<uint32_t> vs10_span =
+      vs1->GetRegister(vs1_idx[0])->data_buffer()->Get<uint32_t>();
+  absl::Span<uint32_t> vs11_span =
+      vs1->GetRegister(vs1_idx[1])->data_buffer()->Get<uint32_t>();
+  absl::Span<uint32_t> vs12_span =
+      vs1->GetRegister(vs1_idx[2])->data_buffer()->Get<uint32_t>();
+  uint32_t a_data[kDwRegisterProducts * kVectorLenInWord];
+  switch (dwconv_cmd.sparsity) {
+    case 0:
+      memcpy(a_data, vs10_span.data(), 8 * sizeof(uint32_t));
+      memcpy(a_data + 8, vs11_span.data(), 8 * sizeof(uint32_t));
+      memcpy(a_data + 16, vs12_span.data(), 8 * sizeof(uint32_t));
+      break;
+    case 1:
+      a_data[0] = vs10_span[7];
+      memcpy(a_data + 1, vs11_span.data(), 7 * sizeof(uint32_t));
+      memcpy(a_data + 8, vs11_span.data(), 8 * sizeof(uint32_t));
+      memcpy(a_data + 16, vs11_span.data() + 1, 7 * sizeof(uint32_t));
+      a_data[23] = vs12_span[0];
+      break;
+    case 2:
+      memcpy(a_data, vs10_span.data(), 8 * sizeof(uint32_t));
+      memcpy(a_data + 8, vs10_span.data() + 1, 7 * sizeof(uint32_t));
+      a_data[15] = vs11_span[0];
+      memcpy(a_data + 16, vs10_span.data() + 2, 6 * sizeof(uint32_t));
+      a_data[22] = vs11_span[0];
+      a_data[23] = vs11_span[1];
+      break;
+    default:
+      // Invalid state enum
+      state->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
+                  *mpact::sim::riscv::ExceptionCode::kIllegalInstruction,
+                  /*epc=*/inst->address(), inst);
+  }
+
+  auto vs3 = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  int32_t *acc = reinterpret_cast<int32_t *>(state->dw_acc_vec(0));
+
+  for (int r = 0; r < kDwRegisterProducts; r++) {
+    absl::Span<uint8_t> a_span = absl::Span<uint8_t>(
+        reinterpret_cast<uint8_t *>(a_data + (r * kVectorLenInWord)),
+        kVectorLenInByte);
+    absl::Span<uint8_t> b_span =
+        vs3->GetRegister(r)->data_buffer()->Get<uint8_t>();
+
+    for (int i = 0; i < kVectorLenInByte; i++) {
+      int32_t a =
+          dwconv_cmd.sdata1 ? static_cast<int8_t>(a_span[i]) : a_span[i];
+      int32_t b =
+          dwconv_cmd.sdata2 ? static_cast<int8_t>(b_span[i]) : b_span[i];
+      a += dwconv_cmd.sbias1;
+      b += dwconv_cmd.sbias2;
+
+      constexpr static int interleave[4] = {0, 2, 1, 3};
+      int acc_reg = interleave[(i & 0b11)];
+      int reg_offset = i >> 2;
+      acc[kVectorLenInWord * acc_reg + reg_offset] += a * b;
+    }
+  }
+
+  if (!write_acc) {
+    return;
+  }
+
+  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  for (int i = 0; i < 4; i++) {
+    DataBuffer *dest_db = vd->AllocateDataBuffer(i);
+    absl::Span<uint32_t> dest_span = dest_db->Get<uint32_t>();
+    for (int j = 0; j < kVectorLenInWord; j++) {
+      dest_span[j] = acc[i * kVectorLenInWord + j];
+    }
+    dest_db->Submit();
   }
 }
 

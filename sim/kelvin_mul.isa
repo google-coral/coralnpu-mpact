@@ -537,5 +537,13 @@ slot kelvin_conv {
     aconv_vxv{: vs1, vs2, vs3 : vd},
       disasm: "aconv.vxv", "%vd, %vs1, %vs2, %vs3",
       semfunc: "&KelvinVConv";
+    // adwconv
+    adwconv_vxv{: vs1, rs2, vs3 : vd},
+      disasm: "adwconv.vxv", "%vd, %vs1, %rs2, %vs3",
+      semfunc: "absl::bind_front(&KelvinVDwconv, /*write_acc*/ false)";
+    // vdwconv
+    vdwconv_vxv{: vs1, rs2, vs3 : vd},
+      disasm: "adwconv.vxv", "%vd, %vs1, %rs2, %vs3",
+      semfunc: "absl::bind_front(&KelvinVDwconv, /*write_acc*/ true)";
   }
 }

@@ -100,6 +100,7 @@ constexpr uint32_t kVld = 0b000000'000000'000000'00'000000'0'111'11;
 constexpr uint32_t kVAccsBase = 0b001010'000001'000000'00'001000'0'100'00;
 constexpr uint32_t kVAddBase = 0b000000'000000'000001'00'000010'0'000'00;
 constexpr uint32_t kAconvBase = 0b001000'000001'010000'10'110000'0'00'101;
+constexpr uint32_t kVdwconvBase = 0b001000'000001'010000'10'110000'0'10'101;
 
 class KelvinEncodingTest : public testing::Test {
  protected:
@@ -497,6 +498,12 @@ TEST_F(KelvinEncodingTest, KelvinWideningVs1) {
       kVAddBase, OpcodeEnum::kVaddBVv, SourceOpEnum::kVs1);
   EXPECT_EQ(v_src->size(), 1);
   delete v_src;
+
+  // Test vdwconv.vxv
+  v_src = EncodeOpHelper<RV32VectorSourceOperand>(
+      kVdwconvBase, OpcodeEnum::kVdwconvVxv, SourceOpEnum::kVs1);
+  EXPECT_EQ(v_src->size(), 9);
+  delete v_src;
 }
 
 TEST_F(KelvinEncodingTest, KelvinWideningVd) {
@@ -587,6 +594,12 @@ TEST_F(KelvinEncodingTest, KelvinWideningVd) {
   v_dest = EncodeOpHelper<RV32VectorDestOperand>(kVCGet, OpcodeEnum::kVcget,
                                                  DestOpEnum::kVd);
   EXPECT_EQ(v_dest->size(), 8);
+  delete v_dest;
+
+  // Test vdwconv
+  v_dest = EncodeOpHelper<RV32VectorDestOperand>(
+      kVdwconvBase, OpcodeEnum::kVdwconvVxv, DestOpEnum::kVd);
+  EXPECT_EQ(v_dest->size(), 4);
   delete v_dest;
 }
 

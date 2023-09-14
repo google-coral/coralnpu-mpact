@@ -379,6 +379,12 @@ void KelvinADwInit(const mpact::sim::generic::Instruction *inst) {
   auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
   for (int op_index = 0; op_index < kInitSize; ++op_index) {
     auto source_span = vs->GetRegister(op_index)->data_buffer()->Get<uint8_t>();
+    uint8_t *dwacc_span =
+        reinterpret_cast<uint8_t *>(state->dw_acc_vec(8 * op_index));
+    for (int i = 0; i < 32; i++) {
+      dwacc_span[i] = source_span[i];
+    }
+
     DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<uint8_t> dest_span = dest_db->Get<uint8_t>();
     for (int i = 0; i < init_n; ++i) {

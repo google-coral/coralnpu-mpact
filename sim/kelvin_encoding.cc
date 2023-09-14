@@ -212,6 +212,11 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
               absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, reg_num),
               mpact::sim::riscv::kXRegisterAliases[reg_num]);
         }
+        if (opcode_ == OpcodeEnum::kAdwconvVxv ||
+            opcode_ == OpcodeEnum::kVdwconvVxv) {
+          return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
+              state_, reg_num, /*strip_mine*/ false, /*widen_factor*/ 9);
+        }
         if (opcode_ == OpcodeEnum::kAdwinit) {
           // Borrow the strip_mine setting to set 4x registers.
           strip_mine = true;
@@ -295,7 +300,8 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
       [this](int latency) -> DestinationOperandInterface * {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
-        if (opcode_ == OpcodeEnum::kVcget || opcode_ == OpcodeEnum::kAdwinit) {
+        if (opcode_ == OpcodeEnum::kVcget || opcode_ == OpcodeEnum::kAdwinit ||
+            opcode_ == OpcodeEnum::kVdwconvVxv) {
           // Borrow the strip_mine setting to set 4x/8x registers although it is
           // not part of the encoding.
           strip_mine = true;

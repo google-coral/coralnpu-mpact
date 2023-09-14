@@ -616,11 +616,17 @@ TEST_F(KelvinAccumulateInstructionTest, ADwInit) {
     auto vref_num = kVs + i;
     auto ref_vreg = vreg_[vref_num];
     auto ref_span = ref_vreg->data_buffer()->Get<uint8_t>();
+
+    uint8_t *dwacc_span =
+        reinterpret_cast<uint8_t *>(state_->dw_acc_vec(8 * i));
     for (int element_index = 0; element_index < ref_span.size() / 4;
          element_index++) {
       EXPECT_EQ(vreg_span[element_index], ref_span[element_index])
           << absl::StrCat("vreg[", vreg_num, "][", element_index, "] != ref[",
                           vref_num, "][", element_index, "]");
+      EXPECT_EQ(dwacc_span[element_index], ref_span[element_index])
+          << absl::StrCat("dwacc_span[", vreg_num, "][", element_index,
+                          "] != ref[", vref_num, "][", element_index, "]");
     }
   }
 }

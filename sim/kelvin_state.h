@@ -29,6 +29,8 @@ using AccArrayTemplate = std::array<T, kVectorLengthInBits / 32>;
 
 using AccArrayType = AccArrayTemplate<uint32_t>;
 
+using DwAccArray = std::array<uint32_t, 32>;
+
 class KelvinState : public mpact::sim::riscv::RiscVState {
  public:
   KelvinState(absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
@@ -51,6 +53,10 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
 
   AccArrayType *acc_vec(int index) { return &(acc_register_[index]); }
   AccArrayTemplate<AccArrayType> acc_register() const { return acc_register_; }
+
+  uint32_t *dw_acc_vec(int i) { return &depthwise_acc_register_[i]; }
+  DwAccArray &dw_acc_register() { return depthwise_acc_register_; }
+  const DwAccArray &dw_acc_register() const { return depthwise_acc_register_; }
 
   void SetLogArgs(std::any data) { log_args_.emplace_back(std::move(data)); }
   std::string *clog_string() { return &clog_string_; }
@@ -75,6 +81,9 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
 
   // Convolution accumulation register, set to be uint32[VLENW][VLENW].
   AccArrayTemplate<AccArrayType> acc_register_;
+
+  // Depthwise convolution accumulation register.
+  DwAccArray depthwise_acc_register_;
 };
 
 }  // namespace kelvin::sim
