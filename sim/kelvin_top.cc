@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
-#include <iomanip>
 #include <ios>
 #include <iostream>
 #include <string>
@@ -18,6 +17,7 @@
 #include "sim/decoder.h"
 #include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
+#include "sim/proto/kelvin_trace.pb.h"
 #include "sim/renode/kelvin_renode_memory.h"
 #include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
@@ -41,8 +41,12 @@
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 
 ABSL_FLAG(bool, use_semihost, false, "Use semihost in the simulation");
-ABSL_FLAG(bool, trace, false, "Dump executed instruction trace");
-ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.txt",
+ABSL_FLAG(bool, trace, false,
+          "Dump executed instruction trace as Google Protobuf binary file. The "
+          "output can be decoded with protoc");
+ABSL_FLAG(bool, trace_disasm, false,
+          "Dump the disassembled opcode string with the trace");
+ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.pb",
           "Path to save trace");
 
 namespace kelvin::sim {
@@ -52,8 +56,7 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 constexpr char kKelvinName[] = "Kelvin";
 
 // Local helper function used to execute instructions.
-static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst,
-                                      std::fstream *trace = nullptr) {
+static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst) {
   for (auto *resource : inst->ResourceHold()) {
     if (!resource->IsFree()) {
       return false;
@@ -62,13 +65,6 @@ static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst,
   for (auto *resource : inst->ResourceAcquire()) {
     resource->Acquire();
   }
-  if (trace != nullptr) {
-    // TODO(hcindyl): Use protobuf to store the serialized trace.
-    *trace << "["
-           << "0x" << std::setfill('0') << std::setw(8) << std::hex
-           << inst->address() << "] " << inst->AsString() << std::endl;
-  }
-
   inst->Execute(nullptr);
   return true;
 }
@@ -359,13 +355,16 @@ absl::Status KelvinTop::Run() {
     uint64_t next_seq_pc;
 
     std::fstream trace_file;
+    proto::TraceData trace_data;
+    auto *inst_db = db_factory_.Allocate<uint32_t>(1);
     if (absl::GetFlag(FLAGS_trace)) {
       std::string trace_path = absl::GetFlag(FLAGS_trace_path);
       std::string trace_dir =
           trace_path.substr(0, trace_path.find_last_of('/'));
       int res = mkdir(trace_dir.c_str(), 0777);
       if (res == 0 || errno == EEXIST) {
-        trace_file.open(absl::GetFlag(FLAGS_trace_path), std::ios_base::out);
+        trace_file.open(absl::GetFlag(FLAGS_trace_path),
+                        std::ios_base::out | std::ios_base::binary);
         std::cout << "Dump trace file at " << absl::GetFlag(FLAGS_trace_path)
                   << std::endl;
       } else {
@@ -381,9 +380,19 @@ absl::Status KelvinTop::Run() {
       // executed will overwrite this.
       SetPc(next_seq_pc);
       bool executed = false;
-      std::fstream *trace_ptr = trace_file.is_open() ? &trace_file : nullptr;
       do {
-        executed = ExecuteInstruction(inst, trace_ptr);
+        executed = ExecuteInstruction(inst);
+        if (trace_file.is_open()) {
+          // Set trace entry {address, instruction}
+          memory_->Load(pc, inst_db, nullptr, nullptr);
+          auto inst_word = inst_db->Get<uint32_t>(0);
+          proto::TraceEntry *trace_entry = trace_data.add_entry();
+          trace_entry->set_address(pc);
+          trace_entry->set_opcode(inst_word);
+          if (absl::GetFlag(FLAGS_trace_disasm)) {
+            trace_entry->set_disasm(inst->AsString());
+          }
+        }
         counter_num_cycles_.Increment(1);
         state_->AdvanceDelayLines();
       } while (!executed);
@@ -404,7 +413,9 @@ absl::Status KelvinTop::Run() {
     }
     run_status_ = RunStatus::kHalted;
 
+    inst_db->DecRef();
     if (trace_file.is_open()) {
+      trace_data.SerializeToOstream(&trace_file);
       trace_file.close();
     }
     // Notify that the run has completed.

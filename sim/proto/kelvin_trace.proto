@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package kelvin.sim.proto;
+
+option java_multiple_files = true;
+
+message TraceEntry {
+  optional uint32 address = 1;
+  optional uint32 opcode = 2;
+  optional string disasm = 3;
+}
+
+message TraceData {
+  repeated TraceEntry entry = 1;
+}

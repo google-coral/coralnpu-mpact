@@ -131,6 +131,7 @@ cc_library(
         ":kelvin_decoder",
         ":kelvin_isa",
         ":kelvin_state",
+        "//sim/proto:trace_cc_proto",
         "//sim/renode:kelvin_renode_memory",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/flags:flag",
