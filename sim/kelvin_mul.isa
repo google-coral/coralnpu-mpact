@@ -5,7 +5,7 @@
 disasm widths = {-18};
 
 // Kelvin simd instructions:
-// https://spacebeaker.googlesource.com/shodan/sw/kelvin/+/refs/heads/master/docs/kelvin_isa.md
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/kelvin_isa.md
 // Mul/Div instructions (func1 011)
 slot kelvin_mul {
   includes {

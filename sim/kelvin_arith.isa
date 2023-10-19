@@ -5,7 +5,7 @@
 disasm widths = {-18};
 
 // Kelvin simd instructions:
-// https://spacebeaker.googlesource.com/shodan/sw/kelvin/+/refs/heads/master/docs/kelvin_isa.md
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/kelvin_isa.md
 // Arithmetics/Logical instructions (func1 000/100/001)
 slot kelvin_arith {
   includes {

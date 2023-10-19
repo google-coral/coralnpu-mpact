@@ -5,7 +5,7 @@
 disasm widths = {-18};
 
 // Kelvin simd instructions:
-// https://spacebeaker.googlesource.com/shodan/sw/kelvin/+/refs/heads/master/docs/kelvin_isa.md
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/kelvin_isa.md
 // Shift / Shuffle instructions (func1 010/110)
 slot kelvin_shift {
   includes {

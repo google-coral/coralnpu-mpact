@@ -21,7 +21,7 @@ slot kelvin_memory {
 }
 
 // Kelvin simd instructions:
-// https://spacebeaker.googlesource.com/shodan/sw/kelvin/+/refs/heads/master/docs/kelvin_isa.md
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/kelvin_isa.md
 // Load / Store
 slot kelvin_vector_memory {
   includes {
