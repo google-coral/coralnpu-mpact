@@ -23,6 +23,7 @@
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/register.h"
 
 namespace kelvin::sim {
 

@@ -27,6 +27,8 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 
 namespace kelvin::sim {
 

@@ -23,6 +23,8 @@
 #include "absl/log/check.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "riscv/riscv_state.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 
 namespace kelvin::sim {
 

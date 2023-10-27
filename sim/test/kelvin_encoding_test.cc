@@ -22,6 +22,7 @@
 #include "sim/kelvin_state.h"
 #include "googletest/include/gtest/gtest.h"
 #include "riscv/riscv_register.h"
+#include "riscv/riscv_state.h"
 #include "mpact/sim/generic/register.h"
 
 namespace {

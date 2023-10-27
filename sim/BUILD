@@ -36,6 +36,8 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
     ],
 )
 
@@ -61,6 +63,7 @@ cc_library(
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/types:span",
         "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
@@ -127,6 +130,7 @@ cc_library(
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/memory",
     ],

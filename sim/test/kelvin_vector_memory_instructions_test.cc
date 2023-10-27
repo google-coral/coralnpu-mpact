@@ -22,9 +22,11 @@
 #include <utility>
 #include <vector>
 
+#include "sim/kelvin_state.h"
 #include "sim/test/kelvin_vector_instructions_test_base.h"
 #include "googletest/include/gtest/gtest.h"
 #include "absl/functional/bind_front.h"
+#include "absl/random/distributions.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"

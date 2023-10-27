@@ -14,7 +14,15 @@
 
 #include "sim/decoder.h"
 
+#include "sim/kelvin_decoder.h"
+#include "sim/kelvin_encoding.h"
+#include "sim/kelvin_enums.h"
+#include "sim/kelvin_state.h"
+#include "riscv/riscv_state.h"
+#include "mpact/sim/generic/instruction.h"
+#include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/generic/type_helpers.h"
+#include "mpact/sim/util/memory/memory_interface.h"
 
 namespace kelvin::sim {
 
