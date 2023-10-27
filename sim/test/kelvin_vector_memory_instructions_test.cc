@@ -184,8 +184,7 @@ class KelvinVectorMemoryInstructionsTest
           for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < quad_size; ++j) {
               memory_values[op_num * vd_size + i * quad_size + j] =
-                  GetSavedMemoryValue<T>(addr +
-                                         (i * quad_size + j) * sizeof(T));
+                  GetSavedMemoryValue<T>(addr + j * sizeof(T));
             }
             // Stride increase per quad_size.
             addr += rs2_value * sizeof(T);

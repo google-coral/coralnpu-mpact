@@ -212,8 +212,7 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
       const uint32_t quad_size = elts_per_register / 4;
       for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < quad_size && address_index < elts_to_store; ++j) {
-          addresses[address_index] =
-              base_addr + (i * quad_size + j) * sizeof(T);
+          addresses[address_index] = base_addr + j * sizeof(T);
           value[address_index] = source_span[i * quad_size + j];
           mask[address_index++] = true;
         }
