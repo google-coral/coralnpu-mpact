@@ -116,10 +116,10 @@ void KelvinLogInstruction(int log_mode,
 // Handle Store instructions for mmap_uncached addresses
 template <typename T>
 void KelvinIStore(Instruction *inst) {
-  uint32_t base = GetInstructionSource<uint32_t>(inst, 0);
-  int32_t offset = GetInstructionSource<int32_t>(inst, 1);
+  uint32_t base = mpact::sim::generic::GetInstructionSource<uint32_t>(inst, 0);
+  int32_t offset = mpact::sim::generic::GetInstructionSource<int32_t>(inst, 1);
   uint32_t address = base + offset;
-  T value = GetInstructionSource<T>(inst, 2);
+  T value = mpact::sim::generic::GetInstructionSource<T>(inst, 2);
   auto *state = static_cast<KelvinState *>(inst->state());
   // Check and exclude the cache invalidation bit. However, the semihost tests
   // use the memory space greater than the kelvin HW configuration and do not
