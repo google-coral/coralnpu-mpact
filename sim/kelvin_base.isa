@@ -179,15 +179,15 @@ slot riscv32i {
     sw{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sw", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&mpact::sim::riscv::RV32::RiscVISw";
+      semfunc: "&KelvinIStore<uint32_t>";
     sh{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sh", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&mpact::sim::riscv::RV32::RiscVISh";
+      semfunc: "&KelvinIStore<uint16_t>";
     sb{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sb", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&mpact::sim::riscv::RV32::RiscVISb";
+      semfunc: "&KelvinIStore<uint8_t>";
     fence{: I_imm12 : },
       disasm: "fence",
       semfunc: "&mpact::sim::riscv::RiscVIFence";

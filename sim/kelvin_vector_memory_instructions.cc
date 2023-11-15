@@ -33,14 +33,6 @@ using mpact::sim::riscv::LoadContext;
 using mpact::sim::riscv::RV32VectorDestinationOperand;
 using mpact::sim::riscv::RV32VectorSourceOperand;
 
-// Kelvin HW reserves the 31st bit as the magic cache invalidation bit.
-// SW can update the load/store address to include that bit to trigger immediate
-// cache invalidation. The actual address should exclude that bit. In ISS the
-// invalidation is no-op and the actual address should be in the lower bits.
-//
-// Note the core supports up to 2GB memory (4MB is actually integrated in RTL).
-constexpr uint64_t kMemMask = 0x0000'0000'7fff'ffff;
-
 // Vector load instruction with optional data length, stride and address
 // register post-increment.
 template <typename T>

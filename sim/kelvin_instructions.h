@@ -29,6 +29,9 @@ void KelvinIMpause(const mpact::sim::generic::Instruction *inst);
 
 void KelvinLogInstruction(int log_mode, mpact::sim::generic::Instruction *inst);
 
+template <typename T>
+void KelvinIStore(mpact::sim::generic::Instruction *inst);
+
 }  // namespace kelvin::sim
 
 #endif  // SIM_KELVIN_INSTRUCTIONS_H_

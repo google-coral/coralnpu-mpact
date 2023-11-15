@@ -34,6 +34,14 @@ namespace kelvin::sim {
 
 using Instruction = ::mpact::sim::generic::Instruction;
 
+// Kelvin HW reserves the 31st bit as the magic cache invalidation bit.
+// SW can update the load/store address to include that bit to trigger immediate
+// cache invalidation. The actual address should exclude that bit. In ISS the
+// invalidation is no-op and the actual address should be in the lower bits.
+//
+// Note the core supports up to 2GB memory (4MB is actually integrated in RTL).
+constexpr uint64_t kMemMask = 0x0000'0000'7fff'ffff;
+
 // Default to 256 to match
 // https://opensecura.googlesource.com/hw/kelvin/+/master/hdl/chisel/src/kelvin/Parameters.scala.
 inline constexpr uint32_t kVectorLengthInBits = 256;

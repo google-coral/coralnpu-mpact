@@ -113,4 +113,30 @@ void KelvinLogInstruction(int log_mode,
   }
 }
 
+// Handle Store instructions for mmap_uncached addresses
+template <typename T>
+void KelvinIStore(Instruction *inst) {
+  uint32_t base = GetInstructionSource<uint32_t>(inst, 0);
+  int32_t offset = GetInstructionSource<int32_t>(inst, 1);
+  uint32_t address = base + offset;
+  T value = GetInstructionSource<T>(inst, 2);
+  auto *state = static_cast<KelvinState *>(inst->state());
+  // Check and exclude the cache invalidation bit. However, the semihost tests
+  // use the memory space greater than the kelvin HW configuration and do not
+  // comply to the magic bit setting. Exclude the check and mask for those
+  // tests.
+  if (state->max_physical_address() <=
+      kKelvinMaxMemoryAddress) {  // exclude semihost tests
+    address &= kMemMask;
+  }
+  auto *db = state->db_factory()->Allocate(sizeof(T));
+  db->Set<T>(0, value);
+  state->StoreMemory(inst, address, db);
+  db->DecRef();
+}
+
+template void KelvinIStore<uint32_t>(mpact::sim::generic::Instruction *inst);
+template void KelvinIStore<uint16_t>(mpact::sim::generic::Instruction *inst);
+template void KelvinIStore<uint8_t>(mpact::sim::generic::Instruction *inst);
+
 }  // namespace kelvin::sim
