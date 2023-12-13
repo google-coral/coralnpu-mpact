@@ -26,6 +26,7 @@
 
 #include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -110,6 +111,9 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
 
   // Depthwise convolution accumulation register.
   DwAccArray depthwise_acc_register_;
+
+  // Kelvin-specific CSR, contains information about the Kelvin ISA version.
+  mpact::sim::riscv::RiscV32SimpleCsr kisa_;
 };
 
 }  // namespace kelvin::sim

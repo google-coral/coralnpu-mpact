@@ -445,6 +445,10 @@ TEST_F(KelvinTopTest, RegisterNames) {
     read_value = result.value();
     EXPECT_EQ(read_value, write_value);
   }
+  // Custom CSRs.
+  for (auto name : {"kisa"}) {
+    EXPECT_OK(kelvin_top_->ReadRegister(name));
+  }
 }
 
 TEST_F(KelvinTopTest, RunKelvinVectorProgram) {

@@ -21,12 +21,20 @@
 #include <string>
 
 #include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 
 namespace kelvin::sim {
+
+using ::mpact::sim::riscv::RiscVCsrEnum;
+
+enum class KelvinCsrEnum {
+  kKIsa = 0xFC0,
+};
 
 constexpr uint32_t kVectorRegisterWidth = 32;
 
@@ -34,11 +42,15 @@ KelvinState::KelvinState(
     absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
     mpact::sim::util::MemoryInterface *memory,
     mpact::sim::util::AtomicMemoryOpInterface *atomic_memory)
-    : mpact::sim::riscv::RiscVState(id, xlen, memory, atomic_memory) {
+    : mpact::sim::riscv::RiscVState(id, xlen, memory, atomic_memory),
+      kisa_("kisa", static_cast<RiscVCsrEnum>(KelvinCsrEnum::kKIsa), this) {
   set_vector_register_width(kVectorRegisterWidth);
   for (int i = 0; i < acc_register_.size(); ++i) {
     acc_register_[i].fill(0);
   }
+  if (!csr_set()->AddCsr(&kisa_).ok()) {
+    LOG(FATAL) << "Failed to register kisa";
+  };
 }
 
 KelvinState::KelvinState(absl::string_view id,
