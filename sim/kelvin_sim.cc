@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
       LOG(ERROR) << wait_status.message();
     }
     auto sec = absl::ToDoubleSeconds(absl::Now() - t0);
-    std::cout << "Total cycles: " << kelvin_top.GetCycleCount() << std::endl;
+    std::cout << "Total cycles: " << kelvin_top.GetCycleCount() << '\n';
     std::cout << absl::StrFormat("Simulation done: %0.3f sec\n", sec);
   }
 }

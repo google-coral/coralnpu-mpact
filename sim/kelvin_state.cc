@@ -96,7 +96,7 @@ void KelvinState::PrintLog(absl::string_view format_string) {
                 absl::StrFormat("%x", std::any_cast<uint32_t>(log_args_[0]));
             break;
           default:
-            std::cerr << "incorrect format" << std::endl;
+            std::cerr << "incorrect format" << '\n';
             break;
         }
       }
@@ -104,7 +104,7 @@ void KelvinState::PrintLog(absl::string_view format_string) {
         if (print_ptr[1] == 's') {
           log_string += std::any_cast<std::string>(log_args_[0]);
         } else {
-          std::cerr << "incorrect format" << std::endl;
+          std::cerr << "incorrect format" << '\n';
         }
       }
       log_args_.erase(log_args_.begin());

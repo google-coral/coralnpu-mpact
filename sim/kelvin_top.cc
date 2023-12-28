@@ -172,7 +172,7 @@ void KelvinTop::Initialize() {
                          inst->address())) {  // Software breakpoint.
             RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
           } else {  // The default Kelvin simulation mode.
-            std::cout << "Program exits with fault" << std::endl;
+            std::cout << "Program exits with fault" << '\n';
             RequestHalt(kHaltAbort, inst);
           }
           return true;
@@ -183,7 +183,7 @@ void KelvinTop::Initialize() {
   state_->AddMpauseHandler(
       [this](const mpact::sim::generic::Instruction *inst) -> bool {
         if (inst != nullptr) {
-          std::cout << "Program exits properly" << std::endl;
+          std::cout << "Program exits properly" << '\n';
           RequestHalt(HaltReason::kUserRequest, inst);
           return true;
         }
@@ -198,20 +198,19 @@ void KelvinTop::Initialize() {
     bool result = false;
     switch (code) {
       case mpact::sim::riscv::ExceptionCode::kIllegalInstruction: {
-        std::cerr << "Illegal instruction at 0x" << std::hex << epc
-                  << std::endl;
+        std::cerr << "Illegal instruction at 0x" << std::hex << epc << '\n';
         RequestHalt(HaltReason::kUserRequest, nullptr);
         result = true;
       } break;
       case mpact::sim::riscv::ExceptionCode::kLoadAccessFault: {
         std::cerr << "Memory load access fault at 0x" << std::hex << epc
-                  << " as: " << inst->AsString() << std::endl;
+                  << " as: " << inst->AsString() << '\n';
         RequestHalt(HaltReason::kUserRequest, nullptr);
         result = true;
       } break;
       case mpact::sim::riscv::ExceptionCode::kStoreAccessFault: {
         std::cerr << "Memory store access fault at 0x" << std::hex << epc
-                  << " as: " << inst->AsString() << std::endl;
+                  << " as: " << inst->AsString() << '\n';
         RequestHalt(HaltReason::kUserRequest, nullptr);
         result = true;
       } break;
@@ -380,9 +379,9 @@ absl::Status KelvinTop::Run() {
         trace_file.open(absl::GetFlag(FLAGS_trace_path),
                         std::ios_base::out | std::ios_base::binary);
         std::cout << "Dump trace file at " << absl::GetFlag(FLAGS_trace_path)
-                  << std::endl;
+                  << '\n';
       } else {
-        std::cerr << "Failed to create " << trace_dir << std::endl;
+        std::cerr << "Failed to create " << trace_dir << '\n';
       }
     }
 
