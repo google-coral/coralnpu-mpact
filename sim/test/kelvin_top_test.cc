@@ -449,6 +449,15 @@ TEST_F(KelvinTopTest, RegisterNames) {
   for (auto name : {"kisa"}) {
     EXPECT_OK(kelvin_top_->ReadRegister(name));
   }
+
+  // CSRs that diverge from stock values in MPACT.
+  constexpr uint32_t kMisaValue = 0x40801100;
+  for (auto &[name, expected_value] :
+       {std::tuple<std::string, uint32_t>{"misa", kMisaValue}}) {
+    auto result = kelvin_top_->ReadRegister(name);
+    EXPECT_OK(result.status());
+    EXPECT_EQ(result.value(), expected_value);
+  }
 }
 
 TEST_F(KelvinTopTest, RunKelvinVectorProgram) {

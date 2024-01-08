@@ -31,6 +31,10 @@
 namespace kelvin::sim {
 
 using ::mpact::sim::riscv::RiscVCsrEnum;
+using ::mpact::sim::riscv::RiscVCsrInterface;
+
+// The misa implementation uses only the 64-bit variant.
+constexpr uint64_t kKelvinMisaVal = 0x4000000000801100;
 
 enum class KelvinCsrEnum {
   kKIsa = 0xFC0,
@@ -50,7 +54,14 @@ KelvinState::KelvinState(
   }
   if (!csr_set()->AddCsr(&kisa_).ok()) {
     LOG(FATAL) << "Failed to register kisa";
-  };
+  }
+
+  absl::StatusOr<RiscVCsrInterface *> result = csr_set()->GetCsr("misa");
+  if (!result.ok()) {
+    LOG(FATAL) << "Failed to get misa";
+  }
+  auto *misa = *result;
+  misa->Set(kKelvinMisaVal);
 }
 
 KelvinState::KelvinState(absl::string_view id,
