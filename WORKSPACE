@@ -6,9 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # MPACT-RiscV repo
 http_archive(
     name = "com_google_mpact-riscv",
-    sha256 = "2f51e0d90f6adf639fe6b23bee6dd86283326d86f8952e60cb26abeccc1e939b",
-    strip_prefix = "mpact-riscv-641f0748c6b17aa8789d455e82fb8f1296f79d26",
-    url = "https://github.com/google/mpact-riscv/archive/641f0748c6b17aa8789d455e82fb8f1296f79d26.tar.gz",
+    sha256 = "68c65bae71654ce59f3bd047af9083840b4b463aee7a17ba7d75c84322534347",
+    strip_prefix = "mpact-riscv-a4c534a97b107f3734e04c8e32d182e49d400ac3",
+    url = "https://github.com/google/mpact-riscv/archive/a4c534a97b107f3734e04c8e32d182e49d400ac3.tar.gz",
 )
 
 # MPACT-Sim repo

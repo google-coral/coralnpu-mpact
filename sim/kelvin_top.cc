@@ -252,7 +252,7 @@ absl::Status KelvinTop::StepPastBreakpoint() {
   bool executed = false;
   do {
     executed = ExecuteInstruction(real_inst);
-    counter_num_cycles_.Increment(1);
+    IncrementCycleCount(1);
     state_->AdvanceDelayLines();
   } while (!executed);
   // Increment counter.
@@ -309,7 +309,7 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
     bool executed = false;
     do {
       executed = ExecuteInstruction(inst);
-      counter_num_cycles_.Increment(1);
+      IncrementCycleCount(1);
       state_->AdvanceDelayLines();
     } while (!executed);
     count++;
@@ -406,7 +406,7 @@ absl::Status KelvinTop::Run() {
             trace_entry->set_disasm(inst->AsString());
           }
         }
-        counter_num_cycles_.Increment(1);
+        IncrementCycleCount(1);
         state_->AdvanceDelayLines();
       } while (!executed);
       // Update counters.
@@ -723,6 +723,11 @@ void KelvinTop::SetPc(uint64_t value) {
   } else {
     pc_->data_buffer()->Set<uint64_t>(0, value);
   }
+}
+
+void KelvinTop::IncrementCycleCount(uint64_t value) {
+  counter_num_cycles_.Increment(value);
+  state_->IncrementMCycle(value);
 }
 
 }  // namespace kelvin::sim

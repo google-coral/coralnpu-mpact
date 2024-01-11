@@ -97,6 +97,8 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
     on_mpause_.emplace_back(std::move(handler));
   }
 
+  void IncrementMCycle(uint64_t value);
+
  private:
   uint32_t vector_length_{kVectorLengthInBits};
 
@@ -114,6 +116,10 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
 
   // Kelvin-specific CSR, contains information about the Kelvin ISA version.
   mpact::sim::riscv::RiscV32SimpleCsr kisa_;
+
+  // mcycle/mcycleh CSR.
+  mpact::sim::riscv::RiscV32SimpleCsr mcycle_;
+  mpact::sim::riscv::RiscV32SimpleCsr mcycleh_;
 };
 
 }  // namespace kelvin::sim
