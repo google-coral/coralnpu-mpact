@@ -29,6 +29,7 @@
 #include "absl/functional/bind_front.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "mpact/sim/generic/instruction.h"
 
 // This file contains the tests for testing kelvin vector binary instructions.
@@ -1517,8 +1518,8 @@ template <typename T>
 static std::pair<T, T> SlidepArgsGetter(
     bool horizontal, int index, int num_ops, int op_num, int dest_reg_sub_index,
     int element_index, int vd_size, bool widen_dst, int src1_widen_factor,
-    int vs1_size, const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
-    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    int vs1_size, absl::Span<const T> vs1_value, int vs2_size, bool s2_scalar,
+    absl::Span<const T> vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
   assert(!s2_scalar && !halftype_op && !vmvp_op && dest_reg_sub_index == 0);
 

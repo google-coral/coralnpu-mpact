@@ -406,7 +406,7 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   // value.
   template <typename T>
   void SetVectorRegisterValues(
-      const std::vector<std::tuple<std::string, Span<const T>>> &values) {
+      absl::Span<const std::tuple<std::string, Span<const T>>> values) {
     for (auto &[vreg_name, span] : values) {
       auto *vreg = state_->GetRegister<RVVectorRegister>(vreg_name).first;
       auto *db = state_->db_factory()->MakeCopyOf(vreg->data_buffer());
@@ -419,7 +419,7 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   // Set the named registers to their corresponding value.
   template <typename T, typename RegisterType = RV32Register>
   void SetRegisterValues(
-      const std::vector<std::tuple<std::string, const T>> &values) {
+      absl::Span<const std::tuple<std::string, const T>> values) {
     for (auto &[reg_name, value] : values) {
       auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
       auto *db =
@@ -449,9 +449,9 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   // named in the two vectors and appends them to the given instruction.
   void AppendVectorRegisterOperands(Instruction *inst, const uint32_t num_ops,
                                     int src1_widen_factor, int src1_reg,
-                                    const std::vector<int> &other_sources,
+                                    absl::Span<const int> other_sources,
                                     bool widen_dst,
-                                    const std::vector<int> &destinations) {
+                                    absl::Span<const int> destinations) {
     {
       std::vector<RegisterBase *> reg_vec;
       auto regs_count = src1_widen_factor * num_ops;
