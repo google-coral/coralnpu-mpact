@@ -257,7 +257,7 @@ absl::Status KelvinTop::StepPastBreakpoint() {
   } while (!executed);
   // Increment counter.
   counter_opcode_[real_inst->opcode()].Increment(1);
-  counter_num_instructions_.Increment(1);
+  IncrementInstructionCount(1);
   real_inst->DecRef();
   // Re-enable the breakpoint.
   if (status.ok()) {
@@ -315,7 +315,7 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
     count++;
     // Update counters.
     counter_opcode_[inst->opcode()].Increment(1);
-    counter_num_instructions_.Increment(1);
+    IncrementInstructionCount(1);
     // Get the next pc value.
     next_pc = pc_operand->AsUint64(0);
   }
@@ -411,7 +411,7 @@ absl::Status KelvinTop::Run() {
       } while (!executed);
       // Update counters.
       counter_opcode_[inst->opcode()].Increment(1);
-      counter_num_instructions_.Increment(1);
+      IncrementInstructionCount(1);
       // Get the next pc value.
       next_pc = pc_operand->AsUint64(0);
     }
@@ -728,6 +728,11 @@ void KelvinTop::SetPc(uint64_t value) {
 void KelvinTop::IncrementCycleCount(uint64_t value) {
   counter_num_cycles_.Increment(value);
   state_->IncrementMCycle(value);
+}
+
+void KelvinTop::IncrementInstructionCount(uint64_t value) {
+  counter_num_instructions_.Increment(value);
+  state_->IncrementMInstret(value);
 }
 
 }  // namespace kelvin::sim

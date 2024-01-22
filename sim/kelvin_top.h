@@ -123,6 +123,7 @@ class KelvinTop : public mpact::sim::generic::Component,
   void SetPc(uint64_t value);
   // Increment the cycle count.
   void IncrementCycleCount(uint64_t value);
+  void IncrementInstructionCount(uint64_t value);
 
   // The DB factory is used to manage data buffers for memory read/writes.
   mpact::sim::generic::DataBufferFactory db_factory_;

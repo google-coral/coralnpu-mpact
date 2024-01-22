@@ -49,7 +49,9 @@ KelvinState::KelvinState(
     : mpact::sim::riscv::RiscVState(id, xlen, memory, atomic_memory),
       kisa_("kisa", static_cast<RiscVCsrEnum>(KelvinCsrEnum::kKIsa), this),
       mcycle_("mcycle", RiscVCsrEnum::kMCycle, this),
-      mcycleh_("mcycleh", RiscVCsrEnum::kMCycleH, this) {
+      mcycleh_("mcycleh", RiscVCsrEnum::kMCycleH, this),
+      minstret_("minstret", RiscVCsrEnum::kMInstret, this),
+      minstreth_("minstreth", RiscVCsrEnum::kMInstretH, this) {
   set_vector_register_width(kVectorRegisterWidth);
   for (int i = 0; i < acc_register_.size(); ++i) {
     acc_register_[i].fill(0);
@@ -70,6 +72,12 @@ KelvinState::KelvinState(
   }
   if (!csr_set()->AddCsr(&mcycleh_).ok()) {
     LOG(FATAL) << "Failed to register mcycleh";
+  }
+  if (!csr_set()->AddCsr(&minstret_).ok()) {
+    LOG(FATAL) << "Failed to register minstret";
+  }
+  if (!csr_set()->AddCsr(&minstreth_).ok()) {
+    LOG(FATAL) << "Failed to register minstreth";
   }
 }
 
@@ -143,6 +151,13 @@ void KelvinState::IncrementMCycle(uint64_t value) {
       (mcycle_.GetUint64() | (mcycleh_.GetUint64() << 32)) + value;
   mcycle_.Set(new_cycle & 0xFFFFFFFF);
   mcycleh_.Set(new_cycle >> 32);
+}
+
+void KelvinState::IncrementMInstret(uint64_t value) {
+  uint64_t new_instret =
+      (minstret_.GetUint64() | (minstreth_.GetUint64() << 32)) + value;
+  minstret_.Set(new_instret & 0xFFFFFFFF);
+  minstreth_.Set(new_instret >> 32);
 }
 
 }  // namespace kelvin::sim

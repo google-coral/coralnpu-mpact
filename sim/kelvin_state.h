@@ -98,6 +98,7 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   }
 
   void IncrementMCycle(uint64_t value);
+  void IncrementMInstret(uint64_t value);
 
  private:
   uint32_t vector_length_{kVectorLengthInBits};
@@ -120,6 +121,8 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   // mcycle/mcycleh CSR.
   mpact::sim::riscv::RiscV32SimpleCsr mcycle_;
   mpact::sim::riscv::RiscV32SimpleCsr mcycleh_;
+  mpact::sim::riscv::RiscV32SimpleCsr minstret_;
+  mpact::sim::riscv::RiscV32SimpleCsr minstreth_;
 };
 
 }  // namespace kelvin::sim
