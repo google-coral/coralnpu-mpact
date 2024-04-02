@@ -688,6 +688,7 @@ absl::Status KelvinTop::LoadImage(const std::string &image_path,
     image_file.read(buffer, kBufferSize);
     // Get the number of bytes that was read.
     gcount = image_file.gcount();
+    if (gcount == 0) break;
     // Write to the simulator memory.
     auto res = WriteMemory(load_address, buffer, gcount);
     // Check that the write succeeded, increment address if it did.
@@ -698,7 +699,7 @@ absl::Status KelvinTop::LoadImage(const std::string &image_path,
       return absl::InternalError("Failed to write all the bytes");
     }
     load_address += gcount;
-  } while (image_file.good() && (gcount > 0));
+  } while (image_file.good());
   image_file.close();
   return absl::OkStatus();
 }
