@@ -65,6 +65,12 @@ KelvinRenode::KelvinRenode(std::string name, uint64_t memory_block_size_bytes,
 KelvinRenode::~KelvinRenode() { delete kelvin_top_; }
 
 absl::Status KelvinRenode::Halt() { return kelvin_top_->Halt(); }
+absl::Status KelvinRenode::Halt(HaltReason halt_reason) {
+  return kelvin_top_->Halt(halt_reason);
+}
+absl::Status KelvinRenode::Halt(HaltReasonValueType halt_reason) {
+  return kelvin_top_->Halt(halt_reason);
+}
 absl::StatusOr<int> KelvinRenode::Step(int num_steps) {
   return kelvin_top_->Step(num_steps);
 }

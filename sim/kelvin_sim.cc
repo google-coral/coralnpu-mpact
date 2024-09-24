@@ -213,8 +213,8 @@ int main(int argc, char **argv) {
 
   // Determine if this is being run interactively or as a batch job.
   if (interactive) {
-    mpact::sim::riscv::DebugCommandShell cmd_shell(
-        {{&kelvin_top, &elf_loader}});
+    mpact::sim::riscv::DebugCommandShell cmd_shell;
+    cmd_shell.AddCore({&kelvin_top, [&elf_loader]() { return &elf_loader; }});
     // Add custom commands to interactive debug command shell.
     cmd_shell.AddCommand(
         "    reg info                       - print all scalar regs",

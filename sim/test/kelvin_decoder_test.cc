@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdint>
 #include <ios>
 #include <string>
 
@@ -44,8 +45,9 @@ using SymbolAccessor = ELFIO::symbol_section_accessor_template<ELFIO::section>;
 class KelvinDecoderTest : public testing::Test {
  protected:
   KelvinDecoderTest()
-      : state_("kelvin_decoder_test", RiscVXlen::RV32),
-        memory_(0),
+      : memory_(0),
+        state_("kelvin_decoder_test", RiscVXlen::RV32, &memory_),
+
         loader_(&memory_),
         decoder_(&state_, &memory_) {
     const std::string input_file =
@@ -61,8 +63,8 @@ class KelvinDecoderTest : public testing::Test {
   ~KelvinDecoderTest() override { delete symbol_accessor_; }
 
   ELFIO::elfio elf_reader_;
-  kelvin::sim::KelvinState state_;
   mpact::sim::util::FlatDemandMemory memory_;
+  kelvin::sim::KelvinState state_;
   mpact::sim::util::ElfProgramLoader loader_;
   kelvin::sim::KelvinDecoder decoder_;
   SymbolAccessor *symbol_accessor_;

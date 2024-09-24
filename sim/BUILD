@@ -80,11 +80,13 @@ mpact_isa_decoder(
         "kelvin_memory.isa",
         "kelvin_mul.isa",
         "kelvin_shift.isa",
+        "@com_google_mpact-riscv//riscv:riscv32zb.isa",
     ],
     isa_name = "Kelvin",
     deps = [
         ":kelvin_instructions",
         "@com_google_absl//absl/functional:bind_front",
+        "@com_google_mpact-riscv//riscv:riscv_bitmanip_instructions",
         "@com_google_mpact-riscv//riscv:riscv_g",
     ],
 )
@@ -101,6 +103,7 @@ mpact_bin_fmt_decoder(
         "kelvin_memory.bin_fmt",
         "kelvin_mul.bin_fmt",
         "kelvin_shift.bin_fmt",
+        "@com_google_mpact-riscv//riscv:riscv32zb.bin_fmt",
     ],
     deps = [
         ":kelvin_isa",
@@ -140,9 +143,11 @@ cc_library(
 cc_library(
     name = "kelvin_top",
     srcs = [
+        "kelvin_action_point_memory_interface.cc",
         "kelvin_top.cc",
     ],
     hdrs = [
+        "kelvin_action_point_memory_interface.h",
         "kelvin_top.h",
     ],
     copts = ["-O3"],
@@ -154,6 +159,7 @@ cc_library(
         "//sim/renode:kelvin_renode_memory",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
@@ -161,9 +167,11 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
+        "@com_google_mpact-riscv//riscv:riscv_action_point_memory_interface",
         "@com_google_mpact-riscv//riscv:riscv_arm_semihost",
-        "@com_google_mpact-riscv//riscv:riscv_breakpoint",
+        "@com_google_mpact-riscv//riscv:riscv_fp_state",
         "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:action_points",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
         "@com_google_mpact-sim//mpact/sim/generic:component",
         "@com_google_mpact-sim//mpact/sim/generic:core",
@@ -198,6 +206,7 @@ cc_binary(
         "@com_google_absl//absl/time",
         "@com_google_mpact-riscv//riscv:debug_command_shell",
         "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_googlesource_code_re2//:re2",
     ],

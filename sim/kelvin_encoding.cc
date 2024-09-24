@@ -358,6 +358,8 @@ void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
   decode_functions.push_back(encoding::DecodeKelvinVectorMemoryInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorMulInst);
   decode_functions.push_back(encoding::DecodeKelvinVectorShiftInst);
+  decode_functions.push_back(encoding::DecodeRiscVZbbInst32);
+  decode_functions.push_back(encoding::DecodeRiscVZbbInst32Only);
   for (auto &function : decode_functions) {
     opcode_ = function(inst_word_);
     if (opcode_ != OpcodeEnum::kNone) break;

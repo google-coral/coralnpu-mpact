@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto2";
+edition = "2023";
 
 package kelvin.sim.proto;
 
+option features.utf8_validation = NONE;
 option java_multiple_files = true;
 
 message TraceEntry {
-  optional uint32 address = 1;
-  optional uint32 opcode = 2;
-  optional string disasm = 3;
+  uint32 address = 1;
+  uint32 opcode = 2;
+  string disasm = 3;
 }
 
 message TraceData {

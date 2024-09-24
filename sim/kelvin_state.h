@@ -65,7 +65,6 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
               mpact::sim::util::AtomicMemoryOpInterface *atomic_memory);
   KelvinState(absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
               mpact::sim::util::MemoryInterface *memory);
-  KelvinState(absl::string_view id, mpact::sim::riscv::RiscVXlen xlen);
   ~KelvinState() override = default;
 
   // Deleted Constructors and operators.
@@ -97,9 +96,6 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
     on_mpause_.emplace_back(std::move(handler));
   }
 
-  void IncrementMCycle(uint64_t value);
-  void IncrementMInstret(uint64_t value);
-
  private:
   uint32_t vector_length_{kVectorLengthInBits};
 
@@ -118,11 +114,9 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   // Kelvin-specific CSR, contains information about the Kelvin ISA version.
   mpact::sim::riscv::RiscV32SimpleCsr kisa_;
 
-  // mcycle/mcycleh CSR.
-  mpact::sim::riscv::RiscV32SimpleCsr mcycle_;
-  mpact::sim::riscv::RiscV32SimpleCsr mcycleh_;
-  mpact::sim::riscv::RiscV32SimpleCsr minstret_;
-  mpact::sim::riscv::RiscV32SimpleCsr minstreth_;
+  // minstret CSR.
+  mpact::sim::riscv::RiscVCsrInterface *minstret_;
+  mpact::sim::riscv::RiscVCsrInterface *minstreth_;
 };
 
 }  // namespace kelvin::sim

@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "sim/decoder.h"
+#include "sim/kelvin_action_point_memory_interface.h"
 #include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
 #include "sim/proto/kelvin_trace.pb.h"
@@ -41,11 +42,13 @@
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/notification.h"
 #include "riscv/riscv_arm_semihost.h"
-#include "riscv/riscv_breakpoint.h"
+#include "riscv/riscv_counter_csr.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
+#include "mpact/sim/generic/action_point_manager_base.h"
+#include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/data_buffer.h"
@@ -65,6 +68,11 @@ ABSL_FLAG(std::string, trace_path, "/tmp/kelvin_trace.pb",
 
 namespace kelvin::sim {
 
+using ::mpact::sim::generic::ActionPointManagerBase;
+using ::mpact::sim::generic::BreakpointManager;
+using ::mpact::sim::generic::DecodeCache;
+using ::mpact::sim::riscv::RiscVCounterCsr;
+using ::mpact::sim::riscv::RiscVCounterCsrHigh;
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 
 constexpr char kKelvinName[] = "Kelvin";
@@ -112,7 +120,9 @@ KelvinTop::~KelvinTop() {
     delete run_halted_;
   }
 
-  delete rv_bp_manager_;
+  delete bp_manager_;
+  delete ap_manager_;
+  delete kelvin_ap_memory_interface_;
   delete decode_cache_;
   delete kelvin_decoder_;
   delete state_;
@@ -127,7 +137,7 @@ void KelvinTop::Initialize() {
   state_ = new sim::KelvinState(kKelvinName, mpact::sim::riscv::RiscVXlen::RV32,
                                 memory_);
   state_->set_max_physical_address(kKelvinMaxMemoryAddress);
-  fp_state_ = new mpact::sim::riscv::RiscVFPState(state_);
+  fp_state_ = new mpact::sim::riscv::RiscVFPState(state_->csr_set(), state_);
   state_->set_rv_fp(fp_state_);
   pc_ = state_->registers()->at(sim::KelvinState::kPcName);
   // Set up the decoder and decode cache.
@@ -144,12 +154,15 @@ void KelvinTop::Initialize() {
   CHECK_OK(AddCounter(&counter_num_instructions_))
       << "Failed to register counter";
 
-  // Always return 4-byte breakpoint instruction size
-  rv_bp_manager_ = new mpact::sim::riscv::RiscVBreakpointManager(
-      memory_,
-      absl::bind_front(&mpact::sim::generic::DecodeCache::Invalidate,
-                       decode_cache_),
-      [](uint64_t, uint32_t) -> int { return 4; });
+  // Set up break and action points.
+  kelvin_ap_memory_interface_ = new KelvinActionPointMemoryInterface(
+      state_->memory(),
+      absl::bind_front(&DecodeCache::Invalidate, decode_cache_));
+  ap_manager_ = new ActionPointManagerBase(kelvin_ap_memory_interface_);
+  bp_manager_ = new BreakpointManager(ap_manager_, [this]() {
+    RequestHalt(HaltReason::kSoftwareBreakpoint, nullptr);
+  });
+
   // Make sure the architectural and abi register aliases are added.
   std::string reg_name;
   for (int i = 0; i < 32; i++) {
@@ -168,9 +181,10 @@ void KelvinTop::Initialize() {
           if (absl::GetFlag(FLAGS_use_semihost) &&
               semihost_->IsSemihostingCall(inst)) {
             semihost_->OnEBreak(inst);
-          } else if (rv_bp_manager_->HasBreakpoint(
-                         inst->address())) {  // Software breakpoint.
-            RequestHalt(HaltReason::kSoftwareBreakpoint, inst);
+          } else if (ap_manager_->IsActionPointActive(inst->address())) {
+            // Possible software breakpoint.
+            RequestHalt(HaltReason::kActionPoint, inst);
+            ap_manager_->PerformActions(inst->address());
           } else {  // The default Kelvin simulation mode.
             std::cout << "Program exits with fault" << '\n';
             RequestHalt(kHaltAbort, inst);
@@ -220,6 +234,29 @@ void KelvinTop::Initialize() {
     return result;
   });
 
+  // Connect counters to instret(h) and mcycle(h) CSRs.
+  auto csr_res = state_->csr_set()->GetCsr("minstret");
+  // Minstret/minstreth.
+  auto *minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState> *>(
+      csr_res.value());
+  minstret->set_counter(&counter_num_instructions_);
+  csr_res = state_->csr_set()->GetCsr("minstreth");
+  CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
+  auto *minstreth =
+      reinterpret_cast<RiscVCounterCsrHigh<KelvinState> *>(csr_res.value());
+  minstreth->set_counter(&counter_num_instructions_);
+  // Mcycle/mcycleh.
+  csr_res = state_->csr_set()->GetCsr("mcycle");
+  CHECK_OK(csr_res.status()) << "Failed to get mcycle CSR";
+  auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState> *>(
+      csr_res.value());
+  mcycle->set_counter(&counter_num_cycles_);
+  csr_res = state_->csr_set()->GetCsr("mcycleh");
+  CHECK_OK(csr_res.status()) << "Failed to get mcycleh CSR";
+  auto *mcycleh =
+      reinterpret_cast<RiscVCounterCsrHigh<KelvinState> *>(csr_res.value());
+  mcycleh->set_counter(&counter_num_cycles_);
+
   semihost_->set_exit_callback(
       [this]() { RequestHalt(HaltReason::kSemihostHaltRequest, nullptr); });
 }
@@ -239,11 +276,20 @@ absl::Status KelvinTop::Halt() {
   return absl::OkStatus();
 }
 
+absl::Status KelvinTop::Halt(HaltReason halt_reason) {
+  RequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
+absl::Status KelvinTop::Halt(HaltReasonValueType halt_reason) {
+  RequestHalt(halt_reason, nullptr);
+  return absl::OkStatus();
+}
+
 absl::Status KelvinTop::StepPastBreakpoint() {
   uint64_t pc = state_->pc_operand()->AsUint64(0);
-  uint64_t bpt_pc = pc;
   // Disable the breakpoint. Status will show error if there is no breakpoint.
-  auto status = rv_bp_manager_->DisableBreakpoint(pc);
+  (void)ap_manager_->ap_memory_interface()->WriteOriginalInstruction(pc);
   // Execute the real instruction.
   auto real_inst = decode_cache_->GetDecodedInstruction(pc);
   real_inst->IncRef();
@@ -260,10 +306,7 @@ absl::Status KelvinTop::StepPastBreakpoint() {
   IncrementInstructionCount(1);
   real_inst->DecRef();
   // Re-enable the breakpoint.
-  if (status.ok()) {
-    status = rv_bp_manager_->EnableBreakpoint(bpt_pc);
-    if (!status.ok()) return status;
-  }
+  (void)ap_manager_->ap_memory_interface()->WriteBreakpointInstruction(pc);
   return absl::OkStatus();
 }
 
@@ -281,8 +324,8 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
   halted_ = false;
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = *HaltReason::kNone;
+  if (need_to_step_over_) {
+    need_to_step_over_ = false;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
     count++;
@@ -318,6 +361,18 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
     IncrementInstructionCount(1);
     // Get the next pc value.
     next_pc = pc_operand->AsUint64(0);
+    if (!halted_) continue;
+    // If it's an action point, just step over and continue.
+    if (halt_reason_ == *HaltReason::kActionPoint) {
+      auto status = StepPastBreakpoint();
+      if (!status.ok()) return status;
+      // Reset the halt reason and continue;
+      halted_ = false;
+      halt_reason_ = *HaltReason::kNone;
+      need_to_step_over_ = false;
+      continue;
+    }
+    break;
   }
   // Update the pc register, now that it can be read.
   if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
@@ -343,8 +398,8 @@ absl::Status KelvinTop::Run() {
   }
   // First check to see if the previous halt was due to a breakpoint. If so,
   // need to step over the breakpoint.
-  if (halt_reason_ == *HaltReason::kSoftwareBreakpoint) {
-    halt_reason_ = *HaltReason::kNone;
+  if (need_to_step_over_) {
+    need_to_step_over_ = false;
     auto status = StepPastBreakpoint();
     if (!status.ok()) return status;
   }
@@ -414,6 +469,22 @@ absl::Status KelvinTop::Run() {
       IncrementInstructionCount(1);
       // Get the next pc value.
       next_pc = pc_operand->AsUint64(0);
+      if (!halted_) continue;
+      // If it's an action point, just step over and continue executing, as
+      // this is not a full breakpoint.
+      if (halt_reason_ == *HaltReason::kActionPoint) {
+        auto status = StepPastBreakpoint();
+        if (!status.ok()) {
+          // If there is an error, signal a simulator error.
+          halt_reason_ = *HaltReason::kSimulatorError;
+          break;
+        };
+        // Reset the halt reason and continue;
+        halted_ = false;
+        halt_reason_ = *HaltReason::kNone;
+        continue;
+      }
+      break;
     }
     // Update the pc register, now that it can be read (since we are not
     // running).
@@ -595,7 +666,7 @@ absl::StatusOr<size_t> KelvinTop::WriteMemory(uint64_t address,
 }
 
 bool KelvinTop::HasBreakpoint(uint64_t address) {
-  return rv_bp_manager_->HasBreakpoint(address);
+  return bp_manager_->HasBreakpoint(address);
 }
 
 absl::Status KelvinTop::SetSwBreakpoint(uint64_t address) {
@@ -605,11 +676,11 @@ absl::Status KelvinTop::SetSwBreakpoint(uint64_t address) {
         "SetSwBreakpoint: Core must be halted");
   }
   // If there is no breakpoint manager, return an error.
-  if (rv_bp_manager_ == nullptr) {
+  if (bp_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
   // Try setting the breakpoint.
-  return rv_bp_manager_->SetBreakpoint(address);
+  return bp_manager_->SetBreakpoint(address);
 }
 
 absl::Status KelvinTop::ClearSwBreakpoint(uint64_t address) {
@@ -618,10 +689,10 @@ absl::Status KelvinTop::ClearSwBreakpoint(uint64_t address) {
     return absl::FailedPreconditionError(
         "ClearSwBreakpoing: Core must be halted");
   }
-  if (rv_bp_manager_ == nullptr) {
+  if (bp_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
-  return rv_bp_manager_->ClearBreakpoint(address);
+  return bp_manager_->ClearBreakpoint(address);
 }
 
 absl::Status KelvinTop::ClearAllSwBreakpoints() {
@@ -630,10 +701,10 @@ absl::Status KelvinTop::ClearAllSwBreakpoints() {
     return absl::FailedPreconditionError(
         "ClearAllSwBreakpoints: Core must be halted");
   }
-  if (rv_bp_manager_ == nullptr) {
+  if (bp_manager_ == nullptr) {
     return absl::InternalError("Breakpoints are not enabled");
   }
-  rv_bp_manager_->ClearAllBreakpoints();
+  bp_manager_->ClearAllBreakpoints();
   return absl::OkStatus();
 }
 
@@ -652,17 +723,17 @@ absl::StatusOr<std::string> KelvinTop::GetDisassembly(uint64_t address) {
   mpact::sim::generic::Instruction *inst = nullptr;
   // If requesting the disassembly for an instruction at a breakpoint, return
   // that of the original instruction instead.
-  if (rv_bp_manager_->IsBreakpoint(address)) {
-    auto bp_pc = address;
-    // Disable the breakpoint.
-    auto status = rv_bp_manager_->DisableBreakpoint(bp_pc);
-    if (!status.ok()) return status;
+  // If requesting the disassembly for an instruction at an action point, return
+  // that of the original instruction instead.
+  if (ap_manager_->IsActionPointActive(address)) {
+    // Write the original instruction back to memory.
+    (void)ap_manager_->ap_memory_interface()->WriteOriginalInstruction(address);
     // Get the real instruction.
-    inst = decode_cache_->GetDecodedInstruction(bp_pc);
+    inst = decode_cache_->GetDecodedInstruction(address);
     auto disasm = inst != nullptr ? inst->AsString() : "Invalid instruction";
-    // Re-enable the breakpoint.
-    status = rv_bp_manager_->EnableBreakpoint(bp_pc);
-    if (!status.ok()) return status;
+    // Restore the breakpoint instruction.
+    (void)ap_manager_->ap_memory_interface()->WriteBreakpointInstruction(
+        address);
     return disasm;
   }
 
@@ -706,16 +777,20 @@ absl::Status KelvinTop::LoadImage(const std::string &image_path,
 
 void KelvinTop::RequestHalt(HaltReasonValueType halt_reason,
                             const mpact::sim::generic::Instruction *inst) {
-  // First set the halt_reason_, then the half flag.
+  // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
   halted_ = true;
+  // If the halt reason is either sw breakpoint or action point, set
+  // need_to_step_over to true.
+  if ((halt_reason_ == *HaltReason::kSoftwareBreakpoint) ||
+      (halt_reason_ == *HaltReason::kActionPoint)) {
+    need_to_step_over_ = true;
+  }
 }
 
 void KelvinTop::RequestHalt(HaltReason halt_reason,
                             const mpact::sim::generic::Instruction *inst) {
-  // First set the halt_reason_, then the half flag.
-  halt_reason_ = static_cast<HaltReasonValueType>(halt_reason);
-  halted_ = true;
+  RequestHalt(*halt_reason, inst);
 }
 
 void KelvinTop::SetPc(uint64_t value) {
@@ -728,12 +803,10 @@ void KelvinTop::SetPc(uint64_t value) {
 
 void KelvinTop::IncrementCycleCount(uint64_t value) {
   counter_num_cycles_.Increment(value);
-  state_->IncrementMCycle(value);
 }
 
 void KelvinTop::IncrementInstructionCount(uint64_t value) {
   counter_num_instructions_.Increment(value);
-  state_->IncrementMInstret(value);
 }
 
 }  // namespace kelvin::sim

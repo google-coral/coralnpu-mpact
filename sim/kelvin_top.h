@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <string>
 
+#include "sim/kelvin_action_point_memory_interface.h"
 #include "sim/kelvin_enums.h"
 #include "sim/kelvin_state.h"
 #include "absl/container/flat_hash_map.h"
@@ -29,8 +30,9 @@
 #include "absl/status/statusor.h"
 #include "absl/synchronization/notification.h"
 #include "riscv/riscv_arm_semihost.h"
-#include "riscv/riscv_breakpoint.h"
 #include "riscv/riscv_fp_state.h"
+#include "mpact/sim/generic/action_point_manager_base.h"
+#include "mpact/sim/generic/breakpoint_manager.h"
 #include "mpact/sim/generic/component.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 #include "mpact/sim/generic/counters.h"
@@ -38,6 +40,7 @@
 #include "mpact/sim/generic/decode_cache.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/register.h"
+#include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 #include "mpact/sim/util/memory/memory_watcher.h"
 
@@ -45,6 +48,10 @@ ABSL_DECLARE_FLAG(bool, use_semihost);
 
 namespace kelvin::sim {
 
+using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
+
+using ::mpact::sim::generic::ActionPointManagerBase;
+using ::mpact::sim::generic::BreakpointManager;
 using ::mpact::sim::generic::DataBuffer;
 using HaltReason = mpact::sim::generic::CoreDebugInterface::HaltReason;
 using HaltReasonValueType =
@@ -69,6 +76,8 @@ class KelvinTop : public mpact::sim::generic::Component,
 
   // Methods inherited from CoreDebugInterface.
   absl::Status Halt() override;
+  absl::Status Halt(HaltReason halt_reason) override;
+  absl::Status Halt(HaltReasonValueType halt_reason) override;
   absl::StatusOr<int> Step(int num) override;
   absl::Status Run() override;
   absl::Status Wait() override;
@@ -137,8 +146,15 @@ class KelvinTop : public mpact::sim::generic::Component,
   // The local Kelvin state.
   sim::KelvinState *state_;
   mpact::sim::riscv::RiscVFPState *fp_state_;
+  // Memory interface used by action point manager.
+  KelvinActionPointMemoryInterface *kelvin_ap_memory_interface_ = nullptr;
+  // Action point manager.
+  ActionPointManagerBase *ap_manager_ = nullptr;
   // Breakpoint manager.
-  mpact::sim::riscv::RiscVBreakpointManager *rv_bp_manager_ = nullptr;
+  BreakpointManager *bp_manager_ = nullptr;
+  // Flat to indicate that the current instruction is a break/action point that
+  // needs to be stepped over.
+  bool need_to_step_over_ = false;
   // The pc register instance.
   mpact::sim::generic::RegisterBase *pc_;
   // Kelvin decoder decoder instance.

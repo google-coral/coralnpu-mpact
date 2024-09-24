@@ -5,3 +5,7 @@ build --action_env=CC="clang"
 # ratio.
 build --copt=-Wno-unused-function
 build --host_copt=-Wno-unused-function
+
+# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
+# https://github.com/protocolbuffers/protobuf/issues/14313
+common --noenable_bzlmod

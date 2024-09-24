@@ -17,6 +17,7 @@
 #ifndef SIM_DECODER_H_
 #define SIM_DECODER_H_
 
+#include <cstdint>
 #include <memory>
 
 #include "sim/kelvin_decoder.h"
@@ -59,6 +60,15 @@ class KelvinDecoder : public mpact::sim::generic::DecoderInterface {
   // instance will raise an internal simulator error when executed.
   mpact::sim::generic::Instruction *DecodeInstruction(
       uint64_t address) override;
+
+  // Return the number of opcodes supported by this decoder.
+  int GetNumOpcodes() const override {
+    return static_cast<int>(OpcodeEnum::kPastMaxValue);
+  }
+  // Return the name of the opcode at the given index.
+  const char *GetOpcodeName(int index) const override {
+    return isa32::kOpcodeNames[index];
+  }
 
   // Getter.
   isa32::KelvinEncoding *kelvin_encoding() const { return kelvin_encoding_; }

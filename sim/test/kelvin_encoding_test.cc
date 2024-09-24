@@ -24,11 +24,13 @@
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/register.h"
+#include "mpact/sim/util/memory/flat_demand_memory.h"
 
 namespace {
 
 using kelvin::sim::KelvinState;
 using kelvin::sim::isa32::KelvinEncoding;
+using mpact::sim::util::FlatDemandMemory;
 using SlotEnum = kelvin::sim::isa32::SlotEnum;
 using OpcodeEnum = kelvin::sim::isa32::OpcodeEnum;
 using SourceOpEnum = kelvin::sim::isa32::SourceOpEnum;
@@ -120,11 +122,14 @@ constexpr uint32_t kVdwconvBase = 0b001000'000001'010000'10'110000'0'10'101;
 class KelvinEncodingTest : public testing::Test {
  protected:
   KelvinEncodingTest() {
-    state_ = new KelvinState("test", mpact::sim::riscv::RiscVXlen::RV32);
+    memory_ = new FlatDemandMemory();
+    state_ =
+        new KelvinState("test", mpact::sim::riscv::RiscVXlen::RV32, memory_);
     enc_ = new KelvinEncoding(state_);
   }
   ~KelvinEncodingTest() override {
     delete enc_;
+    delete memory_;
     delete state_;
   }
 
@@ -144,6 +149,7 @@ class KelvinEncodingTest : public testing::Test {
     return reinterpret_cast<T *>(dest);
   }
 
+  FlatDemandMemory *memory_;
   KelvinState *state_;
   KelvinEncoding *enc_;
 };

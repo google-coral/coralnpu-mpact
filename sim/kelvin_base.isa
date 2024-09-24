@@ -7,7 +7,7 @@ disasm widths = {-18};
 // Basic integer ALU instructions, part of the RiscV 32i subset.
 slot riscv32i {
   includes {
-    #include "riscv/riscv_i_instructions.h"
+    #include "external/com_google_mpact-riscv/riscv/riscv_i_instructions.h"
   }
   default size = 4;
   default latency = global_latency;
@@ -203,7 +203,7 @@ slot riscv32i {
 // RiscV32 multiply/divide instructions.
 slot riscv32m {
   includes {
-    #include "riscv/riscv_m_instructions.h"
+    #include "external/com_google_mpact-riscv/riscv/riscv_m_instructions.h"
   }
   default size = 4;
   default latency = global_latency;
@@ -247,7 +247,7 @@ slot riscv32m {
 // RiscV32 CSR manipulation instructions.
 slot zicsr {
   includes {
-    #include "riscv/riscv_zicsr_instructions.h"
+    #include "external/com_google_mpact-riscv/riscv/riscv_zicsr_instructions.h"
   }
   default size = 4;
   default latency = global_latency;
@@ -322,7 +322,7 @@ slot zicsr {
 // Instruction fence.
 slot zfencei {
   includes {
-    #include "riscv/riscv_zfencei_instructions.h"
+    #include "external/com_google_mpact-riscv/riscv/riscv_zfencei_instructions.h"
   }
   default size = 4;
   default latency = global_latency;
@@ -336,7 +336,7 @@ slot zfencei {
 // Privileged instructions.
 slot privileged {
   includes {
-    #include "riscv/riscv_priv_instructions.h"
+    #include "external/com_google_mpact-riscv/riscv/riscv_priv_instructions.h"
     #include "sim/kelvin_instructions.h"
   }
   default size = 4;

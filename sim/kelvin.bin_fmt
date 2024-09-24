@@ -11,6 +11,8 @@ decoder Kelvin {
   KelvinVectorMemoryInst;
   KelvinVectorMulInst;
   KelvinVectorShiftInst;
+  RiscVZbbInst32;
+  RiscVZbbInst32Only;
 };
 
 #include "sim/kelvin_format.bin_fmt"
@@ -20,3 +22,4 @@ decoder Kelvin {
 #include "sim/kelvin_memory.bin_fmt"
 #include "sim/kelvin_mul.bin_fmt"
 #include "sim/kelvin_shift.bin_fmt"
+#include "external/com_google_mpact-riscv/riscv/riscv32zb.bin_fmt"

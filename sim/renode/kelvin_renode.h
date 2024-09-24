@@ -56,6 +56,8 @@ class KelvinRenode : public renode::RenodeDebugInterface {
 
   // Request that core stop running override;
   absl::Status Halt() override;
+  absl::Status Halt(HaltReason halt_reason) override;
+  absl::Status Halt(HaltReasonValueType halt_reason) override;
   // Step the core by num instructions.
   absl::StatusOr<int> Step(int num) override;
   // Allow the core to free-run. The loop to run the instructions should be

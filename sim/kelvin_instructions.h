@@ -19,6 +19,11 @@
 
 #include "mpact/sim/generic/instruction.h"
 
+// We define this empty namespace and using it so that kelvin_encoder
+// can successfully resolve definitions for generic RiscV semfuncs.
+namespace mpact::sim::riscv {}
+using namespace mpact::sim::riscv;  // NOLINT
+
 namespace kelvin::sim {
 
 void KelvinIllegalInstruction(mpact::sim::generic::Instruction *inst);

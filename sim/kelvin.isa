@@ -16,15 +16,23 @@ isa Kelvin {
 #include "sim/kelvin_shift.isa"
 #include "sim/kelvin_memory.isa"
 #include "sim/kelvin_mul.isa"
+#include "external/com_google_mpact-riscv/riscv/riscv32zb.isa"
 
 // Combining all kelvin instruction sets.
 slot kelvin : riscv32i, riscv32m, zicsr, zfencei, privileged, kelvin_arith,
     kelvin_conv, kelvin_log, kelvin_memory, kelvin_mul, kelvin_shift,
-    kelvin_vector_memory {
+    kelvin_vector_memory, riscv32_zbb {
   includes {
     #include "sim/kelvin_instructions.h"
   }
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
     semfunc: "&KelvinIllegalInstruction";
+
+  opcodes {
+    ror = delete;
+    rol = delete;
+    orcb = delete;
+    rev8 = delete;
+  }
 }

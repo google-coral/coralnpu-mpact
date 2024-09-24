@@ -433,8 +433,8 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and appends them to the given instruction.
   void AppendRegisterOperands(Instruction *inst,
-                              const std::vector<std::string> &sources,
-                              const std::vector<std::string> &destinations) {
+                              absl::Span<const std::string> sources,
+                              absl::Span<const std::string> destinations) {
     for (auto &reg_name : sources) {
       auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
