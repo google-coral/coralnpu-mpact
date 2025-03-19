@@ -61,7 +61,6 @@ constexpr uint32_t kDataLoadAddress = 0x1'0000;
 constexpr uint32_t kNumVectorRegister = 64;
 constexpr char kRs1Name[] = "x1";
 constexpr char kRs2Name[] = "x2";
-constexpr int kRs1 = 1;
 constexpr int kVd = 32;
 constexpr int kVs1 = 8;
 constexpr int kVs2 = 24;

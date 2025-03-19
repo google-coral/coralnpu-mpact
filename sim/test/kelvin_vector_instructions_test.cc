@@ -177,31 +177,6 @@ class KelvinVectorInstructionsTest
     KelvinHalftypeVectorBinaryOpHelper<F, TNext1, TNext...>(name);
   }
 
-  template <template <typename, typename, typename> class F, typename TD,
-            typename TS1, typename TS2>
-  void KelvinVectorVXBinaryOpHelper(absl::string_view name) {
-    const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<TD>());
-
-    // Vector OP vector-scalar.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kNonStripmine),
-        absl::StrCat(name_with_type, "VX"), kIsScalar, kNonStripmine,
-        F<TD, TS1, TS2>::Op);
-
-    // Vector OP vector-scalar stripmined.
-    BinaryOpTestHelper<TD, TS1, TS2>(
-        absl::bind_front(F<TD, TS1, TS2>::KelvinOp, kIsStripmine),
-        absl::StrCat(name_with_type, "VXM"), kIsScalar, kIsStripmine,
-        F<TD, TS1, TS2>::Op);
-  }
-
-  template <template <typename, typename, typename> class F, typename TD,
-            typename TS1, typename TS2, typename TNext1, typename... TNext>
-  void KelvinVectorVXBinaryOpHelper(absl::string_view name) {
-    KelvinVectorVXBinaryOpHelper<F, TD, TS1, TS2>(name);
-    KelvinVectorVXBinaryOpHelper<F, TNext1, TNext...>(name);
-  }
-
   template <template <typename, typename, typename> class F, typename T>
   void KelvinVectorShiftBinaryOpHelper(absl::string_view name) {
     const auto name_with_type = absl::StrCat(name, KelvinTestTypeSuffix<T>());
@@ -673,7 +648,6 @@ struct VPaddOp {
   static void KelvinOp(bool strip_mine, Instruction *inst) {
     KelvinVPadd<Vd, Vs2>(strip_mine, inst);
   }
-  static constexpr auto kArgsGetter = PairwiseOpArgsGetter<Vs1>;
 };
 
 TEST_F(KelvinVectorInstructionsTest, VPadd) {

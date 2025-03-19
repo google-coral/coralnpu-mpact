@@ -163,6 +163,11 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
             encoding::inst32_format::ExtractRUimm5(inst_word_));
       }));
   source_op_getters_.insert(
+      std::make_pair(static_cast<int>(SourceOpEnum::kRUimm5), [this]() {
+        return new mpact::sim::generic::ImmediateOperand<uint32_t>(
+            encoding::inst32_format::ExtractRUimm5(inst_word_));
+      }));
+  source_op_getters_.insert(
       std::make_pair(static_cast<int>(SourceOpEnum::kJImm12), [this]() {
         return new mpact::sim::generic::ImmediateOperand<int32_t>(
             encoding::inst32_format::ExtractImm12(inst_word_));
@@ -360,6 +365,7 @@ void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
   decode_functions.push_back(encoding::DecodeKelvinVectorShiftInst);
   decode_functions.push_back(encoding::DecodeRiscVZbbInst32);
   decode_functions.push_back(encoding::DecodeRiscVZbbInst32Only);
+  decode_functions.push_back(encoding::DecodeRiscVZbbImmInst32);
   for (auto &function : decode_functions) {
     opcode_ = function(inst_word_);
     if (opcode_ != OpcodeEnum::kNone) break;

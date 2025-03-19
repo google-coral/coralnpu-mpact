@@ -103,6 +103,25 @@ constexpr uint32_t kDiv = 0b0000001'00000'00000'100'00000'0110011;
 constexpr uint32_t kDivu = 0b0000001'00000'00000'101'00000'0110011;
 constexpr uint32_t kRem = 0b0000001'00000'00000'110'00000'0110011;
 constexpr uint32_t kRemu = 0b0000001'00000'00000'111'00000'0110011;
+// ZBB
+constexpr uint32_t kAndn = 0b0100000'00000'00000'111'00000'0110011;
+constexpr uint32_t kOrn = 0b0100000'00000'00000'110'00000'0110011;
+constexpr uint32_t kXnor = 0b0100000'00000'00000'100'00000'0110011;
+constexpr uint32_t kClz = 0b0110000'00000'00000'001'00000'0010011;
+constexpr uint32_t kCtz = 0b0110000'00001'00000'001'00000'0010011;
+constexpr uint32_t kCpop = 0b0110000'00010'00000'001'00000'0010011;
+constexpr uint32_t kMax = 0b0000101'00000'00000'110'00000'0110011;
+constexpr uint32_t kMaxu = 0b0000101'00000'00000'111'00000'0110011;
+constexpr uint32_t kMin = 0b0000101'00000'00000'100'00000'0110011;
+constexpr uint32_t kMinu = 0b0000101'00000'00000'101'00000'0110011;
+constexpr uint32_t kSextB = 0b0110000'00100'00000'001'00000'0010011;
+constexpr uint32_t kSextH = 0b0110000'00101'00000'001'00000'0010011;
+constexpr uint32_t kRol = 0b0110000'00000'00000'001'00000'0110011;
+constexpr uint32_t kRor = 0b0110000'00000'00000'101'00000'0110011;
+constexpr uint32_t kOrcb = 0b0010100'00111'00000'101'00000'0010011;
+constexpr uint32_t kRev8 = 0b0110100'11000'00000'101'00000'0010011;
+constexpr uint32_t kZextH = 0b0000100'00000'00000'100'00000'0110011;
+constexpr uint32_t kRori = 0b0110000'00000'00000'101'00000'0010011;
 
 // Kelvin System Op
 constexpr uint32_t kGetMaxVl = 0b0001'0'00'00000'00000'000'00000'111'0111;
@@ -180,6 +199,45 @@ static uint32_t SetSucc(uint32_t iword, uint32_t succ) {
 
 static inline uint32_t SetSz(uint32_t iword, uint32_t sz) {
   return (iword | ((sz & 0x3) << 12));
+}
+
+TEST_F(KelvinEncodingTest, RV32ZBBOpcodes) {
+  enc_->ParseInstruction(kAndn);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kAndn);
+  enc_->ParseInstruction(kOrn);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kOrn);
+  enc_->ParseInstruction(kXnor);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kXnor);
+  enc_->ParseInstruction(kClz);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kClz);
+  enc_->ParseInstruction(kCtz);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kCtz);
+  enc_->ParseInstruction(kCpop);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kCpop);
+  enc_->ParseInstruction(kMax);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kMax);
+  enc_->ParseInstruction(kMaxu);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kMaxu);
+  enc_->ParseInstruction(kMin);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kMin);
+  enc_->ParseInstruction(kMinu);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kMinu);
+  enc_->ParseInstruction(kSextB);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kSextB);
+  enc_->ParseInstruction(kSextH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kSextH);
+  enc_->ParseInstruction(kRol);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRol);
+  enc_->ParseInstruction(kRor);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRor);
+  enc_->ParseInstruction(kOrcb);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kOrcb);
+  enc_->ParseInstruction(kRev8);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRev8);
+  enc_->ParseInstruction(kZextH);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kZextH);
+  enc_->ParseInstruction(kRori);
+  EXPECT_EQ(enc_->GetOpcode(SlotEnum::kKelvin, 0), OpcodeEnum::kRori);
 }
 
 TEST_F(KelvinEncodingTest, RV32IOpcodes) {
@@ -389,7 +447,7 @@ TEST_F(KelvinEncodingTest, KelvinVldEncodeXs1Xs2) {
   // Test vld.b.x (x = x0)
   auto *src = EncodeOpHelper<RV32SourceOperand>(kVld, OpcodeEnum::kVldBX,
                                                 SourceOpEnum::kVs1);
-  EXPECT_EQ(src->AsString(), "0");
+  EXPECT_EQ(src->AsString(), "zero");
   delete src;
 
   // Test vld.w.l.xx
@@ -641,7 +699,7 @@ TEST_F(KelvinEncodingTest, KelvinEncodeVs2) {
 
   auto *src = EncodeOpHelper<RV32SourceOperand>(
       kVAddBase | 0b10, OpcodeEnum::kVaddBVx, SourceOpEnum::kVs2);
-  EXPECT_EQ(src->AsString(), "0");
+  EXPECT_EQ(src->AsString(), "zero");
   delete src;
 }
 

@@ -13,6 +13,7 @@ decoder Kelvin {
   KelvinVectorShiftInst;
   RiscVZbbInst32;
   RiscVZbbInst32Only;
+  RiscVZbbImmInst32;
 };
 
 #include "sim/kelvin_format.bin_fmt"
