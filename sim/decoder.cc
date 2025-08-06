@@ -14,6 +14,8 @@
 
 #include "sim/decoder.h"
 
+#include <cstdint>
+
 #include "sim/kelvin_decoder.h"
 #include "sim/kelvin_encoding.h"
 #include "sim/kelvin_enums.h"
@@ -28,8 +30,8 @@ namespace kelvin::sim {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-KelvinDecoder::KelvinDecoder(KelvinState *state,
-                             mpact::sim::util::MemoryInterface *memory)
+KelvinDecoder::KelvinDecoder(KelvinState* state,
+                             mpact::sim::util::MemoryInterface* memory)
     : state_(state), memory_(memory) {
   // Get a handle to the internal error in the program error controller.
   decode_error_ = state->program_error_controller()->GetProgramError(
@@ -54,14 +56,14 @@ KelvinDecoder::~KelvinDecoder() {
   delete kelvin_encoding_;
 }
 
-mpact::sim::generic::Instruction *KelvinDecoder::DecodeInstruction(
+mpact::sim::generic::Instruction* KelvinDecoder::DecodeInstruction(
     uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an empty instruction object and raise an exception.
   if (address & 0x1) {
-    auto *inst = new mpact::sim::generic::Instruction(address, state_);
+    auto* inst = new mpact::sim::generic::Instruction(address, state_);
     inst->set_semantic_function(
-        [](mpact::sim::generic::Instruction *inst) { /* empty */ });
+        [](mpact::sim::generic::Instruction* inst) { /* empty */ });
     inst->set_size(1);
     inst->SetDisassemblyString("Misaligned instruction address");
     inst->set_opcode(static_cast<int>(isa32::OpcodeEnum::kNone));
@@ -77,12 +79,12 @@ mpact::sim::generic::Instruction *KelvinDecoder::DecodeInstruction(
     state_->Trap(/*is_interrupt*/ false, address,
                  *mpact::sim::riscv::ExceptionCode::kInstructionAccessFault,
                  address, nullptr);
-    auto *inst = new mpact::sim::generic::Instruction(address, state_);
+    auto* inst = new mpact::sim::generic::Instruction(address, state_);
     inst->set_size(0);
     inst->SetDisassemblyString("Instruction access fault");
     inst->set_opcode(static_cast<int>(isa32::OpcodeEnum::kNone));
     inst->set_semantic_function(
-        [](mpact::sim::generic::Instruction *inst) { /* empty */ });
+        [](mpact::sim::generic::Instruction* inst) { /* empty */ });
     return inst;
   }
 
@@ -93,7 +95,7 @@ mpact::sim::generic::Instruction *KelvinDecoder::DecodeInstruction(
 
   // Call the isa decoder to obtain a new instruction object for the instruction
   // word that was parsed above.
-  auto *instruction = kelvin_isa_->Decode(address, kelvin_encoding_);
+  auto* instruction = kelvin_isa_->Decode(address, kelvin_encoding_);
   return instruction;
 }
 }  // namespace kelvin::sim

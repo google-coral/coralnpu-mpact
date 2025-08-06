@@ -44,8 +44,8 @@ using ::mpact::sim::riscv::RV32VectorSourceOperand;
 // vs3 (wide) is the starting register of group of up-to 8 vector
 // registers. xs2 stores the convolution command.
 // `vd` is not used in the op.
-void KelvinVConv(Instruction *inst) {
-  auto state = static_cast<KelvinState *>(inst->state());
+void KelvinVConv(Instruction* inst) {
+  auto state = static_cast<KelvinState*>(inst->state());
 
   vconv_cmd_t conv_cmd;
   auto reg_data = GetInstructionSource<uint32_t>(inst, 1, 0);
@@ -72,8 +72,8 @@ void KelvinVConv(Instruction *inst) {
   }
 
   // Read the narrow source.
-  auto vs1 = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
-  auto vs3 = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
+  auto vs1 = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+  auto vs3 = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
   AccArrayTemplate<std::array<uint8_t, kVectorLenInByte>> vec_narrow;
   for (int vec_idx = 0; vec_idx < vec_narrow.size(); ++vec_idx) {
     auto source_span = vs1->GetRegister(vec_idx)->data_buffer()->Get<uint8_t>();
@@ -135,8 +135,8 @@ void KelvinVConv(Instruction *inst) {
 // vs3 (wide) is the starting register of group of 3 vector registers.
 // xs2 stores the convolution command.
 // `vd` is used if |write_acc| is set to true.
-void KelvinVDwconv(bool write_acc, Instruction *inst) {
-  KelvinState *state = static_cast<KelvinState *>(inst->state());
+void KelvinVDwconv(bool write_acc, Instruction* inst) {
+  KelvinState* state = static_cast<KelvinState*>(inst->state());
   uint32_t reg_data = GetInstructionSource<uint32_t>(inst, 1, 0);
   vdwconv_u8_t dwconv_cmd;
   memcpy(&dwconv_cmd, &reg_data, sizeof(dwconv_cmd));
@@ -177,7 +177,7 @@ void KelvinVDwconv(bool write_acc, Instruction *inst) {
       break;
   }
 
-  auto vs1 = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto vs1 = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
   absl::Span<uint32_t> vs10_span =
       vs1->GetRegister(vs1_idx[0])->data_buffer()->Get<uint32_t>();
   absl::Span<uint32_t> vs11_span =
@@ -213,12 +213,12 @@ void KelvinVDwconv(bool write_acc, Instruction *inst) {
                   /*epc=*/inst->address(), inst);
   }
 
-  auto vs3 = static_cast<RV32VectorSourceOperand *>(inst->Source(2));
-  int32_t *acc = reinterpret_cast<int32_t *>(state->dw_acc_vec(0));
+  auto vs3 = static_cast<RV32VectorSourceOperand*>(inst->Source(2));
+  int32_t* acc = reinterpret_cast<int32_t*>(state->dw_acc_vec(0));
 
   for (int r = 0; r < kDwRegisterProducts; r++) {
     absl::Span<uint8_t> a_span = absl::Span<uint8_t>(
-        reinterpret_cast<uint8_t *>(a_data + (r * kVectorLenInWord)),
+        reinterpret_cast<uint8_t*>(a_data + (r * kVectorLenInWord)),
         kVectorLenInByte);
     absl::Span<uint8_t> b_span =
         vs3->GetRegister(r)->data_buffer()->Get<uint8_t>();
@@ -242,9 +242,9 @@ void KelvinVDwconv(bool write_acc, Instruction *inst) {
     return;
   }
 
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   for (int i = 0; i < 4; i++) {
-    DataBuffer *dest_db = vd->AllocateDataBuffer(i);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(i);
     absl::Span<uint32_t> dest_span = dest_db->Get<uint32_t>();
     for (int j = 0; j < kVectorLenInWord; j++) {
       dest_span[j] = acc[i * kVectorLenInWord + j];

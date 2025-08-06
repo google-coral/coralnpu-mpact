@@ -36,7 +36,7 @@ namespace kelvin::sim::isa32 {
 // instructions according to the operand fields in the encoding.
 class KelvinEncoding : public KelvinEncodingBase {
  public:
-  explicit KelvinEncoding(KelvinState *state);
+  explicit KelvinEncoding(KelvinState* state);
   ~KelvinEncoding() override;
 
   // Parses an instruction and determines the opcode.
@@ -46,7 +46,7 @@ class KelvinEncoding : public KelvinEncodingBase {
   OpcodeEnum GetOpcode(SlotEnum, int) override { return opcode_; }
 
   // There is no predicate, so return nullptr.
-  PredicateOperandInterface *GetPredicate(SlotEnum, int, OpcodeEnum,
+  PredicateOperandInterface* GetPredicate(SlotEnum, int, OpcodeEnum,
                                           PredOpEnum) override {
     return nullptr;
   }
@@ -58,12 +58,12 @@ class KelvinEncoding : public KelvinEncodingBase {
   // where the resource itself is a register bank, and the argument specifies
   // which register (or more precisely) which encoding "field" specifies the
   // register number.
-  ResourceOperandInterface *GetSimpleResourceOperand(
-      SlotEnum, int, OpcodeEnum, SimpleResourceVector &resource_vec,
+  ResourceOperandInterface* GetSimpleResourceOperand(
+      SlotEnum, int, OpcodeEnum, SimpleResourceVector& resource_vec,
       int end) override {
     return nullptr;
   }
-  ResourceOperandInterface *GetComplexResourceOperand(
+  ResourceOperandInterface* GetComplexResourceOperand(
       SlotEnum, int, OpcodeEnum, ComplexResourceEnum resource, int begin,
       int end) override {
     return nullptr;
@@ -71,12 +71,12 @@ class KelvinEncoding : public KelvinEncodingBase {
 
   // The following method returns a source operand that corresponds to the
   // particular operand field.
-  SourceOperandInterface *GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
+  SourceOperandInterface* GetSource(SlotEnum, int, OpcodeEnum, SourceOpEnum op,
                                     int source_no) override;
 
   // The following method returns a destination operand that corresponds to the
   // particular operand field.
-  DestinationOperandInterface *GetDestination(SlotEnum, int, OpcodeEnum,
+  DestinationOperandInterface* GetDestination(SlotEnum, int, OpcodeEnum,
                                               DestOpEnum op, int,
                                               int latency) override;
 
@@ -88,20 +88,20 @@ class KelvinEncoding : public KelvinEncodingBase {
   }
 
   // Getter.
-  mpact::sim::generic::SimpleResourcePool *resource_pool() const {
+  mpact::sim::generic::SimpleResourcePool* resource_pool() const {
     return resource_pool_;
   }
 
  protected:
   using SourceOpGetterMap =
-      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface *()>>;
+      absl::flat_hash_map<int, absl::AnyInvocable<SourceOperandInterface*()>>;
   using DestOpGetterMap = absl::flat_hash_map<
-      int, absl::AnyInvocable<DestinationOperandInterface *(int)>>;
+      int, absl::AnyInvocable<DestinationOperandInterface*(int)>>;
 
-  SourceOpGetterMap &source_op_getters() { return source_op_getters_; }
-  DestOpGetterMap &dest_op_getters() { return dest_op_getters_; }
+  SourceOpGetterMap& source_op_getters() { return source_op_getters_; }
+  DestOpGetterMap& dest_op_getters() { return dest_op_getters_; }
 
-  KelvinState *state() const { return state_; }
+  KelvinState* state() const { return state_; }
   OpcodeEnum opcode() const { return opcode_; }
   uint32_t inst_word() const { return inst_word_; }
 
@@ -116,10 +116,10 @@ class KelvinEncoding : public KelvinEncodingBase {
 
   SourceOpGetterMap source_op_getters_;
   DestOpGetterMap dest_op_getters_;
-  KelvinState *state_;
+  KelvinState* state_;
   uint32_t inst_word_;
   OpcodeEnum opcode_;
-  mpact::sim::generic::SimpleResourcePool *resource_pool_ = nullptr;
+  mpact::sim::generic::SimpleResourcePool* resource_pool_ = nullptr;
 };
 
 }  // namespace kelvin::sim::isa32

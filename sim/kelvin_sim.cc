@@ -50,7 +50,7 @@ ABSL_FLAG(std::optional<uint32_t>, entry_point, std::nullopt,
           "Optionally set the entry point of the program.");
 
 // Static pointer to the top instance. Used by the control-C handler.
-static kelvin::sim::KelvinTop *top = nullptr;
+static kelvin::sim::KelvinTop* top = nullptr;
 
 // Control-c handler to interrupt any running simulation.
 static void sim_sigint_handler(int arg) {
@@ -65,8 +65,8 @@ static void sim_sigint_handler(int arg) {
 // Custom debug command to print all the scalar register values.
 static bool PrintRegisters(
     absl::string_view input,
-    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
-    std::string &output) {
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess& core_access,
+    std::string& output) {
   LazyRE2 xreg_info_re{R"(\s*reg\s+info\s*)"};
   if (!RE2::FullMatch(input, *xreg_info_re)) {
     return false;
@@ -90,8 +90,8 @@ static bool PrintRegisters(
 // Custom debug command to print all the assigned vector register values.
 static bool PrintVectorRegisters(
     absl::string_view input,
-    const mpact::sim::riscv::DebugCommandShell::CoreAccess &core_access,
-    std::string &output) {
+    const mpact::sim::riscv::DebugCommandShell::CoreAccess& core_access,
+    std::string& output) {
   LazyRE2 vreg_info_re{R"(\s*vreg\s+info\s*)"};
   if (!RE2::FullMatch(input, *vreg_info_re)) {
     return false;
@@ -104,7 +104,7 @@ static bool PrintVectorRegisters(
       // Skip the register if error occurs.
       continue;
     }
-    auto *db = result.value();
+    auto* db = result.value();
     if (db == nullptr) {
       // Skip the register if the data buffer is not available.
       continue;
@@ -124,19 +124,19 @@ static bool PrintVectorRegisters(
 }
 
 // Use ELF file's magic word to determine if the input file is an ELF file.
-static bool IsElfFile(std::string &file_name) {
+static bool IsElfFile(std::string& file_name) {
   std::ifstream image_file;
   image_file.open(file_name, std::ios::in | std::ios::binary);
   if (image_file.good()) {
     uint32_t magic_word;
-    image_file.read(reinterpret_cast<char *>(&magic_word), sizeof(magic_word));
+    image_file.read(reinterpret_cast<char*>(&magic_word), sizeof(magic_word));
     image_file.close();
     return magic_word == 0x464c457f;  // little endian ELF magic word.
   }
   return false;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   absl::InitializeLog();
   absl::SetProgramUsageMessage("Kelvin MPACT-Sim based CLI tool");
   auto out_args = absl::ParseCommandLine(argc, argv);

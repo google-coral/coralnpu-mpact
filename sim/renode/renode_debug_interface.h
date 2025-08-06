@@ -49,10 +49,10 @@ class RenodeDebugInterface : public mpact::sim::generic::CoreDebugInterface {
   // Get register information.
   virtual int32_t GetRenodeRegisterInfoSize() const = 0;
   virtual absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len,
-                                             char *name,
-                                             RenodeCpuRegister &info) = 0;
+                                             char* name,
+                                             RenodeCpuRegister& info) = 0;
 
-  virtual absl::Status LoadImage(const std::string &image_path,
+  virtual absl::Status LoadImage(const std::string& image_path,
                                  uint64_t start_address) = 0;
 };
 

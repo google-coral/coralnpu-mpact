@@ -30,15 +30,15 @@
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 
-kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string name) {
-  auto *top = new kelvin::sim::KelvinRenode(name);
+kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(std::string name) {
+  auto* top = new kelvin::sim::KelvinRenode(name);
   return top;
 }
 
-kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
+kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(
     std::string name, uint64_t memory_block_size_bytes,
-    uint64_t memory_size_bytes, uint8_t **block_ptr_list) {
-  auto *top = new kelvin::sim::KelvinRenode(name, memory_block_size_bytes,
+    uint64_t memory_size_bytes, uint8_t** block_ptr_list) {
+  auto* top = new kelvin::sim::KelvinRenode(name, memory_block_size_bytes,
                                             memory_size_bytes, block_ptr_list);
   return top;
 }
@@ -57,7 +57,7 @@ KelvinRenode::KelvinRenode(std::string name) {
 
 KelvinRenode::KelvinRenode(std::string name, uint64_t memory_block_size_bytes,
                            uint64_t memory_size_bytes,
-                           uint8_t **block_ptr_list) {
+                           uint8_t** block_ptr_list) {
   kelvin_top_ = new KelvinTop(name, memory_block_size_bytes, memory_size_bytes,
                               block_ptr_list);
 }
@@ -83,28 +83,28 @@ absl::StatusOr<HaltReasonValueType> KelvinRenode::GetLastHaltReason() {
   return kelvin_top_->GetLastHaltReason();
 }
 
-absl::StatusOr<uint64_t> KelvinRenode::ReadRegister(const std::string &name) {
+absl::StatusOr<uint64_t> KelvinRenode::ReadRegister(const std::string& name) {
   return kelvin_top_->ReadRegister(name);
 }
 
-absl::Status KelvinRenode::WriteRegister(const std::string &name,
+absl::Status KelvinRenode::WriteRegister(const std::string& name,
                                          uint64_t value) {
   return kelvin_top_->WriteRegister(name, value);
 }
 
-absl::StatusOr<size_t> KelvinRenode::ReadMemory(uint64_t address, void *buf,
+absl::StatusOr<size_t> KelvinRenode::ReadMemory(uint64_t address, void* buf,
                                                 size_t length) {
   return kelvin_top_->ReadMemory(address, buf, length);
 }
 
 absl::StatusOr<size_t> KelvinRenode::WriteMemory(uint64_t address,
-                                                 const void *buf,
+                                                 const void* buf,
                                                  size_t length) {
   return kelvin_top_->WriteMemory(address, buf, length);
 }
 
-absl::StatusOr<mpact::sim::generic::DataBuffer *>
-KelvinRenode::GetRegisterDataBuffer(const std::string &name) {
+absl::StatusOr<mpact::sim::generic::DataBuffer*>
+KelvinRenode::GetRegisterDataBuffer(const std::string& name) {
   return kelvin_top_->GetRegisterDataBuffer(name);
 }
 
@@ -124,7 +124,7 @@ absl::Status KelvinRenode::ClearAllSwBreakpoints() {
   return kelvin_top_->ClearAllSwBreakpoints();
 }
 
-absl::StatusOr<mpact::sim::generic::Instruction *> KelvinRenode::GetInstruction(
+absl::StatusOr<mpact::sim::generic::Instruction*> KelvinRenode::GetInstruction(
     uint64_t address) {
   return kelvin_top_->GetInstruction(address);
 }
@@ -133,7 +133,7 @@ absl::StatusOr<std::string> KelvinRenode::GetDisassembly(uint64_t address) {
   return kelvin_top_->GetDisassembly(address);
 }
 
-absl::Status KelvinRenode::LoadImage(const std::string &image_path,
+absl::Status KelvinRenode::LoadImage(const std::string& image_path,
                                      uint64_t start_address) {
   return kelvin_top_->LoadImage(image_path, start_address);
 }
@@ -163,15 +163,15 @@ int32_t KelvinRenode::GetRenodeRegisterInfoSize() const {
 }
 
 absl::Status KelvinRenode::GetRenodeRegisterInfo(int32_t index, int32_t max_len,
-                                                 char *name,
-                                                 RenodeCpuRegister &info) {
-  auto const &register_info = KelvinRenodeRegisterInfo::GetRenodeRegisterInfo();
+                                                 char* name,
+                                                 RenodeCpuRegister& info) {
+  auto const& register_info = KelvinRenodeRegisterInfo::GetRenodeRegisterInfo();
   if ((index < 0 || index >= register_info.size())) {
     return absl::OutOfRangeError(
         absl::StrCat("Register info index (", index, ") out of range"));
   }
   info = register_info[index];
-  auto const &reg_map = RiscVDebugInfo::Instance()->debug_register_map();
+  auto const& reg_map = RiscVDebugInfo::Instance()->debug_register_map();
   auto ptr = reg_map.find(info.index);
   if (ptr == reg_map.end()) {
     name[0] = '\0';

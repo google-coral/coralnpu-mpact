@@ -37,8 +37,8 @@ using mpact::sim::riscv::RV32VectorSourceOperand;
 // register post-increment.
 template <typename T>
 void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
-               Instruction *inst) {
-  auto state = static_cast<KelvinState *>(inst->state());
+               Instruction* inst) {
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const uint32_t elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -65,11 +65,11 @@ void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
     stride_elts = stride_arg;
   }
 
-  auto *db_factory = inst->state()->db_factory();
-  auto *address_db = db_factory->Allocate<uint64_t>(elts_to_load);
-  auto *mask_db = db_factory->Allocate<bool>(elts_to_load);
+  auto* db_factory = inst->state()->db_factory();
+  auto* address_db = db_factory->Allocate<uint64_t>(elts_to_load);
+  auto* mask_db = db_factory->Allocate<bool>(elts_to_load);
   // Allocate the value data buffer that the loaded data is returned in.
-  auto *value_db = db_factory->Allocate<T>(elts_to_load);
+  auto* value_db = db_factory->Allocate<T>(elts_to_load);
 
   auto addresses = address_db->Get<uint64_t>();
   auto masks = mask_db->Get<bool>();
@@ -84,7 +84,7 @@ void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
     elts_left -= count;
     base += stride_elts * sizeof(T);
   }
-  auto *context = new LoadContext(value_db);
+  auto* context = new LoadContext(value_db);
   value_db->set_latency(0);
   state->LoadMemory(inst, address_db, mask_db, sizeof(T), value_db,
                     inst->child(), context);
@@ -96,9 +96,8 @@ void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
 
   const bool post_increment = inst->DestinationsSize() == 1;
   if (post_increment) {
-    auto *reg =
-        static_cast<
-            mpact::sim::generic::RegisterDestinationOperand<uint32_t> *>(
+    auto* reg =
+        static_cast<mpact::sim::generic::RegisterDestinationOperand<uint32_t>*>(
             inst->Destination(0))
             ->GetRegister();
 
@@ -120,24 +119,24 @@ void KelvinVLd(bool has_length, bool has_stride, bool strip_mine,
     reg->data_buffer()->template Set<uint32_t>(0, addr);
   }
 }
-template void KelvinVLd<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVLd<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVLd<int32_t>(bool, bool, bool, Instruction *);
+template void KelvinVLd<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVLd<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVLd<int32_t>(bool, bool, bool, Instruction*);
 
 // VLd child instruction which writes data loaded to destination register(s).
 template <typename T>
-void KelvinVLdRegWrite(bool strip_mine, Instruction *inst) {
-  auto state = static_cast<KelvinState *>(inst->state());
+void KelvinVLdRegWrite(bool strip_mine, Instruction* inst) {
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const uint32_t elts_per_register = vector_size_in_bytes / sizeof(T);
   const auto num_ops = strip_mine ? 4 : 1;
 
-  auto *context = static_cast<LoadContext *>(inst->context());
+  auto* context = static_cast<LoadContext*>(inst->context());
   auto values = context->value_db->template Get<T>();
 
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   for (int op_index = 0; op_index < num_ops; ++op_index) {
-    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<T> dest_span = dest_db->template Get<T>();
 
     for (int dst_element_index = 0; dst_element_index < elts_per_register;
@@ -152,9 +151,9 @@ void KelvinVLdRegWrite(bool strip_mine, Instruction *inst) {
     dest_db->Submit();
   }
 }
-template void KelvinVLdRegWrite<int8_t>(bool, Instruction *);
-template void KelvinVLdRegWrite<int16_t>(bool, Instruction *);
-template void KelvinVLdRegWrite<int32_t>(bool, Instruction *);
+template void KelvinVLdRegWrite<int8_t>(bool, Instruction*);
+template void KelvinVLdRegWrite<int16_t>(bool, Instruction*);
+template void KelvinVLdRegWrite<int32_t>(bool, Instruction*);
 
 // Vector store instruction with the optional data length, stride and address
 // register post-increment.
@@ -162,8 +161,8 @@ template void KelvinVLdRegWrite<int32_t>(bool, Instruction *);
 // register with xs2 stride.
 template <typename T>
 void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
-                       bool is_quad, Instruction *inst) {
-  auto state = static_cast<KelvinState *>(inst->state());
+                       bool is_quad, Instruction* inst) {
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const uint32_t elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -173,7 +172,7 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
       kKelvinMaxMemoryAddress) {  // exclude semihost tests
     mem_addr &= kMemMask;
   }
-  auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
+  auto vs = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
 
   auto base_addr = mem_addr;
 
@@ -190,9 +189,9 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
   }
 
   // Allocate the store memory
-  auto *value_db = state->db_factory()->Allocate(elts_to_store * sizeof(T));
-  auto *address_db = state->db_factory()->Allocate<uint64_t>(elts_to_store);
-  auto *mask_db = state->db_factory()->Allocate<bool>(elts_to_store);
+  auto* value_db = state->db_factory()->Allocate(elts_to_store * sizeof(T));
+  auto* address_db = state->db_factory()->Allocate<uint64_t>(elts_to_store);
+  auto* mask_db = state->db_factory()->Allocate<bool>(elts_to_store);
   auto addresses = address_db->Get<uint64_t>();
   auto value = value_db->Get<T>();
   auto mask = mask_db->Get<bool>();
@@ -228,9 +227,8 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
 
   const bool post_increment = inst->DestinationsSize() == 1;
   if (post_increment) {
-    auto *reg =
-        static_cast<
-            mpact::sim::generic::RegisterDestinationOperand<uint32_t> *>(
+    auto* reg =
+        static_cast<mpact::sim::generic::RegisterDestinationOperand<uint32_t>*>(
             inst->Destination(0))
             ->GetRegister();
     if (elts_to_store > 0) {
@@ -254,30 +252,30 @@ void VectorStoreHelper(bool has_length, bool has_stride, bool strip_mine,
 
 template <typename T>
 void KelvinVSt(bool has_length, bool has_stride, bool strip_mine,
-               Instruction *inst) {
+               Instruction* inst) {
   VectorStoreHelper<T>(has_length, has_stride, strip_mine, /*is_quad=*/false,
                        inst);
 }
 
-template void KelvinVSt<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVSt<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVSt<int32_t>(bool, bool, bool, Instruction *);
+template void KelvinVSt<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVSt<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVSt<int32_t>(bool, bool, bool, Instruction*);
 
 // Duplicate a scalar value into a vector register.
 template <typename T>
-void KelvinVDup(bool strip_mine, Instruction *inst) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinVDup(bool strip_mine, Instruction* inst) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const uint32_t elts_per_register = vector_size_in_bytes / sizeof(T);
   const auto num_ops = strip_mine ? 4 : 1;
 
   // Gets destination register and scalar value.
-  auto *vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto* vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   auto value = GetInstructionSource<T>(inst, 0);
 
   // Fill destination buffer and write to register.
   for (int op_index = 0; op_index < num_ops; ++op_index) {
-    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<T> dest_span = dest_db->template Get<T>();
     for (int dst_element_index = 0; dst_element_index < elts_per_register;
          ++dst_element_index) {
@@ -287,30 +285,30 @@ void KelvinVDup(bool strip_mine, Instruction *inst) {
   }
 }
 
-template void KelvinVDup<int8_t>(bool, Instruction *);
-template void KelvinVDup<int16_t>(bool, Instruction *);
-template void KelvinVDup<int32_t>(bool, Instruction *);
+template void KelvinVDup<int8_t>(bool, Instruction*);
+template void KelvinVDup<int16_t>(bool, Instruction*);
+template void KelvinVDup<int32_t>(bool, Instruction*);
 
 template <typename T>
-void KelvinVStQ(bool strip_mine, Instruction *inst) {
+void KelvinVStQ(bool strip_mine, Instruction* inst) {
   VectorStoreHelper<T>(/*has_length=*/false, /*has_stride=*/true, strip_mine,
                        /*is_quad=*/true, inst);
 }
 
-template void KelvinVStQ<int8_t>(bool, Instruction *);
-template void KelvinVStQ<int16_t>(bool, Instruction *);
-template void KelvinVStQ<int32_t>(bool, Instruction *);
+template void KelvinVStQ<int8_t>(bool, Instruction*);
+template void KelvinVStQ<int16_t>(bool, Instruction*);
+template void KelvinVStQ<int32_t>(bool, Instruction*);
 
 // Return the supported vl length. It starts with the maximum value based on
 // vector_length and then is capped to the minimum by the additional inputs.
 template <typename T>
 void KelvinGetVl(bool strip_mine, bool is_rs1, bool is_rs2,
-                 const mpact::sim::generic::Instruction *inst) {
-  auto *dest_reg =
-      static_cast<mpact::sim::generic::RegisterDestinationOperand<uint32_t> *>(
+                 const mpact::sim::generic::Instruction* inst) {
+  auto* dest_reg =
+      static_cast<mpact::sim::generic::RegisterDestinationOperand<uint32_t>*>(
           inst->Destination(0))
           ->GetRegister();
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   uint32_t vlen = vector_size_in_bytes / sizeof(T);
   if (strip_mine) {
@@ -327,20 +325,20 @@ void KelvinGetVl(bool strip_mine, bool is_rs1, bool is_rs2,
   }
   dest_reg->data_buffer()->Set<uint32_t>(0, vlen);
 }
-template void KelvinGetVl<int8_t>(bool, bool, bool, const Instruction *);
-template void KelvinGetVl<int16_t>(bool, bool, bool, const Instruction *);
-template void KelvinGetVl<int32_t>(bool, bool, bool, const Instruction *);
+template void KelvinGetVl<int8_t>(bool, bool, bool, const Instruction*);
+template void KelvinGetVl<int16_t>(bool, bool, bool, const Instruction*);
+template void KelvinGetVl<int32_t>(bool, bool, bool, const Instruction*);
 
 // Copy convolution accumulation registers into general vector register. In HW,
 // it is set to be v48..55.
-void KelvinVcGet(const mpact::sim::generic::Instruction *inst) {
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinVcGet(const mpact::sim::generic::Instruction* inst) {
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
+  auto* state = static_cast<KelvinState*>(inst->state());
   const uint32_t kVecLenInWord = state->vector_length() / 32;
   for (int op_index = 0; op_index < kVecLenInWord; ++op_index) {
-    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<uint32_t> dest_span = dest_db->Get<uint32_t>();
-    auto *acc_vec = state->acc_vec(op_index);
+    auto* acc_vec = state->acc_vec(op_index);
     for (int i = 0; i < dest_span.size(); ++i) {
       dest_span[i] = (*acc_vec)[i];
     }
@@ -353,19 +351,19 @@ void KelvinVcGet(const mpact::sim::generic::Instruction *inst) {
 // accumulation register. In HW, vs has to be 16-register aligned, and vd has
 // to be set to v48.
 void KelvinAcSet(bool is_transpose,
-                 const mpact::sim::generic::Instruction *inst) {
-  auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
-  auto *state = static_cast<KelvinState *>(inst->state());
+                 const mpact::sim::generic::Instruction* inst) {
+  auto vs = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+  auto* state = static_cast<KelvinState*>(inst->state());
   const uint32_t kVecLenInWord = state->vector_length() / 32;
   for (int op_index = 0; op_index < kVecLenInWord; ++op_index) {
     auto source_span =
         vs->GetRegister(op_index)->data_buffer()->Get<uint32_t>();
     for (int i = 0; i < source_span.size(); ++i) {
       if (is_transpose) {
-        auto *acc_vec = state->acc_vec(i);
+        auto* acc_vec = state->acc_vec(i);
         (*acc_vec)[op_index] = source_span[i];
       } else {
-        auto *acc_vec = state->acc_vec(op_index);
+        auto* acc_vec = state->acc_vec(op_index);
         (*acc_vec)[i] = source_span[i];
       }
     }
@@ -375,23 +373,23 @@ void KelvinAcSet(bool is_transpose,
 // Copy the content from the source `vs1` banks to the `vd` banks to prepare the
 // depthwise convolution. Due to compiler encoding, this op is typeless and only
 // assumes `vs1` and `vd` content in 8-bit type.
-void KelvinADwInit(const mpact::sim::generic::Instruction *inst) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinADwInit(const mpact::sim::generic::Instruction* inst) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   // Only set a quarter of the to prepare for double-widening in depth-wise
   // convolution.
   const uint32_t init_n = state->vector_length() / (8 * 4);
   constexpr int kInitSize = 4;
-  auto vs = static_cast<RV32VectorSourceOperand *>(inst->Source(0));
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto vs = static_cast<RV32VectorSourceOperand*>(inst->Source(0));
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
   for (int op_index = 0; op_index < kInitSize; ++op_index) {
     auto source_span = vs->GetRegister(op_index)->data_buffer()->Get<uint8_t>();
-    uint8_t *dwacc_span =
-        reinterpret_cast<uint8_t *>(state->dw_acc_vec(8 * op_index));
+    uint8_t* dwacc_span =
+        reinterpret_cast<uint8_t*>(state->dw_acc_vec(8 * op_index));
     for (int i = 0; i < 32; i++) {
       dwacc_span[i] = source_span[i];
     }
 
-    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<uint8_t> dest_span = dest_db->Get<uint8_t>();
     for (int i = 0; i < init_n; ++i) {
       dest_span[i] = source_span[i];

@@ -43,8 +43,8 @@ constexpr uint32_t kVectorRegisterWidth = 32;
 
 KelvinState::KelvinState(
     absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
-    mpact::sim::util::MemoryInterface *memory,
-    mpact::sim::util::AtomicMemoryOpInterface *atomic_memory)
+    mpact::sim::util::MemoryInterface* memory,
+    mpact::sim::util::AtomicMemoryOpInterface* atomic_memory)
     : mpact::sim::riscv::RiscVState(id, xlen, memory, atomic_memory),
       kisa_("kisa", static_cast<RiscVCsrEnum>(KelvinCsrEnum::kKIsa), this) {
   auto res = csr_set()->GetCsr("minstret");
@@ -65,21 +65,21 @@ KelvinState::KelvinState(
     LOG(FATAL) << "Failed to register kisa";
   }
 
-  absl::StatusOr<RiscVCsrInterface *> result = csr_set()->GetCsr("misa");
+  absl::StatusOr<RiscVCsrInterface*> result = csr_set()->GetCsr("misa");
   if (!result.ok()) {
     LOG(FATAL) << "Failed to get misa";
   }
-  auto *misa = *result;
+  auto* misa = *result;
   misa->Set(kKelvinMisaVal);
 }
 
 KelvinState::KelvinState(absl::string_view id,
                          mpact::sim::riscv::RiscVXlen xlen,
-                         mpact::sim::util::MemoryInterface *memory)
+                         mpact::sim::util::MemoryInterface* memory)
     : KelvinState(id, xlen, memory, nullptr) {}
 
-void KelvinState::MPause(const Instruction *inst) {
-  for (auto &handler : on_mpause_) {
+void KelvinState::MPause(const Instruction* inst) {
+  for (auto& handler : on_mpause_) {
     bool res = handler(inst);
     if (res) return;
   }
@@ -90,7 +90,7 @@ void KelvinState::MPause(const Instruction *inst) {
 
 // Print the logging message based on log_args_.
 void KelvinState::PrintLog(absl::string_view format_string) {
-  char *print_ptr = const_cast<char *>(format_string.data());
+  char* print_ptr = const_cast<char*>(format_string.data());
   std::string log_string = "";
   while (*print_ptr) {
     if (*print_ptr == '%') {

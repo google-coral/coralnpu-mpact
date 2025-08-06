@@ -26,7 +26,7 @@ namespace kelvin::sim::renode {
 
 KelvinRenodeMemory::KelvinRenodeMemory(uint64_t block_size_bytes,
                                        uint64_t memory_size_bytes,
-                                       uint8_t **block_ptr_list,
+                                       uint8_t** block_ptr_list,
                                        uint64_t base_address,
                                        unsigned addressable_unit_size)
     : addressable_unit_size_(addressable_unit_size),
@@ -49,13 +49,13 @@ bool KelvinRenodeMemory::IsValidAddress(uint64_t address,
   return (address >= base_address_) && (high_address <= max_address_);
 }
 
-void KelvinRenodeMemory::Load(uint64_t address, DataBuffer *db,
-                              Instruction *inst, ReferenceCount *context) {
+void KelvinRenodeMemory::Load(uint64_t address, DataBuffer* db,
+                              Instruction* inst, ReferenceCount* context) {
   int size_in_units = db->size<uint8_t>() / addressable_unit_size_;
   uint64_t high = address + size_in_units;
   ABSL_HARDENING_ASSERT(IsValidAddress(address, high));
   ABSL_HARDENING_ASSERT(size_in_units > 0);
-  uint8_t *byte_ptr = static_cast<uint8_t *>(db->raw_ptr());
+  uint8_t* byte_ptr = static_cast<uint8_t*>(db->raw_ptr());
   // Load the data into the data buffer.
   LoadStoreHelper(address, byte_ptr, size_in_units, true);
   // Execute the instruction to process and write back the load data.
@@ -76,12 +76,12 @@ void KelvinRenodeMemory::Load(uint64_t address, DataBuffer *db,
   }
 }
 
-void KelvinRenodeMemory::Load(DataBuffer *address_db, DataBuffer *mask_db,
-                              int el_size, DataBuffer *db, Instruction *inst,
-                              ReferenceCount *context) {
+void KelvinRenodeMemory::Load(DataBuffer* address_db, DataBuffer* mask_db,
+                              int el_size, DataBuffer* db, Instruction* inst,
+                              ReferenceCount* context) {
   auto mask_span = mask_db->Get<bool>();
   auto address_span = address_db->Get<uint64_t>();
-  uint8_t *byte_ptr = static_cast<uint8_t *>(db->raw_ptr());
+  uint8_t* byte_ptr = static_cast<uint8_t*>(db->raw_ptr());
   int size_in_units = el_size / addressable_unit_size_;
   ABSL_HARDENING_ASSERT(size_in_units > 0);
   // This is either a gather load, or a unit stride load depending on size of
@@ -112,20 +112,20 @@ void KelvinRenodeMemory::Load(DataBuffer *address_db, DataBuffer *mask_db,
   }
 }
 
-void KelvinRenodeMemory::Store(uint64_t address, DataBuffer *db) {
+void KelvinRenodeMemory::Store(uint64_t address, DataBuffer* db) {
   int size_in_units = db->size<uint8_t>() / addressable_unit_size_;
   uint64_t high = address + size_in_units;
   ABSL_HARDENING_ASSERT(IsValidAddress(address, high));
   ABSL_HARDENING_ASSERT(size_in_units > 0);
-  uint8_t *byte_ptr = static_cast<uint8_t *>(db->raw_ptr());
+  uint8_t* byte_ptr = static_cast<uint8_t*>(db->raw_ptr());
   LoadStoreHelper(address, byte_ptr, size_in_units, /*is_load*/ false);
 }
 
-void KelvinRenodeMemory::Store(DataBuffer *address_db, DataBuffer *mask_db,
-                               int el_size, DataBuffer *db) {
+void KelvinRenodeMemory::Store(DataBuffer* address_db, DataBuffer* mask_db,
+                               int el_size, DataBuffer* db) {
   auto mask_span = mask_db->Get<bool>();
   auto address_span = address_db->Get<uint64_t>();
-  uint8_t *byte_ptr = static_cast<uint8_t *>(db->raw_ptr());
+  uint8_t* byte_ptr = static_cast<uint8_t*>(db->raw_ptr());
   int size_in_units = el_size / addressable_unit_size_;
   ABSL_HARDENING_ASSERT(size_in_units > 0);
   // If the address_span.size() > 1, then this is a scatter store, otherwise
@@ -142,14 +142,14 @@ void KelvinRenodeMemory::Store(DataBuffer *address_db, DataBuffer *mask_db,
   }
 }
 
-void KelvinRenodeMemory::LoadStoreHelper(uint64_t address, uint8_t *byte_ptr,
+void KelvinRenodeMemory::LoadStoreHelper(uint64_t address, uint8_t* byte_ptr,
                                          int size_in_units, bool is_load) {
   ABSL_HARDENING_ASSERT(address < max_address_);
   do {
     // Find the block in the map.
     uint64_t block_idx = address / memory_block_size_bytes_;
 
-    uint8_t *block = block_map_[block_idx];
+    uint8_t* block = block_map_[block_idx];
 
     int block_unit_offset = (address - block_idx * memory_block_size_bytes_);
 

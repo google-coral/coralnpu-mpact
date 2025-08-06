@@ -26,17 +26,17 @@ namespace kelvin::sim {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-void KelvinIllegalInstruction(mpact::sim::generic::Instruction *inst) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinIllegalInstruction(mpact::sim::generic::Instruction* inst) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   state->Trap(/*is_interrupt*/ false, /*trap_value*/ 0,
               *mpact::sim::riscv::ExceptionCode::kIllegalInstruction,
               /*epc*/ inst->address(), inst);
 }
 
-void KelvinNopInstruction(mpact::sim::generic::Instruction *inst) {}
+void KelvinNopInstruction(mpact::sim::generic::Instruction* inst) {}
 
-void KelvinIMpause(const mpact::sim::generic::Instruction *inst) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinIMpause(const mpact::sim::generic::Instruction* inst) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   state->MPause(inst);
 }
 
@@ -49,17 +49,17 @@ bool WordHasZero(uint32_t data) {
 
 // A helper function to load a string from the memory address by detecting the
 // '\0' terminator
-void KelvinStringLoadHelper(const mpact::sim::generic::Instruction *inst,
-                            std::string *out_string) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+void KelvinStringLoadHelper(const mpact::sim::generic::Instruction* inst,
+                            std::string* out_string) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   auto addr = mpact::sim::generic::GetInstructionSource<uint32_t>(inst, 0, 0);
   uint32_t data;
-  auto *db = state->db_factory()->Allocate<uint32_t>(1);
+  auto* db = state->db_factory()->Allocate<uint32_t>(1);
   do {
     state->LoadMemory(inst, addr, db, nullptr, nullptr);
     data = db->Get<uint32_t>(0);
     *out_string +=
-        std::string(reinterpret_cast<char *>(&data), sizeof(uint32_t));
+        std::string(reinterpret_cast<char*>(&data), sizeof(uint32_t));
     addr += 4;
   } while (!WordHasZero(data) && addr < state->max_physical_address());
   // Trim the string properly.
@@ -69,8 +69,8 @@ void KelvinStringLoadHelper(const mpact::sim::generic::Instruction *inst,
 
 // Handle FLOG, SLOG, CLOG, and KLOG instructions
 void KelvinLogInstruction(int log_mode,
-                          mpact::sim::generic::Instruction *inst) {
-  auto *state = static_cast<KelvinState *>(inst->state());
+                          mpact::sim::generic::Instruction* inst) {
+  auto* state = static_cast<KelvinState*>(inst->state());
   switch (log_mode) {
     case 0: {  // Format log op to set the format of the printout and print it.
       std::string format_string;
@@ -89,11 +89,11 @@ void KelvinLogInstruction(int log_mode,
     case 2: {  // Character log op to load a group of char[4] as an argument.
       auto data =
           mpact::sim::generic::GetInstructionSource<uint32_t>(inst, 0, 0);
-      auto *clog_string = state->clog_string();
+      auto* clog_string = state->clog_string();
       // CLOG can break a long character array as multiple CLOG calls, and they
       // need to be combined as a single string argument.
       *clog_string +=
-          std::string(reinterpret_cast<char *>(&data), sizeof(uint32_t));
+          std::string(reinterpret_cast<char*>(&data), sizeof(uint32_t));
       if (WordHasZero(data)) {
         // Trim the string properly.
         clog_string->resize(clog_string->find('\0'));
@@ -115,12 +115,12 @@ void KelvinLogInstruction(int log_mode,
 
 // Handle Store instructions for mmap_uncached addresses
 template <typename T>
-void KelvinIStore(Instruction *inst) {
+void KelvinIStore(Instruction* inst) {
   uint32_t base = mpact::sim::generic::GetInstructionSource<uint32_t>(inst, 0);
   int32_t offset = mpact::sim::generic::GetInstructionSource<int32_t>(inst, 1);
   uint32_t address = base + offset;
   T value = mpact::sim::generic::GetInstructionSource<T>(inst, 2);
-  auto *state = static_cast<KelvinState *>(inst->state());
+  auto* state = static_cast<KelvinState*>(inst->state());
   // Check and exclude the cache invalidation bit. However, the semihost tests
   // use the memory space greater than the kelvin HW configuration and do not
   // comply to the magic bit setting. Exclude the check and mask for those
@@ -129,14 +129,14 @@ void KelvinIStore(Instruction *inst) {
       kKelvinMaxMemoryAddress) {  // exclude semihost tests
     address &= kMemMask;
   }
-  auto *db = state->db_factory()->Allocate(sizeof(T));
+  auto* db = state->db_factory()->Allocate(sizeof(T));
   db->Set<T>(0, value);
   state->StoreMemory(inst, address, db);
   db->DecRef();
 }
 
-template void KelvinIStore<uint32_t>(mpact::sim::generic::Instruction *inst);
-template void KelvinIStore<uint16_t>(mpact::sim::generic::Instruction *inst);
-template void KelvinIStore<uint8_t>(mpact::sim::generic::Instruction *inst);
+template void KelvinIStore<uint32_t>(mpact::sim::generic::Instruction* inst);
+template void KelvinIStore<uint16_t>(mpact::sim::generic::Instruction* inst);
+template void KelvinIStore<uint8_t>(mpact::sim::generic::Instruction* inst);
 
 }  // namespace kelvin::sim

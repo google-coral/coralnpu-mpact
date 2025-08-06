@@ -85,9 +85,9 @@ class KelvinTopTest : public testing::Test {
   }
 
   uint32_t entry_point_;
-  KelvinTop *kelvin_top_ = nullptr;
-  ElfProgramLoader *loader_ = nullptr;
-  FlatDemandMemory *memory_ = nullptr;
+  KelvinTop* kelvin_top_ = nullptr;
+  ElfProgramLoader* loader_ = nullptr;
+  FlatDemandMemory* memory_ = nullptr;
 };
 
 // Check the max memory size
@@ -435,7 +435,7 @@ TEST_F(KelvinTopTest, RegisterNames) {
   EXPECT_EQ(kelvin_top_->WriteRegister("x32", word_value).code(),
             absl::StatusCode::kNotFound);
   // Aliases.
-  for (auto &[name, alias] : {std::tuple<std::string, std::string>{"x1", "ra"},
+  for (auto& [name, alias] : {std::tuple<std::string, std::string>{"x1", "ra"},
                               {"x4", "tp"},
                               {"x8", "s0"}}) {
     uint32_t write_value = 0xba5eba11;
@@ -453,7 +453,7 @@ TEST_F(KelvinTopTest, RegisterNames) {
 
   // CSRs that diverge from stock values in MPACT.
   constexpr uint32_t kMisaValue = 0x40801100;
-  for (auto &[name, expected_value] :
+  for (auto& [name, expected_value] :
        {std::tuple<std::string, uint32_t>{"misa", kMisaValue}}) {
     auto result = kelvin_top_->ReadRegister(name);
     EXPECT_OK(result.status());
@@ -525,9 +525,9 @@ class KelvinTopExternalMemoryTest : public testing::Test {
   }
 
   uint32_t entry_point_;
-  KelvinTop *kelvin_top_ = nullptr;
-  ElfProgramLoader *loader_ = nullptr;
-  uint8_t *memory_blocks_[kNumMemoryBlocks] = {nullptr};
+  KelvinTop* kelvin_top_ = nullptr;
+  ElfProgramLoader* loader_ = nullptr;
+  uint8_t* memory_blocks_[kNumMemoryBlocks] = {nullptr};
   uint64_t memory_size_;
 };
 

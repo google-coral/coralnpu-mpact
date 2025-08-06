@@ -23,7 +23,7 @@
 namespace kelvin::sim {
 
 KelvinActionPointMemoryInterface::KelvinActionPointMemoryInterface(
-    MemoryInterface *memory, InvalidateFcn invalidate_fcn)
+    MemoryInterface* memory, InvalidateFcn invalidate_fcn)
     : memory_(memory), invalidate_fcn_(std::move(invalidate_fcn)) {
   // Allocate two data buffers (32 and 16 bit) once, so we don't have to
   // do it every time we access breakpoint instructions.
@@ -32,7 +32,7 @@ KelvinActionPointMemoryInterface::KelvinActionPointMemoryInterface(
 
 KelvinActionPointMemoryInterface::~KelvinActionPointMemoryInterface() {
   if (db4_ != nullptr) db4_->DecRef();
-  for (auto &[unused, inst_info_ptr] : instruction_map_) {
+  for (auto& [unused, inst_info_ptr] : instruction_map_) {
     delete inst_info_ptr;
   }
   instruction_map_.clear();
@@ -65,7 +65,7 @@ absl::Status KelvinActionPointMemoryInterface::WriteBreakpointInstruction(
       return absl::InvalidArgumentError(absl::StrCat(
           "Invalid instruction size: ", size, " at ", absl::Hex(address)));
     }
-    auto *inst_info = new InstructionInfo;
+    auto* inst_info = new InstructionInfo;
     inst_info->og_instruction_word = instruction_word;
     inst_info->size = size;
     it = instruction_map_.insert(std::make_pair(address, inst_info)).first;

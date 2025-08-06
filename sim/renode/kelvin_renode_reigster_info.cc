@@ -20,7 +20,7 @@ namespace kelvin::sim {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: used below (clange error).
 
-KelvinRenodeRegisterInfo *KelvinRenodeRegisterInfo::instance_ = nullptr;
+KelvinRenodeRegisterInfo* KelvinRenodeRegisterInfo::instance_ = nullptr;
 
 void KelvinRenodeRegisterInfo::InitializeRenodeRegisterInfo() {
   using DbgReg = mpact::sim::riscv::DebugRegisterEnum;
@@ -50,19 +50,19 @@ KelvinRenodeRegisterInfo::KelvinRenodeRegisterInfo() {
   InitializeRenodeRegisterInfo();
 }
 
-const KelvinRenodeRegisterInfo::RenodeRegisterInfo &
+const KelvinRenodeRegisterInfo::RenodeRegisterInfo&
 KelvinRenodeRegisterInfo::GetRenodeRegisterInfo() {
   return Instance()->GetRenodeRegisterInfoPrivate();
 }
 
-KelvinRenodeRegisterInfo *KelvinRenodeRegisterInfo::Instance() {
+KelvinRenodeRegisterInfo* KelvinRenodeRegisterInfo::Instance() {
   if (instance_ == nullptr) {
     instance_ = new KelvinRenodeRegisterInfo();
   }
   return instance_;
 }
 
-const KelvinRenodeRegisterInfo::RenodeRegisterInfo &
+const KelvinRenodeRegisterInfo::RenodeRegisterInfo&
 KelvinRenodeRegisterInfo::GetRenodeRegisterInfoPrivate() {
   return renode_register_info_;
 }

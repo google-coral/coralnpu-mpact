@@ -119,23 +119,23 @@ TEST_F(RenodeMpactTest, LoadExecutable) {
 TEST_F(RenodeMpactTest, ReadWriteMem) {
   constexpr uint8_t kBytes[] = {0x01, 0x02, 0x03, 0x04, 0xff, 0xfe, 0xfd, 0xfc};
   int res =
-      write_memory(sim_id_, 0x100, reinterpret_cast<const char *>(kBytes), 8);
+      write_memory(sim_id_, 0x100, reinterpret_cast<const char*>(kBytes), 8);
   EXPECT_EQ(res, 8);
   uint8_t mem_bytes[8] = {0xde, 0xad, 0xbe, 0xef, 0x5a, 0xa5, 0xff, 0x00};
-  res = read_memory(sim_id_, 0x104, reinterpret_cast<char *>(mem_bytes), 1);
+  res = read_memory(sim_id_, 0x104, reinterpret_cast<char*>(mem_bytes), 1);
   EXPECT_EQ(res, 1);
   EXPECT_EQ(mem_bytes[0], kBytes[4]);
-  res = read_memory(sim_id_, 0x100, reinterpret_cast<char *>(mem_bytes), 8);
+  res = read_memory(sim_id_, 0x100, reinterpret_cast<char*>(mem_bytes), 8);
   for (int i = 0; i < 8; i++) EXPECT_EQ(kBytes[i], mem_bytes[i]);
 
   // Read memory from out of bound address
   constexpr uint64_t kOutOfBoundAddress = 0x3'FFFF'FFFFULL;
   res = read_memory(sim_id_, kOutOfBoundAddress,
-                    reinterpret_cast<char *>(mem_bytes), 1);
+                    reinterpret_cast<char*>(mem_bytes), 1);
   EXPECT_EQ(res, 0);
   // Write to out of bound memory address
   res = write_memory(sim_id_, kOutOfBoundAddress,
-                     reinterpret_cast<const char *>(mem_bytes), 1);
+                     reinterpret_cast<const char*>(mem_bytes), 1);
   EXPECT_EQ(res, 0);
 }
 
@@ -266,7 +266,7 @@ TEST_F(RenodeMpactTest, StepImageProgramWithExternalMemory) {
   // Setup the external memory.
   constexpr uint64_t kMemoryBlockSize = 0x40000;  // 256KB
   constexpr uint64_t kNumBlock = 16;              // 4MB / 256KB
-  uint8_t *memory_block[kNumBlock] = {nullptr};
+  uint8_t* memory_block[kNumBlock] = {nullptr};
   // Allocate memory blocks.
   for (int i = 0; i < kNumBlock; ++i) {
     memory_block[i] = new uint8_t[kMemoryBlockSize];

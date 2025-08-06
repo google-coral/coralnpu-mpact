@@ -61,7 +61,7 @@ class KelvinVectorMemoryInstructionsTest
                                    bool is_uncached = false) {
     InstructionPtr child_instruction(
         new Instruction(next_instruction_address_, state_),
-        [](Instruction *inst) { inst->DecRef(); });
+        [](Instruction* inst) { inst->DecRef(); });
     child_instruction->set_size(4);
     auto instruction = CreateInstruction();
 
@@ -257,7 +257,7 @@ class KelvinVectorMemoryInstructionsTest
 
       if (post_increment) {
         // Check rs1 value.
-        auto *reg = state_
+        auto* reg = state_
                         ->GetRegister<kelvin::sim::test::RV32Register>(
                             kelvin::sim::test::kRs1Name)
                         .first;
@@ -416,7 +416,7 @@ class KelvinVectorMemoryInstructionsTest
   template <typename T>
   T GetDefaultMemoryValue(int address) {
     T value = 0;
-    uint8_t *ptr = reinterpret_cast<uint8_t *>(&value);
+    uint8_t* ptr = reinterpret_cast<uint8_t*>(&value);
     for (int j = 0; j < sizeof(T); j++) {
       ptr[j] = (address + j) & 0xff;
     }
@@ -425,7 +425,7 @@ class KelvinVectorMemoryInstructionsTest
 
   template <typename T>
   T GetSavedMemoryValue(int address) {
-    auto *db = state_->db_factory()->Allocate<T>(1);
+    auto* db = state_->db_factory()->Allocate<T>(1);
     memory_->Load(address, db, nullptr, nullptr);
     T data = db->template Get<T>(0);
     db->DecRef();
@@ -574,12 +574,12 @@ class KelvinAccumulateInstructionTest
       for (int element_index = 0; element_index < kVLenInWord;
            element_index++) {
         if (is_transpose) {
-          auto *acc_vec = state_->acc_vec(element_index);
+          auto* acc_vec = state_->acc_vec(element_index);
           EXPECT_EQ(vreg_span[element_index], (*acc_vec)[i])
               << absl::StrCat("vreg[", vreg_num, "][", element_index,
                               "] != acc[", element_index, "][", i, "]");
         } else {
-          auto *acc_vec = state_->acc_vec(i);
+          auto* acc_vec = state_->acc_vec(i);
           EXPECT_EQ(vreg_span[element_index], (*acc_vec)[element_index])
               << absl::StrCat("vreg[", vreg_num, "][", element_index,
                               "] != acc[", i, "][", element_index, "]");
@@ -633,8 +633,7 @@ TEST_F(KelvinAccumulateInstructionTest, ADwInit) {
     auto ref_vreg = vreg_[vref_num];
     auto ref_span = ref_vreg->data_buffer()->Get<uint8_t>();
 
-    uint8_t *dwacc_span =
-        reinterpret_cast<uint8_t *>(state_->dw_acc_vec(8 * i));
+    uint8_t* dwacc_span = reinterpret_cast<uint8_t*>(state_->dw_acc_vec(8 * i));
     for (int element_index = 0; element_index < ref_span.size() / 4;
          element_index++) {
       EXPECT_EQ(vreg_span[element_index], ref_span[element_index])

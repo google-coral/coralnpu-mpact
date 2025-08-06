@@ -94,15 +94,15 @@ class KelvinVectorConvolutionInstructionsTest
     AppendVectorRegisterOperands(instruction.get(), 1, 3, kVs3, {},
                                  false /* widen_dst*/, {});
     if (kWriteAcc) {
-      std::vector<kelvin::sim::test::RegisterBase *> reg_vec;
+      std::vector<kelvin::sim::test::RegisterBase*> reg_vec;
       for (int i = 0; i < 4; i++) {
         auto reg_name = absl::StrCat("v", kVd + i);
         reg_vec.push_back(
             state_->GetRegister<kelvin::sim::test::RVVectorRegister>(reg_name)
                 .first);
       }
-      auto *op = new kelvin::sim::test::RV32VectorDestinationOperand(
-          absl::Span<kelvin::sim::test::RegisterBase *>(reg_vec), 0,
+      auto* op = new kelvin::sim::test::RV32VectorDestinationOperand(
+          absl::Span<kelvin::sim::test::RegisterBase*>(reg_vec), 0,
           absl::StrCat("v", kVd));
       instruction->AppendDestination(op);
     }
@@ -314,10 +314,10 @@ class KelvinVectorConvolutionInstructionsTest
 
  private:
   bool execution_fail_;
-  std::function<bool(bool, uint64_t, uint64_t, uint64_t, const Instruction *)>
+  std::function<bool(bool, uint64_t, uint64_t, uint64_t, const Instruction*)>
       trap_call_back_ = [this](bool is_interrupt, uint64_t trap_value,
                                uint64_t exception_code, uint64_t epc,
-                               const Instruction *instruction) {
+                               const Instruction* instruction) {
         auto code =
             static_cast<mpact::sim::riscv::ExceptionCode>(exception_code);
         if (code == mpact::sim::riscv::ExceptionCode::kIllegalInstruction) {

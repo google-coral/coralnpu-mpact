@@ -39,8 +39,8 @@ namespace kelvin::sim::isa32 {
 
 template <typename RegType>
 inline void GetVRegGroup(
-    KelvinState *state, int reg_num, bool strip_mine, int widen_factor,
-    std::vector<mpact::sim::generic::RegisterBase *> *vreg_group) {
+    KelvinState* state, int reg_num, bool strip_mine, int widen_factor,
+    std::vector<mpact::sim::generic::RegisterBase*>* vreg_group) {
   auto regs_count = (strip_mine ? 4 : 1) * widen_factor;
   for (int i = 0; i < regs_count; ++i) {
     auto vreg_name =
@@ -50,78 +50,78 @@ inline void GetVRegGroup(
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetVectorRegisterSourceOp(KelvinState *state,
+inline SourceOperandInterface* GetVectorRegisterSourceOp(KelvinState* state,
                                                          int reg_num,
                                                          bool strip_mine,
                                                          int widen_factor) {
-  std::vector<mpact::sim::generic::RegisterBase *> vreg_group;
+  std::vector<mpact::sim::generic::RegisterBase*> vreg_group;
   GetVRegGroup<RegType>(state, reg_num, strip_mine, widen_factor, &vreg_group);
-  auto *v_src_op = new mpact::sim::riscv::RV32VectorSourceOperand(
-      absl::Span<mpact::sim::generic::RegisterBase *>(vreg_group),
+  auto* v_src_op = new mpact::sim::riscv::RV32VectorSourceOperand(
+      absl::Span<mpact::sim::generic::RegisterBase*>(vreg_group),
       absl::StrCat(mpact::sim::riscv::RiscVState::kVregPrefix, reg_num));
   return v_src_op;
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetVectorRegisterDestinationOp(
-    KelvinState *state, int reg_num, bool strip_mine, bool widening,
+inline DestinationOperandInterface* GetVectorRegisterDestinationOp(
+    KelvinState* state, int reg_num, bool strip_mine, bool widening,
     int latency) {
-  std::vector<mpact::sim::generic::RegisterBase *> vreg_group;
+  std::vector<mpact::sim::generic::RegisterBase*> vreg_group;
   GetVRegGroup<RegType>(state, reg_num, strip_mine, widening ? 2 : 1,
                         &vreg_group);
-  auto *v_dst_op = new mpact::sim::riscv::RV32VectorDestinationOperand(
-      absl::Span<mpact::sim::generic::RegisterBase *>(vreg_group), latency,
+  auto* v_dst_op = new mpact::sim::riscv::RV32VectorDestinationOperand(
+      absl::Span<mpact::sim::generic::RegisterBase*>(vreg_group), latency,
       absl::StrCat(mpact::sim::riscv::RiscVState::kVregPrefix, reg_num));
   return v_dst_op;
 }
 
 // Generic helper functions to create register operands.
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(KelvinState *state,
+inline DestinationOperandInterface* GetRegisterDestinationOp(KelvinState* state,
                                                              std::string name,
                                                              int latency) {
-  auto *reg = state->GetRegister<RegType>(name).first;
+  auto* reg = state->GetRegister<RegType>(name).first;
   return reg->CreateDestinationOperand(latency);
 }
 
 template <typename RegType>
-inline DestinationOperandInterface *GetRegisterDestinationOp(
-    KelvinState *state, std::string name, int latency, std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
+inline DestinationOperandInterface* GetRegisterDestinationOp(
+    KelvinState* state, std::string name, int latency, std::string op_name) {
+  auto* reg = state->GetRegister<RegType>(name).first;
   return reg->CreateDestinationOperand(latency, op_name);
 }
 
 template <typename T>
-inline DestinationOperandInterface *GetCSRSetBitsDestinationOp(
-    KelvinState *state, std::string name, int latency, std::string op_name) {
+inline DestinationOperandInterface* GetCSRSetBitsDestinationOp(
+    KelvinState* state, std::string name, int latency, std::string op_name) {
   auto result = state->csr_set()->GetCsr(name);
   if (!result.ok()) {
     LOG(ERROR) << "No such CSR '" << name << "'";
     return nullptr;
   }
-  auto *csr = result.value();
-  auto *op = csr->CreateSetDestinationOperand(latency, op_name);
+  auto* csr = result.value();
+  auto* op = csr->CreateSetDestinationOperand(latency, op_name);
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(KelvinState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(KelvinState* state,
                                                    std::string name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand();
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand();
   return op;
 }
 
 template <typename RegType>
-inline SourceOperandInterface *GetRegisterSourceOp(KelvinState *state,
+inline SourceOperandInterface* GetRegisterSourceOp(KelvinState* state,
                                                    std::string name,
                                                    std::string op_name) {
-  auto *reg = state->GetRegister<RegType>(name).first;
-  auto *op = reg->CreateSourceOperand(op_name);
+  auto* reg = state->GetRegister<RegType>(name).first;
+  auto* op = reg->CreateSourceOperand(op_name);
   return op;
 }
 
-KelvinEncoding::KelvinEncoding(KelvinState *state) : state_(state) {
+KelvinEncoding::KelvinEncoding(KelvinState* state) : state_(state) {
   InitializeSourceOperandGetters();
   InitializeDestinationOperandGetters();
   resource_pool_ = new mpact::sim::generic::SimpleResourcePool("Kelvin", 128);
@@ -148,7 +148,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
         if (!res.ok()) {
           return new mpact::sim::generic::ImmediateOperand<uint32_t>(csr_indx);
         }
-        auto *csr = res.value();
+        auto* csr = res.value();
         return new mpact::sim::generic::ImmediateOperand<uint32_t>(csr_indx,
                                                                    csr->name());
       }));
@@ -179,7 +179,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs1),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         int num = encoding::r_type::ExtractRs1(inst_word_);
         if (num == 0)
           return new mpact::sim::generic::IntLiteralOperand<0>(
@@ -191,7 +191,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       }));
   source_op_getters_.insert(std::make_pair(
       static_cast<int>(SourceOpEnum::kRs2),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         int num = encoding::r_type::ExtractRs2(inst_word_);
         if (num == 0)
           return new mpact::sim::generic::IntLiteralOperand<0>(
@@ -213,7 +213,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       }));
   source_op_getters_.emplace(
       static_cast<int>(SourceOpEnum::kVs1),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVs1(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
         auto form = encoding::kelvin_v2_args_type::ExtractForm(inst_word_);
@@ -245,7 +245,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
       });
   source_op_getters_.emplace(
       static_cast<int>(SourceOpEnum::kVs2),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVs2(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
         auto form = encoding::kelvin_v2_args_type::ExtractForm(inst_word_);
@@ -269,8 +269,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
   source_op_getters_.emplace(
       // `vst` and `vstq` use `vd` field as the source for the vector store.
       // convolution instructions also use `vd` as one of the sources.
-      static_cast<int>(SourceOpEnum::kVd),
-      [this]() -> SourceOperandInterface * {
+      static_cast<int>(SourceOpEnum::kVd), [this]() -> SourceOperandInterface* {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
@@ -279,7 +278,7 @@ void KelvinEncoding::InitializeSourceOperandGetters() {
   source_op_getters_.emplace(
       // Used by convolution instructions.
       static_cast<int>(SourceOpEnum::kVs3),
-      [this]() -> SourceOperandInterface * {
+      [this]() -> SourceOperandInterface* {
         auto reg_num = encoding::kelvin_v3_args_type::ExtractVs3(inst_word_);
         int widen_factor = opcode_ == OpcodeEnum::kAconvVxv ? 8 : 4;
         return GetVectorRegisterSourceOp<mpact::sim::riscv::RVVectorRegister>(
@@ -303,7 +302,7 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
       }));
   dest_op_getters_.insert(std::make_pair(
       static_cast<int>(DestOpEnum::kRd),
-      [this](int latency) -> DestinationOperandInterface * {
+      [this](int latency) -> DestinationOperandInterface* {
         int num = encoding::r_type::ExtractRd(inst_word_);
         if (num == 0) {
           return GetRegisterDestinationOp<mpact::sim::riscv::RV32Register>(
@@ -316,7 +315,7 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
       }));
   dest_op_getters_.emplace(
       static_cast<int>(DestOpEnum::kVd),
-      [this](int latency) -> DestinationOperandInterface * {
+      [this](int latency) -> DestinationOperandInterface* {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVd(inst_word_);
         bool strip_mine = encoding::kelvin_v2_args_type::ExtractM(inst_word_);
         if (opcode_ == OpcodeEnum::kVcget || opcode_ == OpcodeEnum::kAdwinit ||
@@ -332,7 +331,7 @@ void KelvinEncoding::InitializeDestinationOperandGetters() {
       });
   dest_op_getters_.insert(std::make_pair(
       static_cast<int>(DestOpEnum::kVs1),
-      [this](int latency) -> DestinationOperandInterface * {
+      [this](int latency) -> DestinationOperandInterface* {
         auto reg_num = encoding::kelvin_v2_args_type::ExtractVs1(inst_word_);
         // Only vld.*p/vst.*p instructions are writing post incremented address
         // to "vs1" register. And it has to be a scalar register in that case.
@@ -366,13 +365,13 @@ void KelvinEncoding::ParseInstruction(uint32_t inst_word) {
   decode_functions.push_back(encoding::DecodeRiscVZbbInst32);
   decode_functions.push_back(encoding::DecodeRiscVZbbInst32Only);
   decode_functions.push_back(encoding::DecodeRiscVZbbImmInst32);
-  for (auto &function : decode_functions) {
+  for (auto& function : decode_functions) {
     opcode_ = function(inst_word_);
     if (opcode_ != OpcodeEnum::kNone) break;
   }
 }
 
-DestinationOperandInterface *KelvinEncoding::GetDestination(SlotEnum, int,
+DestinationOperandInterface* KelvinEncoding::GetDestination(SlotEnum, int,
                                                             OpcodeEnum opcode,
                                                             DestOpEnum dest_op,
                                                             int, int latency) {
@@ -387,7 +386,7 @@ DestinationOperandInterface *KelvinEncoding::GetDestination(SlotEnum, int,
   return (iter->second)(latency);
 }
 
-SourceOperandInterface *KelvinEncoding::GetSource(SlotEnum, int,
+SourceOperandInterface* KelvinEncoding::GetSource(SlotEnum, int,
                                                   OpcodeEnum opcode,
                                                   SourceOpEnum source_op,
                                                   int source_no) {

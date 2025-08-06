@@ -33,12 +33,12 @@
 // class defines a global namespace function that is used by the renode wrapper
 // to create a top simulator instance.
 
-extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
+extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(
     std::string name);
 
-extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(
+extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(
     std::string name, uint64_t memory_block_size_bytes,
-    uint64_t memory_size_bytes, uint8_t **block_ptr_list);
+    uint64_t memory_size_bytes, uint8_t** block_ptr_list);
 
 namespace kelvin::sim {
 
@@ -50,7 +50,7 @@ class KelvinRenode : public renode::RenodeDebugInterface {
 
   explicit KelvinRenode(std::string name);
   explicit KelvinRenode(std::string name, uint64_t memory_block_size_bytes,
-                        uint64_t memory_size_bytes, uint8_t **block_ptr_list);
+                        uint64_t memory_size_bytes, uint8_t** block_ptr_list);
 
   ~KelvinRenode() override;
 
@@ -72,18 +72,18 @@ class KelvinRenode : public renode::RenodeDebugInterface {
   // Returns the reason for the most recent halt.
   absl::StatusOr<HaltReasonValueType> GetLastHaltReason() override;
   // Read/write the named registers.
-  absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
-  absl::Status WriteRegister(const std::string &name, uint64_t value) override;
+  absl::StatusOr<uint64_t> ReadRegister(const std::string& name) override;
+  absl::Status WriteRegister(const std::string& name, uint64_t value) override;
 
   // Read/write the numeric id registers.
   absl::StatusOr<uint64_t> ReadRegister(uint32_t reg_id) override;
   absl::Status WriteRegister(uint32_t reg_id, uint64_t value) override;
-  absl::StatusOr<mpact::sim::generic::DataBuffer *> GetRegisterDataBuffer(
-      const std::string &name) override;
+  absl::StatusOr<mpact::sim::generic::DataBuffer*> GetRegisterDataBuffer(
+      const std::string& name) override;
   // Read/write the buffers to memory.
-  absl::StatusOr<size_t> ReadMemory(uint64_t address, void *buf,
+  absl::StatusOr<size_t> ReadMemory(uint64_t address, void* buf,
                                     size_t length) override;
-  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void *buf,
+  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void* buf,
                                      size_t length) override;
   bool HasBreakpoint(uint64_t address) override;
   // Set/Clear software breakpoints at the given addresses.
@@ -91,20 +91,20 @@ class KelvinRenode : public renode::RenodeDebugInterface {
   absl::Status ClearSwBreakpoint(uint64_t address) override;
   // Remove all software breakpoints.
   absl::Status ClearAllSwBreakpoints() override;
-  absl::StatusOr<mpact::sim::generic::Instruction *> GetInstruction(
+  absl::StatusOr<mpact::sim::generic::Instruction*> GetInstruction(
       uint64_t address) override;
   // Return the string representation for the instruction at the given address.
   absl::StatusOr<std::string> GetDisassembly(uint64_t address) override;
   // Return register information.
   int32_t GetRenodeRegisterInfoSize() const override;
-  absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len, char *name,
-                                     RenodeCpuRegister &info) override;
+  absl::Status GetRenodeRegisterInfo(int32_t index, int32_t max_len, char* name,
+                                     RenodeCpuRegister& info) override;
 
-  absl::Status LoadImage(const std::string &image_path,
+  absl::Status LoadImage(const std::string& image_path,
                          uint64_t start_address) override;
 
  private:
-  KelvinTop *kelvin_top_ = nullptr;
+  KelvinTop* kelvin_top_ = nullptr;
 };
 
 }  // namespace kelvin::sim

@@ -70,7 +70,7 @@ class KelvinTop : public mpact::sim::generic::Component,
 
   explicit KelvinTop(std::string name);
   KelvinTop(std::string name, uint64_t memory_block_size_bytes,
-            uint64_t memory_size_bytes, uint8_t **memory_block_ptr_list);
+            uint64_t memory_size_bytes, uint8_t** memory_block_ptr_list);
 
   ~KelvinTop() override;
 
@@ -86,15 +86,15 @@ class KelvinTop : public mpact::sim::generic::Component,
   absl::StatusOr<HaltReasonValueType> GetLastHaltReason() override;
 
   // Register access by register name.
-  absl::StatusOr<uint64_t> ReadRegister(const std::string &name) override;
-  absl::Status WriteRegister(const std::string &name, uint64_t value) override;
-  absl::StatusOr<DataBuffer *> GetRegisterDataBuffer(
-      const std::string &name) override;
+  absl::StatusOr<uint64_t> ReadRegister(const std::string& name) override;
+  absl::Status WriteRegister(const std::string& name, uint64_t value) override;
+  absl::StatusOr<DataBuffer*> GetRegisterDataBuffer(
+      const std::string& name) override;
 
   // Read and Write memory methods bypass any semihosting.
-  absl::StatusOr<size_t> ReadMemory(uint64_t address, void *buf,
+  absl::StatusOr<size_t> ReadMemory(uint64_t address, void* buf,
                                     size_t length) override;
-  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void *buf,
+  absl::StatusOr<size_t> WriteMemory(uint64_t address, const void* buf,
                                      size_t length) override;
 
   bool HasBreakpoint(uint64_t address) override;
@@ -103,22 +103,22 @@ class KelvinTop : public mpact::sim::generic::Component,
   absl::Status ClearAllSwBreakpoints() override;
 
   // Return the instruction object for the instruction at the given address.
-  absl::StatusOr<mpact::sim::generic::Instruction *> GetInstruction(
+  absl::StatusOr<mpact::sim::generic::Instruction*> GetInstruction(
       uint64_t address) override;
   // Return the string representation for the instruction at the given address.
   absl::StatusOr<std::string> GetDisassembly(uint64_t address) override;
 
   // Called when a halt is requested.
   void RequestHalt(HaltReasonValueType halt_reason,
-                   const mpact::sim::generic::Instruction *inst);
+                   const mpact::sim::generic::Instruction* inst);
   void RequestHalt(HaltReason halt_reason,
-                   const mpact::sim::generic::Instruction *inst);
+                   const mpact::sim::generic::Instruction* inst);
 
   // Load a binary image of the SW program.
-  absl::Status LoadImage(const std::string &image_path, uint64_t start_address);
+  absl::Status LoadImage(const std::string& image_path, uint64_t start_address);
   // Accessors.
-  sim::KelvinState *state() const { return state_; }
-  mpact::sim::util::MemoryInterface *memory() const { return memory_; }
+  sim::KelvinState* state() const { return state_; }
+  mpact::sim::util::MemoryInterface* memory() const { return memory_; }
 
   // Cycle helper function
   uint64_t GetCycleCount() const { return counter_num_cycles_.GetValue(); }
@@ -142,27 +142,27 @@ class KelvinTop : public mpact::sim::generic::Component,
       static_cast<HaltReasonValueType>(HaltReason::kNone);
   // Halting flag. This is set to true when execution must halt.
   bool halted_ = false;
-  absl::Notification *run_halted_;
+  absl::Notification* run_halted_;
   // The local Kelvin state.
-  sim::KelvinState *state_;
-  mpact::sim::riscv::RiscVFPState *fp_state_;
+  sim::KelvinState* state_;
+  mpact::sim::riscv::RiscVFPState* fp_state_;
   // Memory interface used by action point manager.
-  KelvinActionPointMemoryInterface *kelvin_ap_memory_interface_ = nullptr;
+  KelvinActionPointMemoryInterface* kelvin_ap_memory_interface_ = nullptr;
   // Action point manager.
-  ActionPointManagerBase *ap_manager_ = nullptr;
+  ActionPointManagerBase* ap_manager_ = nullptr;
   // Breakpoint manager.
-  BreakpointManager *bp_manager_ = nullptr;
+  BreakpointManager* bp_manager_ = nullptr;
   // Flat to indicate that the current instruction is a break/action point that
   // needs to be stepped over.
   bool need_to_step_over_ = false;
   // The pc register instance.
-  mpact::sim::generic::RegisterBase *pc_;
+  mpact::sim::generic::RegisterBase* pc_;
   // Kelvin decoder decoder instance.
-  mpact::sim::generic::DecoderInterface *kelvin_decoder_ = nullptr;
+  mpact::sim::generic::DecoderInterface* kelvin_decoder_ = nullptr;
   // Decode cache, memory and memory watcher.
-  mpact::sim::generic::DecodeCache *decode_cache_ = nullptr;
-  mpact::sim::util::MemoryInterface *memory_ = nullptr;
-  mpact::sim::util::MemoryWatcher *watcher_ = nullptr;
+  mpact::sim::generic::DecodeCache* decode_cache_ = nullptr;
+  mpact::sim::util::MemoryInterface* memory_ = nullptr;
+  mpact::sim::util::MemoryWatcher* watcher_ = nullptr;
   // Counter for the number of instructions simulated.
   mpact::sim::generic::SimpleCounter<uint64_t>
       counter_opcode_[static_cast<int>(sim::isa32::OpcodeEnum::kPastMaxValue)];
@@ -170,7 +170,7 @@ class KelvinTop : public mpact::sim::generic::Component,
   mpact::sim::generic::SimpleCounter<uint64_t> counter_num_cycles_;
   absl::flat_hash_map<uint32_t, std::string> register_id_map_;
   // Setup arm semihosting.
-  mpact::sim::riscv::RiscVArmSemihost *semihost_ = nullptr;
+  mpact::sim::riscv::RiscVArmSemihost* semihost_ = nullptr;
 };
 
 }  // namespace kelvin::sim

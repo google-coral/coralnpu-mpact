@@ -47,10 +47,10 @@ Vd BinaryOpInvoke(std::function<Vd(Vd, Vs1, Vs2)> op, Vd vd, Vs1 vs1, Vs2 vs2) {
 }
 
 template <typename Vd, typename Vs1, typename Vs2>
-Vs1 CommonBinaryOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
+Vs1 CommonBinaryOpGetArg1(const Instruction* inst, bool scalar, int num_ops,
                           int op_index, int dst_element_index,
                           int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs1);
   auto src_element_index = op_index * elts_per_register +
@@ -66,10 +66,10 @@ Vs1 CommonBinaryOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
 }
 
 template <typename Vd, typename Vs1, typename Vs2>
-Vs2 CommonBinaryOpGetArg2(const Instruction *inst, bool scalar, int num_ops,
+Vs2 CommonBinaryOpGetArg2(const Instruction* inst, bool scalar, int num_ops,
                           int op_index, int dst_element_index,
                           int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs2);
   auto src_element_index = op_index * elts_per_register +
@@ -80,18 +80,18 @@ Vs2 CommonBinaryOpGetArg2(const Instruction *inst, bool scalar, int num_ops,
 
 template <typename T, typename Vd, typename Vs1, typename Vs2>
 using SourceArgGetter =
-    std::function<T(const Instruction *inst, bool scalar, int num_ops,
+    std::function<T(const Instruction* inst, bool scalar, int num_ops,
                     int op_index, int dst_element_index, int dst_reg_index)>;
 
 template <bool halftype = false, bool widen_dst = false, typename Vd,
           typename Vs1, typename Vs2, typename... VDArgs>
-void KelvinBinaryVectorOp(const Instruction *inst, bool scalar, bool strip_mine,
+void KelvinBinaryVectorOp(const Instruction* inst, bool scalar, bool strip_mine,
                           std::function<Vd(VDArgs..., Vs1, Vs2)> op,
                           SourceArgGetter<Vs1, Vd, Vs1, Vs2> arg1_getter =
                               CommonBinaryOpGetArg1<Vd, Vs1, Vs2>,
                           SourceArgGetter<Vs2, Vd, Vs1, Vs2> arg2_getter =
                               CommonBinaryOpGetArg2<Vd, Vs1, Vs2>) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_dest_register = vector_size_in_bytes / sizeof(Vd);
 
@@ -103,10 +103,10 @@ void KelvinBinaryVectorOp(const Instruction *inst, bool scalar, bool strip_mine,
   constexpr size_t dest_regs_per_op = is_widen_op ? 2 : 1;
   // Special case for VADD3 op which is adding dest value to vs1 + vs2.
   constexpr bool is_reading_dest = sizeof...(VDArgs) == 1;
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
 
   for (int op_index = 0; op_index < num_ops; ++op_index) {
-    DataBuffer *dest_db[dest_regs_per_op];
+    DataBuffer* dest_db[dest_regs_per_op];
     absl::Span<Vd> dest_span[dest_regs_per_op];
 
     for (int i = 0; i < dest_regs_per_op; ++i) {
@@ -136,20 +136,20 @@ void KelvinBinaryVectorOp(const Instruction *inst, bool scalar, bool strip_mine,
 }
 
 template <typename Vd, typename Vs>
-void KelvinUnaryVectorOp(const Instruction *inst, bool strip_mine,
+void KelvinUnaryVectorOp(const Instruction* inst, bool strip_mine,
                          std::function<Vd(Vs)> op,
                          SourceArgGetter<Vs, Vd, Vs, Vs> arg_getter =
                              CommonBinaryOpGetArg1<Vd, Vs, Vs>) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_dest_register = vector_size_in_bytes / sizeof(Vd);
 
   // For kelvin, stripmining issues 4 contiguous vector ops.
   auto num_ops = strip_mine ? 4 : 1;
-  auto vd = static_cast<RV32VectorDestinationOperand *>(inst->Destination(0));
+  auto vd = static_cast<RV32VectorDestinationOperand*>(inst->Destination(0));
 
   for (int op_index = 0; op_index < num_ops; ++op_index) {
-    DataBuffer *dest_db = vd->AllocateDataBuffer(op_index);
+    DataBuffer* dest_db = vd->AllocateDataBuffer(op_index);
     absl::Span<Vd> dest_span = dest_db->template Get<Vd>();
 
     for (int dst_element_index = 0; dst_element_index < elts_per_dest_register;
@@ -164,7 +164,7 @@ void KelvinUnaryVectorOp(const Instruction *inst, bool strip_mine,
 }
 
 template <typename T>
-void KelvinVAdd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAdd(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs1 + vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
@@ -176,12 +176,12 @@ void KelvinVAdd(bool scalar, bool strip_mine, Instruction *inst) {
                          return static_cast<T>(uvs1 + uvs2);
                        }));
 }
-template void KelvinVAdd<int8_t>(bool, bool, Instruction *);
-template void KelvinVAdd<int16_t>(bool, bool, Instruction *);
-template void KelvinVAdd<int32_t>(bool, bool, Instruction *);
+template void KelvinVAdd<int8_t>(bool, bool, Instruction*);
+template void KelvinVAdd<int16_t>(bool, bool, Instruction*);
+template void KelvinVAdd<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVSub(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSub(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs1 - vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
@@ -193,12 +193,12 @@ void KelvinVSub(bool scalar, bool strip_mine, Instruction *inst) {
                          return static_cast<T>(uvs1 - uvs2);
                        }));
 }
-template void KelvinVSub<int8_t>(bool, bool, Instruction *);
-template void KelvinVSub<int16_t>(bool, bool, Instruction *);
-template void KelvinVSub<int32_t>(bool, bool, Instruction *);
+template void KelvinVSub<int8_t>(bool, bool, Instruction*);
+template void KelvinVSub<int16_t>(bool, bool, Instruction*);
+template void KelvinVSub<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVRSub(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVRSub(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs2 - vs1.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
@@ -210,90 +210,90 @@ void KelvinVRSub(bool scalar, bool strip_mine, Instruction *inst) {
                          return static_cast<T>(uvs2 - uvs1);
                        }));
 }
-template void KelvinVRSub<int8_t>(bool, bool, Instruction *);
-template void KelvinVRSub<int16_t>(bool, bool, Instruction *);
-template void KelvinVRSub<int32_t>(bool, bool, Instruction *);
+template void KelvinVRSub<int8_t>(bool, bool, Instruction*);
+template void KelvinVRSub<int16_t>(bool, bool, Instruction*);
+template void KelvinVRSub<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVEq(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVEq(bool scalar, bool strip_mine, Instruction* inst) {
   // Return 1 if vs1 and vs2 are equal, else returns 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 == vs2; }));
 }
-template void KelvinVEq<int8_t>(bool, bool, Instruction *);
-template void KelvinVEq<int16_t>(bool, bool, Instruction *);
-template void KelvinVEq<int32_t>(bool, bool, Instruction *);
+template void KelvinVEq<int8_t>(bool, bool, Instruction*);
+template void KelvinVEq<int16_t>(bool, bool, Instruction*);
+template void KelvinVEq<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVNe(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVNe(bool scalar, bool strip_mine, Instruction* inst) {
   // Return 1 if vs1 and vs2 are not equal, else return 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 != vs2; }));
 }
-template void KelvinVNe<int8_t>(bool, bool, Instruction *);
-template void KelvinVNe<int16_t>(bool, bool, Instruction *);
-template void KelvinVNe<int32_t>(bool, bool, Instruction *);
+template void KelvinVNe<int8_t>(bool, bool, Instruction*);
+template void KelvinVNe<int16_t>(bool, bool, Instruction*);
+template void KelvinVNe<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVLt(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVLt(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns 1 if vs1 < vs2, else return 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 < vs2; }));
 }
-template void KelvinVLt<int8_t>(bool, bool, Instruction *);
-template void KelvinVLt<int16_t>(bool, bool, Instruction *);
-template void KelvinVLt<int32_t>(bool, bool, Instruction *);
-template void KelvinVLt<uint8_t>(bool, bool, Instruction *);
-template void KelvinVLt<uint16_t>(bool, bool, Instruction *);
-template void KelvinVLt<uint32_t>(bool, bool, Instruction *);
+template void KelvinVLt<int8_t>(bool, bool, Instruction*);
+template void KelvinVLt<int16_t>(bool, bool, Instruction*);
+template void KelvinVLt<int32_t>(bool, bool, Instruction*);
+template void KelvinVLt<uint8_t>(bool, bool, Instruction*);
+template void KelvinVLt<uint16_t>(bool, bool, Instruction*);
+template void KelvinVLt<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVLe(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVLe(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns 1 if vs1 <= vs2, else return 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 <= vs2; }));
 }
-template void KelvinVLe<int8_t>(bool, bool, Instruction *);
-template void KelvinVLe<int16_t>(bool, bool, Instruction *);
-template void KelvinVLe<int32_t>(bool, bool, Instruction *);
-template void KelvinVLe<uint8_t>(bool, bool, Instruction *);
-template void KelvinVLe<uint16_t>(bool, bool, Instruction *);
-template void KelvinVLe<uint32_t>(bool, bool, Instruction *);
+template void KelvinVLe<int8_t>(bool, bool, Instruction*);
+template void KelvinVLe<int16_t>(bool, bool, Instruction*);
+template void KelvinVLe<int32_t>(bool, bool, Instruction*);
+template void KelvinVLe<uint8_t>(bool, bool, Instruction*);
+template void KelvinVLe<uint16_t>(bool, bool, Instruction*);
+template void KelvinVLe<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVGt(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVGt(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns 1 if vs1 > vs2, else return 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 > vs2; }));
 }
-template void KelvinVGt<int8_t>(bool, bool, Instruction *);
-template void KelvinVGt<int16_t>(bool, bool, Instruction *);
-template void KelvinVGt<int32_t>(bool, bool, Instruction *);
-template void KelvinVGt<uint8_t>(bool, bool, Instruction *);
-template void KelvinVGt<uint16_t>(bool, bool, Instruction *);
-template void KelvinVGt<uint32_t>(bool, bool, Instruction *);
+template void KelvinVGt<int8_t>(bool, bool, Instruction*);
+template void KelvinVGt<int16_t>(bool, bool, Instruction*);
+template void KelvinVGt<int32_t>(bool, bool, Instruction*);
+template void KelvinVGt<uint8_t>(bool, bool, Instruction*);
+template void KelvinVGt<uint16_t>(bool, bool, Instruction*);
+template void KelvinVGt<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVGe(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVGe(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns 1 if vs1 >= vs2, else return 0.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 >= vs2; }));
 }
-template void KelvinVGe<int8_t>(bool, bool, Instruction *);
-template void KelvinVGe<int16_t>(bool, bool, Instruction *);
-template void KelvinVGe<int32_t>(bool, bool, Instruction *);
-template void KelvinVGe<uint8_t>(bool, bool, Instruction *);
-template void KelvinVGe<uint16_t>(bool, bool, Instruction *);
-template void KelvinVGe<uint32_t>(bool, bool, Instruction *);
+template void KelvinVGe<int8_t>(bool, bool, Instruction*);
+template void KelvinVGe<int16_t>(bool, bool, Instruction*);
+template void KelvinVGe<int32_t>(bool, bool, Instruction*);
+template void KelvinVGe<uint8_t>(bool, bool, Instruction*);
+template void KelvinVGe<uint16_t>(bool, bool, Instruction*);
+template void KelvinVGe<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVAbsd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAbsd(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns the absolute difference between vs1 and vs2.
   // Note: for signed(INTx_MAX - INTx_MIN) the result will be UINTx_MAX.
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */,
@@ -309,45 +309,45 @@ void KelvinVAbsd(bool scalar, bool strip_mine, Instruction *inst) {
             return vs1 > vs2 ? uvs1 - uvs2 : uvs2 - uvs1;
           }));
 }
-template void KelvinVAbsd<int8_t>(bool, bool, Instruction *);
-template void KelvinVAbsd<int16_t>(bool, bool, Instruction *);
-template void KelvinVAbsd<int32_t>(bool, bool, Instruction *);
-template void KelvinVAbsd<uint8_t>(bool, bool, Instruction *);
-template void KelvinVAbsd<uint16_t>(bool, bool, Instruction *);
-template void KelvinVAbsd<uint32_t>(bool, bool, Instruction *);
+template void KelvinVAbsd<int8_t>(bool, bool, Instruction*);
+template void KelvinVAbsd<int16_t>(bool, bool, Instruction*);
+template void KelvinVAbsd<int32_t>(bool, bool, Instruction*);
+template void KelvinVAbsd<uint8_t>(bool, bool, Instruction*);
+template void KelvinVAbsd<uint16_t>(bool, bool, Instruction*);
+template void KelvinVAbsd<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVMax(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMax(bool scalar, bool strip_mine, Instruction* inst) {
   // Return the max of vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          return std::max(vs1, vs2);
                        }));
 }
-template void KelvinVMax<int8_t>(bool, bool, Instruction *);
-template void KelvinVMax<int16_t>(bool, bool, Instruction *);
-template void KelvinVMax<int32_t>(bool, bool, Instruction *);
-template void KelvinVMax<uint8_t>(bool, bool, Instruction *);
-template void KelvinVMax<uint16_t>(bool, bool, Instruction *);
-template void KelvinVMax<uint32_t>(bool, bool, Instruction *);
+template void KelvinVMax<int8_t>(bool, bool, Instruction*);
+template void KelvinVMax<int16_t>(bool, bool, Instruction*);
+template void KelvinVMax<int32_t>(bool, bool, Instruction*);
+template void KelvinVMax<uint8_t>(bool, bool, Instruction*);
+template void KelvinVMax<uint16_t>(bool, bool, Instruction*);
+template void KelvinVMax<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVMin(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMin(bool scalar, bool strip_mine, Instruction* inst) {
   // Return the min of vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          return std::min(vs1, vs2);
                        }));
 }
-template void KelvinVMin<int8_t>(bool, bool, Instruction *);
-template void KelvinVMin<int16_t>(bool, bool, Instruction *);
-template void KelvinVMin<int32_t>(bool, bool, Instruction *);
-template void KelvinVMin<uint8_t>(bool, bool, Instruction *);
-template void KelvinVMin<uint16_t>(bool, bool, Instruction *);
-template void KelvinVMin<uint32_t>(bool, bool, Instruction *);
+template void KelvinVMin<int8_t>(bool, bool, Instruction*);
+template void KelvinVMin<int16_t>(bool, bool, Instruction*);
+template void KelvinVMin<int32_t>(bool, bool, Instruction*);
+template void KelvinVMin<uint8_t>(bool, bool, Instruction*);
+template void KelvinVMin<uint16_t>(bool, bool, Instruction*);
+template void KelvinVMin<uint32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVAdd3(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAdd3(bool scalar, bool strip_mine, Instruction* inst) {
   // Return the summation of vd, vs1, and vs2.
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
@@ -359,9 +359,9 @@ void KelvinVAdd3(bool scalar, bool strip_mine, Instruction *inst) {
         return static_cast<T>(uvd + uvs1 + uvs2);
       }));
 }
-template void KelvinVAdd3<int8_t>(bool, bool, Instruction *);
-template void KelvinVAdd3<int16_t>(bool, bool, Instruction *);
-template void KelvinVAdd3<int32_t>(bool, bool, Instruction *);
+template void KelvinVAdd3<int8_t>(bool, bool, Instruction*);
+template void KelvinVAdd3<int16_t>(bool, bool, Instruction*);
+template void KelvinVAdd3<int32_t>(bool, bool, Instruction*);
 
 // Helper function for Vadds (saturated signed addition).
 // Uses unsigned arithmetic for the addition to avoid signed overflow, which,
@@ -381,14 +381,14 @@ inline T VAddsHelper(T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVAdds(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAdds(bool scalar, bool strip_mine, Instruction* inst) {
   // Return saturated sum of vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>(VAddsHelper<T>));
 }
-template void KelvinVAdds<int8_t>(bool, bool, Instruction *);
-template void KelvinVAdds<int16_t>(bool, bool, Instruction *);
-template void KelvinVAdds<int32_t>(bool, bool, Instruction *);
+template void KelvinVAdds<int8_t>(bool, bool, Instruction*);
+template void KelvinVAdds<int16_t>(bool, bool, Instruction*);
+template void KelvinVAdds<int32_t>(bool, bool, Instruction*);
 
 // Helper function for Vaddsu (saturated unsigned addition).
 template <typename T>
@@ -401,14 +401,14 @@ inline T VAddsuHelper(T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVAddsu(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAddsu(bool scalar, bool strip_mine, Instruction* inst) {
   // Return saturated sum of unsigned vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>(VAddsuHelper<T>));
 }
-template void KelvinVAddsu<uint8_t>(bool, bool, Instruction *);
-template void KelvinVAddsu<uint16_t>(bool, bool, Instruction *);
-template void KelvinVAddsu<uint32_t>(bool, bool, Instruction *);
+template void KelvinVAddsu<uint8_t>(bool, bool, Instruction*);
+template void KelvinVAddsu<uint16_t>(bool, bool, Instruction*);
+template void KelvinVAddsu<uint32_t>(bool, bool, Instruction*);
 
 // Helper function for Vsubs (saturated signed subtraction).
 template <typename T>
@@ -426,55 +426,55 @@ inline T VSubsHelper(T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVSubs(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSubs(bool scalar, bool strip_mine, Instruction* inst) {
   // Return saturated sub of vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>(VSubsHelper<T>));
 }
-template void KelvinVSubs<int8_t>(bool, bool, Instruction *);
-template void KelvinVSubs<int16_t>(bool, bool, Instruction *);
-template void KelvinVSubs<int32_t>(bool, bool, Instruction *);
+template void KelvinVSubs<int8_t>(bool, bool, Instruction*);
+template void KelvinVSubs<int16_t>(bool, bool, Instruction*);
+template void KelvinVSubs<int32_t>(bool, bool, Instruction*);
 
 template <typename T>
-void KelvinVSubsu(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSubsu(bool scalar, bool strip_mine, Instruction* inst) {
   // Return saturated sub of unsigned vs1 and vs2.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          return vs1 < vs2 ? 0 : vs1 - vs2;
                        }));
 }
-template void KelvinVSubsu<uint8_t>(bool, bool, Instruction *);
-template void KelvinVSubsu<uint16_t>(bool, bool, Instruction *);
-template void KelvinVSubsu<uint32_t>(bool, bool, Instruction *);
+template void KelvinVSubsu<uint8_t>(bool, bool, Instruction*);
+template void KelvinVSubsu<uint16_t>(bool, bool, Instruction*);
+template void KelvinVSubsu<uint32_t>(bool, bool, Instruction*);
 
 template <typename Td, typename Ts>
-void KelvinVAddw(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAddw(bool scalar, bool strip_mine, Instruction* inst) {
   // Adds operands with widening.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
                          return static_cast<Td>(vs1) + static_cast<Td>(vs2);
                        }));
 }
-template void KelvinVAddw<int16_t, int8_t>(bool, bool, Instruction *);
-template void KelvinVAddw<int32_t, int16_t>(bool, bool, Instruction *);
-template void KelvinVAddw<uint16_t, uint8_t>(bool, bool, Instruction *);
-template void KelvinVAddw<uint32_t, uint16_t>(bool, bool, Instruction *);
+template void KelvinVAddw<int16_t, int8_t>(bool, bool, Instruction*);
+template void KelvinVAddw<int32_t, int16_t>(bool, bool, Instruction*);
+template void KelvinVAddw<uint16_t, uint8_t>(bool, bool, Instruction*);
+template void KelvinVAddw<uint32_t, uint16_t>(bool, bool, Instruction*);
 
 template <typename Td, typename Ts>
-void KelvinVSubw(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSubw(bool scalar, bool strip_mine, Instruction* inst) {
   // Subtracts operands with widening.
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
                          return static_cast<Td>(vs1) - static_cast<Td>(vs2);
                        }));
 }
-template void KelvinVSubw<int16_t, int8_t>(bool, bool, Instruction *);
-template void KelvinVSubw<int32_t, int16_t>(bool, bool, Instruction *);
-template void KelvinVSubw<uint16_t, uint8_t>(bool, bool, Instruction *);
-template void KelvinVSubw<uint32_t, uint16_t>(bool, bool, Instruction *);
+template void KelvinVSubw<int16_t, int8_t>(bool, bool, Instruction*);
+template void KelvinVSubw<int32_t, int16_t>(bool, bool, Instruction*);
+template void KelvinVSubw<uint16_t, uint8_t>(bool, bool, Instruction*);
+template void KelvinVSubw<uint32_t, uint16_t>(bool, bool, Instruction*);
 
 template <typename Td, typename Ts2>
-void KelvinVAcc(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAcc(bool scalar, bool strip_mine, Instruction* inst) {
   // Accumulates operands with widening.
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
@@ -483,16 +483,16 @@ void KelvinVAcc(bool scalar, bool strip_mine, Instruction *inst) {
         return static_cast<Td>(static_cast<UTd>(vs1) + static_cast<UTd>(vs2));
       }));
 }
-template void KelvinVAcc<int16_t, int8_t>(bool, bool, Instruction *);
-template void KelvinVAcc<int32_t, int16_t>(bool, bool, Instruction *);
-template void KelvinVAcc<uint16_t, uint8_t>(bool, bool, Instruction *);
-template void KelvinVAcc<uint32_t, uint16_t>(bool, bool, Instruction *);
+template void KelvinVAcc<int16_t, int8_t>(bool, bool, Instruction*);
+template void KelvinVAcc<int32_t, int16_t>(bool, bool, Instruction*);
+template void KelvinVAcc<uint16_t, uint8_t>(bool, bool, Instruction*);
+template void KelvinVAcc<uint32_t, uint16_t>(bool, bool, Instruction*);
 
 template <typename Vd, typename Vs1, typename Vs2>
-Vs1 PackedBinaryOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
+Vs1 PackedBinaryOpGetArg1(const Instruction* inst, bool scalar, int num_ops,
                           int op_index, int dst_element_index,
                           int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs1);
   auto src_element_index = op_index * elts_per_register +
@@ -501,10 +501,10 @@ Vs1 PackedBinaryOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
 }
 
 template <typename Vd, typename Vs1, typename Vs2>
-Vs2 PackedBinaryOpGetArg2(const Instruction *inst, bool scalar, int num_ops,
+Vs2 PackedBinaryOpGetArg2(const Instruction* inst, bool scalar, int num_ops,
                           int op_index, int dst_element_index,
                           int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs2);
   auto src_element_index = op_index * elts_per_register +
@@ -513,7 +513,7 @@ Vs2 PackedBinaryOpGetArg2(const Instruction *inst, bool scalar, int num_ops,
 }
 
 template <typename Td, typename Ts>
-void KelvinVPadd(bool strip_mine, Instruction *inst) {
+void KelvinVPadd(bool strip_mine, Instruction* inst) {
   // Adds lane pairs.
   KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts, Ts>(
       inst, false /* scalar */, strip_mine,
@@ -523,13 +523,13 @@ void KelvinVPadd(bool strip_mine, Instruction *inst) {
       SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
       SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
 }
-template void KelvinVPadd<int16_t, int8_t>(bool, Instruction *);
-template void KelvinVPadd<int32_t, int16_t>(bool, Instruction *);
-template void KelvinVPadd<uint16_t, uint8_t>(bool, Instruction *);
-template void KelvinVPadd<uint32_t, uint16_t>(bool, Instruction *);
+template void KelvinVPadd<int16_t, int8_t>(bool, Instruction*);
+template void KelvinVPadd<int32_t, int16_t>(bool, Instruction*);
+template void KelvinVPadd<uint16_t, uint8_t>(bool, Instruction*);
+template void KelvinVPadd<uint32_t, uint16_t>(bool, Instruction*);
 
 template <typename Td, typename Ts>
-void KelvinVPsub(bool strip_mine, Instruction *inst) {
+void KelvinVPsub(bool strip_mine, Instruction* inst) {
   // Subtracts lane pairs.
   KelvinBinaryVectorOp<true /* halftype */, false /* widen_dst */, Td, Ts, Ts>(
       inst, false /* scalar */, strip_mine,
@@ -539,10 +539,10 @@ void KelvinVPsub(bool strip_mine, Instruction *inst) {
       SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg1<Td, Ts, Ts>),
       SourceArgGetter<Ts, Td, Ts, Ts>(PackedBinaryOpGetArg2<Td, Ts, Ts>));
 }
-template void KelvinVPsub<int16_t, int8_t>(bool, Instruction *);
-template void KelvinVPsub<int32_t, int16_t>(bool, Instruction *);
-template void KelvinVPsub<uint16_t, uint8_t>(bool, Instruction *);
-template void KelvinVPsub<uint32_t, uint16_t>(bool, Instruction *);
+template void KelvinVPsub<int16_t, int8_t>(bool, Instruction*);
+template void KelvinVPsub<int32_t, int16_t>(bool, Instruction*);
+template void KelvinVPsub<uint16_t, uint8_t>(bool, Instruction*);
+template void KelvinVPsub<uint32_t, uint16_t>(bool, Instruction*);
 
 // Halving addition with optional rounding bit.
 template <typename T>
@@ -553,17 +553,17 @@ T KelvinVHaddHelper(bool round, T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVHadd(bool scalar, bool strip_mine, bool round, Instruction *inst) {
+void KelvinVHadd(bool scalar, bool strip_mine, bool round, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>(absl::bind_front(&KelvinVHaddHelper<T>, round)));
 }
-template void KelvinVHadd<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVHadd<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVHadd<int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVHadd<uint8_t>(bool, bool, bool, Instruction *);
-template void KelvinVHadd<uint16_t>(bool, bool, bool, Instruction *);
-template void KelvinVHadd<uint32_t>(bool, bool, bool, Instruction *);
+template void KelvinVHadd<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVHadd<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVHadd<int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVHadd<uint8_t>(bool, bool, bool, Instruction*);
+template void KelvinVHadd<uint16_t>(bool, bool, bool, Instruction*);
+template void KelvinVHadd<uint32_t>(bool, bool, bool, Instruction*);
 
 // Halving subtraction with optional rounding bit.
 template <typename T>
@@ -574,54 +574,54 @@ T KelvinVHsubHelper(bool round, T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVHsub(bool scalar, bool strip_mine, bool round, Instruction *inst) {
+void KelvinVHsub(bool scalar, bool strip_mine, bool round, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>(absl::bind_front(&KelvinVHsubHelper<T>, round)));
 }
-template void KelvinVHsub<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVHsub<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVHsub<int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVHsub<uint8_t>(bool, bool, bool, Instruction *);
-template void KelvinVHsub<uint16_t>(bool, bool, bool, Instruction *);
-template void KelvinVHsub<uint32_t>(bool, bool, bool, Instruction *);
+template void KelvinVHsub<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVHsub<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVHsub<int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVHsub<uint8_t>(bool, bool, bool, Instruction*);
+template void KelvinVHsub<uint16_t>(bool, bool, bool, Instruction*);
+template void KelvinVHsub<uint32_t>(bool, bool, bool, Instruction*);
 
 // Bitwise and.
 template <typename T>
-void KelvinVAnd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVAnd(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 & vs2; }));
 }
-template void KelvinVAnd<uint8_t>(bool, bool, Instruction *);
-template void KelvinVAnd<uint16_t>(bool, bool, Instruction *);
-template void KelvinVAnd<uint32_t>(bool, bool, Instruction *);
+template void KelvinVAnd<uint8_t>(bool, bool, Instruction*);
+template void KelvinVAnd<uint16_t>(bool, bool, Instruction*);
+template void KelvinVAnd<uint32_t>(bool, bool, Instruction*);
 
 // Bitwise or.
 template <typename T>
-void KelvinVOr(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVOr(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 | vs2; }));
 }
-template void KelvinVOr<uint8_t>(bool, bool, Instruction *);
-template void KelvinVOr<uint16_t>(bool, bool, Instruction *);
-template void KelvinVOr<uint32_t>(bool, bool, Instruction *);
+template void KelvinVOr<uint8_t>(bool, bool, Instruction*);
+template void KelvinVOr<uint16_t>(bool, bool, Instruction*);
+template void KelvinVOr<uint32_t>(bool, bool, Instruction*);
 
 // Bitwise xor.
 template <typename T>
-void KelvinVXor(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVXor(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1 ^ vs2; }));
 }
-template void KelvinVXor<uint8_t>(bool, bool, Instruction *);
-template void KelvinVXor<uint16_t>(bool, bool, Instruction *);
-template void KelvinVXor<uint32_t>(bool, bool, Instruction *);
+template void KelvinVXor<uint8_t>(bool, bool, Instruction*);
+template void KelvinVXor<uint16_t>(bool, bool, Instruction*);
+template void KelvinVXor<uint32_t>(bool, bool, Instruction*);
 
 // Generalized reverse using bit ladder.
 template <typename T>
-void KelvinVRev(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVRev(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
         T r = vs1;
@@ -636,13 +636,13 @@ void KelvinVRev(bool scalar, bool strip_mine, Instruction *inst) {
         return r;
       }));
 }
-template void KelvinVRev<uint8_t>(bool, bool, Instruction *);
-template void KelvinVRev<uint16_t>(bool, bool, Instruction *);
-template void KelvinVRev<uint32_t>(bool, bool, Instruction *);
+template void KelvinVRev<uint8_t>(bool, bool, Instruction*);
+template void KelvinVRev<uint16_t>(bool, bool, Instruction*);
+template void KelvinVRev<uint32_t>(bool, bool, Instruction*);
 
 // Cyclic rotation right using a bit ladder.
 template <typename T>
-void KelvinVRor(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVRor(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          T r = vs1;
@@ -654,13 +654,13 @@ void KelvinVRor(bool scalar, bool strip_mine, Instruction *inst) {
                          return r;
                        }));
 }
-template void KelvinVRor<uint8_t>(bool, bool, Instruction *);
-template void KelvinVRor<uint16_t>(bool, bool, Instruction *);
-template void KelvinVRor<uint32_t>(bool, bool, Instruction *);
+template void KelvinVRor<uint8_t>(bool, bool, Instruction*);
+template void KelvinVRor<uint16_t>(bool, bool, Instruction*);
+template void KelvinVRor<uint32_t>(bool, bool, Instruction*);
 
 // Returns Arg1 as either vs1 or vs2 based on dst_reg_index.
 template <typename Vd, typename Vs1, typename Vs2>
-Vs1 VMvpOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
+Vs1 VMvpOpGetArg1(const Instruction* inst, bool scalar, int num_ops,
                   int op_index, int dst_element_index, int dst_reg_index) {
   return dst_reg_index == 0
              ? CommonBinaryOpGetArg1<Vd, Vs1, Vs2>(
@@ -671,7 +671,7 @@ Vs1 VMvpOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
 
 // Copies a pair of registers.
 template <typename T>
-void KelvinVMvp(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMvp(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, true /* widen_dst */, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
@@ -680,48 +680,48 @@ void KelvinVMvp(bool scalar, bool strip_mine, Instruction *inst) {
       // getter expects extra source registers for widening ops.
       SourceArgGetter<T, T, T, T>(VMvpOpGetArg1<T, T, T>));
 }
-template void KelvinVMvp<uint8_t>(bool, bool, Instruction *);
-template void KelvinVMvp<uint16_t>(bool, bool, Instruction *);
-template void KelvinVMvp<uint32_t>(bool, bool, Instruction *);
+template void KelvinVMvp<uint8_t>(bool, bool, Instruction*);
+template void KelvinVMvp<uint16_t>(bool, bool, Instruction*);
+template void KelvinVMvp<uint32_t>(bool, bool, Instruction*);
 
 // Logical shift left.
 template <typename T>
-void KelvinVSll(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSll(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          size_t shift = vs2 & (sizeof(T) * 8 - 1);
                          return vs1 << shift;
                        }));
 }
-template void KelvinVSll<uint8_t>(bool, bool, Instruction *);
-template void KelvinVSll<uint16_t>(bool, bool, Instruction *);
-template void KelvinVSll<uint32_t>(bool, bool, Instruction *);
+template void KelvinVSll<uint8_t>(bool, bool, Instruction*);
+template void KelvinVSll<uint16_t>(bool, bool, Instruction*);
+template void KelvinVSll<uint32_t>(bool, bool, Instruction*);
 
 // Arithmetic shift right.
 template <typename T>
-void KelvinVSra(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSra(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          size_t shift = vs2 & (sizeof(T) * 8 - 1);
                          return vs1 >> shift;
                        }));
 }
-template void KelvinVSra<int8_t>(bool, bool, Instruction *);
-template void KelvinVSra<int16_t>(bool, bool, Instruction *);
-template void KelvinVSra<int32_t>(bool, bool, Instruction *);
+template void KelvinVSra<int8_t>(bool, bool, Instruction*);
+template void KelvinVSra<int16_t>(bool, bool, Instruction*);
+template void KelvinVSra<int32_t>(bool, bool, Instruction*);
 
 // Logical shift right.
 template <typename T>
-void KelvinVSrl(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSrl(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>([](T vs1, T vs2) -> T {
                          size_t shift = vs2 & (sizeof(T) * 8 - 1);
                          return vs1 >> shift;
                        }));
 }
-template void KelvinVSrl<uint8_t>(bool, bool, Instruction *);
-template void KelvinVSrl<uint16_t>(bool, bool, Instruction *);
-template void KelvinVSrl<uint32_t>(bool, bool, Instruction *);
+template void KelvinVSrl<uint8_t>(bool, bool, Instruction*);
+template void KelvinVSrl<uint16_t>(bool, bool, Instruction*);
+template void KelvinVSrl<uint32_t>(bool, bool, Instruction*);
 
 // Logical and arithmetic left/right shift with saturating shift amount and
 // result.
@@ -785,75 +785,75 @@ T KelvinVShiftHelper(bool round, T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVShift(bool round, bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVShift(bool round, bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>(absl::bind_front(&KelvinVShiftHelper<T>, round)));
 }
-template void KelvinVShift<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVShift<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVShift<int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVShift<uint8_t>(bool, bool, bool, Instruction *);
-template void KelvinVShift<uint16_t>(bool, bool, bool, Instruction *);
-template void KelvinVShift<uint32_t>(bool, bool, bool, Instruction *);
+template void KelvinVShift<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVShift<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVShift<int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVShift<uint8_t>(bool, bool, bool, Instruction*);
+template void KelvinVShift<uint16_t>(bool, bool, bool, Instruction*);
+template void KelvinVShift<uint32_t>(bool, bool, bool, Instruction*);
 
 // Bitwise not.
 template <typename T>
-void KelvinVNot(bool strip_mine, Instruction *inst) {
+void KelvinVNot(bool strip_mine, Instruction* inst) {
   KelvinUnaryVectorOp(inst, strip_mine,
                       std::function<T(T)>([](T vs) -> T { return ~vs; }));
 }
-template void KelvinVNot<int32_t>(bool, Instruction *);
+template void KelvinVNot<int32_t>(bool, Instruction*);
 
 // Count the leading bits.
 template <typename T>
-void KelvinVClb(bool strip_mine, Instruction *inst) {
+void KelvinVClb(bool strip_mine, Instruction* inst) {
   KelvinUnaryVectorOp(inst, strip_mine, std::function<T(T)>([](T vs) -> T {
                         return (vs & (1u << (sizeof(T) * 8 - 1)))
                                    ? absl::countl_one(vs)
                                    : absl::countl_zero(vs);
                       }));
 }
-template void KelvinVClb<uint8_t>(bool, Instruction *);
-template void KelvinVClb<uint16_t>(bool, Instruction *);
-template void KelvinVClb<uint32_t>(bool, Instruction *);
+template void KelvinVClb<uint8_t>(bool, Instruction*);
+template void KelvinVClb<uint16_t>(bool, Instruction*);
+template void KelvinVClb<uint32_t>(bool, Instruction*);
 
 // Count the leading zeros.
 template <typename T>
-void KelvinVClz(bool strip_mine, Instruction *inst) {
+void KelvinVClz(bool strip_mine, Instruction* inst) {
   KelvinUnaryVectorOp(inst, strip_mine, std::function<T(T)>([](T vs) -> T {
                         return absl::countl_zero(vs);
                       }));
 }
-template void KelvinVClz<uint8_t>(bool, Instruction *);
-template void KelvinVClz<uint16_t>(bool, Instruction *);
-template void KelvinVClz<uint32_t>(bool, Instruction *);
+template void KelvinVClz<uint8_t>(bool, Instruction*);
+template void KelvinVClz<uint16_t>(bool, Instruction*);
+template void KelvinVClz<uint32_t>(bool, Instruction*);
 
 // Count the set bits.
 template <typename T>
-void KelvinVCpop(bool strip_mine, Instruction *inst) {
+void KelvinVCpop(bool strip_mine, Instruction* inst) {
   KelvinUnaryVectorOp(inst, strip_mine, std::function<T(T)>([](T vs) -> T {
                         return absl::popcount(vs);
                       }));
 }
-template void KelvinVCpop<uint8_t>(bool, Instruction *);
-template void KelvinVCpop<uint16_t>(bool, Instruction *);
-template void KelvinVCpop<uint32_t>(bool, Instruction *);
+template void KelvinVCpop<uint8_t>(bool, Instruction*);
+template void KelvinVCpop<uint16_t>(bool, Instruction*);
+template void KelvinVCpop<uint32_t>(bool, Instruction*);
 
 // Move a register.
 template <typename T>
-void KelvinVMv(bool strip_mine, Instruction *inst) {
+void KelvinVMv(bool strip_mine, Instruction* inst) {
   KelvinUnaryVectorOp(inst, strip_mine,
                       std::function<T(T)>([](T vs) -> T { return vs; }));
 }
-template void KelvinVMv<int32_t>(bool, Instruction *);
+template void KelvinVMv<int32_t>(bool, Instruction*);
 
 // Alternates Vs1 register used for odd/even destination indices.
 template <typename Vd, typename Vs1, typename Vs2>
-Vs1 VSransOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
+Vs1 VSransOpGetArg1(const Instruction* inst, bool scalar, int num_ops,
                     int op_index, int dst_element_index, int dst_reg_index) {
   static_assert(2 * sizeof(Vd) == sizeof(Vs1) || 4 * sizeof(Vd) == sizeof(Vs1));
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(Vs1);
   auto src_element_index = op_index * elts_per_register +
@@ -893,23 +893,23 @@ Td KelvinVSransHelper(bool round, Ts vs1, Td vs2) {
 }
 
 template <typename Td, typename Ts>
-void KelvinVSrans(bool round, bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSrans(bool round, bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<Td(Ts, Td)>(
           absl::bind_front(&KelvinVSransHelper<Td, Ts>, round)),
       SourceArgGetter<Ts, Td, Ts, Td>(VSransOpGetArg1<Td, Ts, Td>));
 }
-template void KelvinVSrans<int8_t, int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVSrans<int16_t, int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVSrans<uint8_t, uint16_t>(bool, bool, bool, Instruction *);
-template void KelvinVSrans<uint16_t, uint32_t>(bool, bool, bool, Instruction *);
-template void KelvinVSrans<int8_t, int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVSrans<uint8_t, uint32_t>(bool, bool, bool, Instruction *);
+template void KelvinVSrans<int8_t, int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVSrans<int16_t, int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVSrans<uint8_t, uint16_t>(bool, bool, bool, Instruction*);
+template void KelvinVSrans<uint16_t, uint32_t>(bool, bool, bool, Instruction*);
+template void KelvinVSrans<int8_t, int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVSrans<uint8_t, uint32_t>(bool, bool, bool, Instruction*);
 
 // Multiplication of vector elements.
 template <typename T>
-void KelvinVMul(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMul(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
         using WT = typename mpact::sim::generic::WideType<T>::type;
@@ -917,13 +917,13 @@ void KelvinVMul(bool scalar, bool strip_mine, Instruction *inst) {
         return static_cast<T>(static_cast<WT>(vs1) * static_cast<WT>(vs2));
       }));
 }
-template void KelvinVMul<int8_t>(bool, bool, Instruction *);
-template void KelvinVMul<int16_t>(bool, bool, Instruction *);
-template void KelvinVMul<int32_t>(bool, bool, Instruction *);
+template void KelvinVMul<int8_t>(bool, bool, Instruction*);
+template void KelvinVMul<int16_t>(bool, bool, Instruction*);
+template void KelvinVMul<int32_t>(bool, bool, Instruction*);
 
 // Multiplication of vector elements with saturation.
 template <typename T>
-void KelvinVMuls(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMuls(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
         using WT = typename mpact::sim::generic::WideType<T>::type;
@@ -940,25 +940,25 @@ void KelvinVMuls(bool scalar, bool strip_mine, Instruction *inst) {
         return result;
       }));
 }
-template void KelvinVMuls<int8_t>(bool, bool, Instruction *);
-template void KelvinVMuls<int16_t>(bool, bool, Instruction *);
-template void KelvinVMuls<int32_t>(bool, bool, Instruction *);
-template void KelvinVMuls<uint8_t>(bool, bool, Instruction *);
-template void KelvinVMuls<uint16_t>(bool, bool, Instruction *);
-template void KelvinVMuls<uint32_t>(bool, bool, Instruction *);
+template void KelvinVMuls<int8_t>(bool, bool, Instruction*);
+template void KelvinVMuls<int16_t>(bool, bool, Instruction*);
+template void KelvinVMuls<int32_t>(bool, bool, Instruction*);
+template void KelvinVMuls<uint8_t>(bool, bool, Instruction*);
+template void KelvinVMuls<uint16_t>(bool, bool, Instruction*);
+template void KelvinVMuls<uint32_t>(bool, bool, Instruction*);
 
 // Multiplication of vector elements with widening.
 template <typename Td, typename Ts>
-void KelvinVMulw(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMulw(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<Td(Ts, Ts)>([](Ts vs1, Ts vs2) -> Td {
                          return static_cast<Td>(vs1) * static_cast<Td>(vs2);
                        }));
 }
-template void KelvinVMulw<int16_t, int8_t>(bool, bool, Instruction *);
-template void KelvinVMulw<int32_t, int16_t>(bool, bool, Instruction *);
-template void KelvinVMulw<uint16_t, uint8_t>(bool, bool, Instruction *);
-template void KelvinVMulw<uint32_t, uint16_t>(bool, bool, Instruction *);
+template void KelvinVMulw<int16_t, int8_t>(bool, bool, Instruction*);
+template void KelvinVMulw<int32_t, int16_t>(bool, bool, Instruction*);
+template void KelvinVMulw<uint16_t, uint8_t>(bool, bool, Instruction*);
+template void KelvinVMulw<uint32_t, uint16_t>(bool, bool, Instruction*);
 
 // Multiplication of vector elements with widening and optional rounding.
 // Returns high half.
@@ -973,17 +973,17 @@ T KelvinVMulhHelper(bool round, T vs1, T vs2) {
 }
 
 template <typename T>
-void KelvinVMulh(bool scalar, bool strip_mine, bool round, Instruction *inst) {
+void KelvinVMulh(bool scalar, bool strip_mine, bool round, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<T(T, T)>(absl::bind_front(&KelvinVMulhHelper<T>, round)));
 }
-template void KelvinVMulh<int8_t>(bool, bool, bool, Instruction *);
-template void KelvinVMulh<int16_t>(bool, bool, bool, Instruction *);
-template void KelvinVMulh<int32_t>(bool, bool, bool, Instruction *);
-template void KelvinVMulh<uint8_t>(bool, bool, bool, Instruction *);
-template void KelvinVMulh<uint16_t>(bool, bool, bool, Instruction *);
-template void KelvinVMulh<uint32_t>(bool, bool, bool, Instruction *);
+template void KelvinVMulh<int8_t>(bool, bool, bool, Instruction*);
+template void KelvinVMulh<int16_t>(bool, bool, bool, Instruction*);
+template void KelvinVMulh<int32_t>(bool, bool, bool, Instruction*);
+template void KelvinVMulh<uint8_t>(bool, bool, bool, Instruction*);
+template void KelvinVMulh<uint16_t>(bool, bool, bool, Instruction*);
+template void KelvinVMulh<uint32_t>(bool, bool, bool, Instruction*);
 
 // Saturating signed doubling multiply returning high half with optional
 // rounding.
@@ -1008,18 +1008,18 @@ T KelvinVDmulhHelper(bool round, bool round_neg, T vs1, T vs2) {
 }
 template <typename T>
 void KelvinVDmulh(bool scalar, bool strip_mine, bool round, bool round_neg,
-                  Instruction *inst) {
+                  Instruction* inst) {
   KelvinBinaryVectorOp(inst, scalar, strip_mine,
                        std::function<T(T, T)>(absl::bind_front(
                            &KelvinVDmulhHelper<T>, round, round_neg)));
 }
-template void KelvinVDmulh<int8_t>(bool, bool, bool, bool, Instruction *);
-template void KelvinVDmulh<int16_t>(bool, bool, bool, bool, Instruction *);
-template void KelvinVDmulh<int32_t>(bool, bool, bool, bool, Instruction *);
+template void KelvinVDmulh<int8_t>(bool, bool, bool, bool, Instruction*);
+template void KelvinVDmulh<int16_t>(bool, bool, bool, bool, Instruction*);
+template void KelvinVDmulh<int32_t>(bool, bool, bool, bool, Instruction*);
 
 // Multiply accumulate.
 template <typename T>
-void KelvinVMacc(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMacc(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
@@ -1028,13 +1028,13 @@ void KelvinVMacc(bool scalar, bool strip_mine, Instruction *inst) {
                static_cast<WT>(vs1) * static_cast<WT>(vs2);
       }));
 }
-template void KelvinVMacc<int8_t>(bool, bool, Instruction *);
-template void KelvinVMacc<int16_t>(bool, bool, Instruction *);
-template void KelvinVMacc<int32_t>(bool, bool, Instruction *);
+template void KelvinVMacc<int8_t>(bool, bool, Instruction*);
+template void KelvinVMacc<int16_t>(bool, bool, Instruction*);
+template void KelvinVMacc<int32_t>(bool, bool, Instruction*);
 
 // Multiply add.
 template <typename T>
-void KelvinVMadd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVMadd(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
@@ -1043,17 +1043,17 @@ void KelvinVMadd(bool scalar, bool strip_mine, Instruction *inst) {
                static_cast<WT>(vd) * static_cast<WT>(vs2);
       }));
 }
-template void KelvinVMadd<int8_t>(bool, bool, Instruction *);
-template void KelvinVMadd<int16_t>(bool, bool, Instruction *);
-template void KelvinVMadd<int32_t>(bool, bool, Instruction *);
+template void KelvinVMadd<int8_t>(bool, bool, Instruction*);
+template void KelvinVMadd<int16_t>(bool, bool, Instruction*);
+template void KelvinVMadd<int32_t>(bool, bool, Instruction*);
 
 // Computes slide index for next register and takes result from either vs1 or
 // vs2.
 template <typename T>
-T VSlidenOpGetArg1(bool horizontal, int index, const Instruction *inst,
+T VSlidenOpGetArg1(bool horizontal, int index, const Instruction* inst,
                    bool scalar, int num_ops, int op_index,
                    int dst_element_index, int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -1097,37 +1097,37 @@ T VSlidenOpGetArg1(bool horizontal, int index, const Instruction *inst,
 
 // Slide next register vertically by index.
 template <typename T>
-void KelvinVSlidevn(int index, bool strip_mine, Instruction *inst) {
+void KelvinVSlidevn(int index, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, false /* scalar */, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(absl::bind_front(
           VSlidenOpGetArg1<T>, false /* horizontal */, index)));
 }
-template void KelvinVSlidevn<int8_t>(int, bool, Instruction *);
-template void KelvinVSlidevn<int16_t>(int, bool, Instruction *);
-template void KelvinVSlidevn<int32_t>(int, bool, Instruction *);
+template void KelvinVSlidevn<int8_t>(int, bool, Instruction*);
+template void KelvinVSlidevn<int16_t>(int, bool, Instruction*);
+template void KelvinVSlidevn<int32_t>(int, bool, Instruction*);
 
 // Slide next register horizontally by index.
 template <typename T>
-void KelvinVSlidehn(int index, Instruction *inst) {
+void KelvinVSlidehn(int index, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, false /* scalar */, true /* strip_mine */,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(
           absl::bind_front(VSlidenOpGetArg1<T>, true /* horizontal */, index)));
 }
-template void KelvinVSlidehn<int8_t>(int, Instruction *);
-template void KelvinVSlidehn<int16_t>(int, Instruction *);
-template void KelvinVSlidehn<int32_t>(int, Instruction *);
+template void KelvinVSlidehn<int8_t>(int, Instruction*);
+template void KelvinVSlidehn<int16_t>(int, Instruction*);
+template void KelvinVSlidehn<int32_t>(int, Instruction*);
 
 // Computes slide index for previous register and takes result from either vs1
 // or vs2.
 template <typename T>
-T VSlidepOpGetArg1(bool horizontal, int index, const Instruction *inst,
+T VSlidepOpGetArg1(bool horizontal, int index, const Instruction* inst,
                    bool scalar, int num_ops, int op_index,
                    int dst_element_index, int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   auto elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -1171,50 +1171,50 @@ T VSlidepOpGetArg1(bool horizontal, int index, const Instruction *inst,
 
 // Slide previous register vertically by index.
 template <typename T>
-void KelvinVSlidevp(int index, bool strip_mine, Instruction *inst) {
+void KelvinVSlidevp(int index, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, false /* scalar */, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(absl::bind_front(
           VSlidepOpGetArg1<T>, false /* horizontal */, index)));
 }
-template void KelvinVSlidevp<int8_t>(int, bool, Instruction *);
-template void KelvinVSlidevp<int16_t>(int, bool, Instruction *);
-template void KelvinVSlidevp<int32_t>(int, bool, Instruction *);
+template void KelvinVSlidevp<int8_t>(int, bool, Instruction*);
+template void KelvinVSlidevp<int16_t>(int, bool, Instruction*);
+template void KelvinVSlidevp<int32_t>(int, bool, Instruction*);
 
 // Slide previous register horizontally by index.
 template <typename T>
-void KelvinVSlidehp(int index, Instruction *inst) {
+void KelvinVSlidehp(int index, Instruction* inst) {
   KelvinBinaryVectorOp(
       inst, false /* scalar */, true /* strip_mine */,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(
           absl::bind_front(VSlidepOpGetArg1<T>, true /* horizontal */, index)));
 }
-template void KelvinVSlidehp<int8_t>(int, Instruction *);
-template void KelvinVSlidehp<int16_t>(int, Instruction *);
-template void KelvinVSlidehp<int32_t>(int, Instruction *);
+template void KelvinVSlidehp<int8_t>(int, Instruction*);
+template void KelvinVSlidehp<int16_t>(int, Instruction*);
+template void KelvinVSlidehp<int32_t>(int, Instruction*);
 
 template <typename T>
-void KelvinVSel(bool scalar, bool strip_mine, Instruction *inst);
+void KelvinVSel(bool scalar, bool strip_mine, Instruction* inst);
 
 template <typename T>
-void KelvinVSel(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVSel(bool scalar, bool strip_mine, Instruction* inst) {
   // Select lanes from two operands with vector selection boolean.
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>(
           [](T vd, T vs1, T vs2) -> T { return vs1 & 1 ? vd : vs2; }));
 }
-template void KelvinVSel<int8_t>(bool, bool, Instruction *);
-template void KelvinVSel<int16_t>(bool, bool, Instruction *);
-template void KelvinVSel<int32_t>(bool, bool, Instruction *);
+template void KelvinVSel<int8_t>(bool, bool, Instruction*);
+template void KelvinVSel<int16_t>(bool, bool, Instruction*);
+template void KelvinVSel<int32_t>(bool, bool, Instruction*);
 
 // Returns even elements of concatenated registers.
 template <typename T>
-T VEvnOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
+T VEvnOpGetArg1(const Instruction* inst, bool scalar, int num_ops, int op_index,
                 int dst_element_index, int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const int elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -1231,22 +1231,22 @@ T VEvnOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
 }
 
 template <typename T>
-void KelvinVEvn(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVEvn(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(VEvnOpGetArg1<T>),
       SourceArgGetter<T, T, T, T>(VEvnOpGetArg1<T>));
 }
-template void KelvinVEvn<int8_t>(bool, bool, Instruction *);
-template void KelvinVEvn<int16_t>(bool, bool, Instruction *);
-template void KelvinVEvn<int32_t>(bool, bool, Instruction *);
+template void KelvinVEvn<int8_t>(bool, bool, Instruction*);
+template void KelvinVEvn<int16_t>(bool, bool, Instruction*);
+template void KelvinVEvn<int32_t>(bool, bool, Instruction*);
 
 // Returns odd elements of concatenated registers.
 template <typename T>
-T VOddOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
+T VOddOpGetArg1(const Instruction* inst, bool scalar, int num_ops, int op_index,
                 int dst_element_index, int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const int elts_per_register = vector_size_in_bytes / sizeof(T);
 
@@ -1263,20 +1263,20 @@ T VOddOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
 }
 
 template <typename T>
-void KelvinVOdd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVOdd(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, false /* widen_dst */, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(VOddOpGetArg1<T>),
       SourceArgGetter<T, T, T, T>(VOddOpGetArg1<T>));
 }
-template void KelvinVOdd<int8_t>(bool, bool, Instruction *);
-template void KelvinVOdd<int16_t>(bool, bool, Instruction *);
-template void KelvinVOdd<int32_t>(bool, bool, Instruction *);
+template void KelvinVOdd<int8_t>(bool, bool, Instruction*);
+template void KelvinVOdd<int16_t>(bool, bool, Instruction*);
+template void KelvinVOdd<int32_t>(bool, bool, Instruction*);
 
 // Returns evn/odd elements of concatenated registers based on dst_reg_index.
 template <typename T>
-T VEvnoddOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
+T VEvnoddOpGetArg1(const Instruction* inst, bool scalar, int num_ops,
                    int op_index, int dst_element_index, int dst_reg_index) {
   return dst_reg_index == 0
              ? VEvnOpGetArg1<T>(inst, scalar, num_ops, op_index,
@@ -1286,23 +1286,23 @@ T VEvnoddOpGetArg1(const Instruction *inst, bool scalar, int num_ops,
 }
 
 template <typename T>
-void KelvinVEvnodd(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVEvnodd(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, true /* widen_dst */, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(VEvnoddOpGetArg1<T>),
       SourceArgGetter<T, T, T, T>(VEvnoddOpGetArg1<T>));
 }
-template void KelvinVEvnodd<int8_t>(bool, bool, Instruction *);
-template void KelvinVEvnodd<int16_t>(bool, bool, Instruction *);
-template void KelvinVEvnodd<int32_t>(bool, bool, Instruction *);
+template void KelvinVEvnodd<int8_t>(bool, bool, Instruction*);
+template void KelvinVEvnodd<int16_t>(bool, bool, Instruction*);
+template void KelvinVEvnodd<int32_t>(bool, bool, Instruction*);
 
 // Interleave even/odd lanes of two operands.
 // Returns even elements of concatenated registers.
 template <typename T>
-T VZipOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
+T VZipOpGetArg1(const Instruction* inst, bool scalar, int num_ops, int op_index,
                 int dst_element_index, int dst_reg_index) {
-  auto state = static_cast<KelvinState *>(inst->state());
+  auto state = static_cast<KelvinState*>(inst->state());
   const int vector_size_in_bytes = state->vector_length() / 8;
   const int elts_per_register = vector_size_in_bytes / sizeof(T);
   const int half_elts_per_register = elts_per_register / 2;
@@ -1321,14 +1321,14 @@ T VZipOpGetArg1(const Instruction *inst, bool scalar, int num_ops, int op_index,
 }
 
 template <typename T>
-void KelvinVZip(bool scalar, bool strip_mine, Instruction *inst) {
+void KelvinVZip(bool scalar, bool strip_mine, Instruction* inst) {
   KelvinBinaryVectorOp<false /* halftype */, true /* widen_dst */, T, T, T>(
       inst, scalar, strip_mine,
       std::function<T(T, T)>([](T vs1, T vs2) -> T { return vs1; }),
       SourceArgGetter<T, T, T, T>(VZipOpGetArg1<T>),
       SourceArgGetter<T, T, T, T>(VZipOpGetArg1<T>));
 }
-template void KelvinVZip<int8_t>(bool, bool, Instruction *);
-template void KelvinVZip<int16_t>(bool, bool, Instruction *);
-template void KelvinVZip<int32_t>(bool, bool, Instruction *);
+template void KelvinVZip<int8_t>(bool, bool, Instruction*);
+template void KelvinVZip<int16_t>(bool, bool, Instruction*);
+template void KelvinVZip<int32_t>(bool, bool, Instruction*);
 }  // namespace kelvin::sim

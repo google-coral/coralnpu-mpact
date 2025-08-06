@@ -26,12 +26,12 @@
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 // This function must be defined in the library.
-extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string);
+extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(std::string);
 
-extern kelvin::sim::renode::RenodeDebugInterface *CreateKelvinSim(std::string,
+extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(std::string,
                                                                   uint64_t,
                                                                   uint64_t,
-                                                                  uint8_t **);
+                                                                  uint8_t**);
 
 // External "C" functions visible to Renode.
 using kelvin::sim::renode::RenodeAgent;
@@ -46,7 +46,7 @@ int32_t construct(int32_t max_name_length) {
 int32_t construct_with_memory(int32_t max_name_length,
                               uint64_t memory_block_size_bytes,
                               uint64_t memory_size_bytes,
-                              uint8_t **mem_block_ptr_list) {
+                              uint8_t** mem_block_ptr_list) {
   return RenodeAgent::Instance()->Construct(
       max_name_length, memory_block_size_bytes, memory_size_bytes,
       mem_block_ptr_list);
@@ -57,48 +57,48 @@ int32_t reset(int32_t id) { return RenodeAgent::Instance()->Reset(id); }
 int32_t get_reg_info_size(int32_t id) {
   return RenodeAgent::Instance()->GetRegisterInfoSize(id);
 }
-int32_t get_reg_info(int32_t id, int32_t index, char *name, void *info) {
+int32_t get_reg_info(int32_t id, int32_t index, char* name, void* info) {
   if (info == nullptr) return -1;
   return RenodeAgent::Instance()->GetRegisterInfo(
-      id, index, name, static_cast<RenodeCpuRegister *>(info));
+      id, index, name, static_cast<RenodeCpuRegister*>(info));
 }
-uint64_t load_executable(int32_t id, const char *elf_file_name,
-                         int32_t *status) {
+uint64_t load_executable(int32_t id, const char* elf_file_name,
+                         int32_t* status) {
   return RenodeAgent::Instance()->LoadExecutable(id, elf_file_name, status);
 }
-int32_t load_image(int32_t id, const char *file_name, uint64_t address) {
+int32_t load_image(int32_t id, const char* file_name, uint64_t address) {
   return RenodeAgent::Instance()->LoadImage(id, file_name, address);
 }
-int32_t read_register(int32_t id, uint32_t reg_id, uint64_t *value) {
+int32_t read_register(int32_t id, uint32_t reg_id, uint64_t* value) {
   return RenodeAgent::Instance()->ReadRegister(id, reg_id, value);
 }
 int32_t write_register(int32_t id, uint32_t reg_id, uint64_t value) {
   return RenodeAgent::Instance()->WriteRegister(id, reg_id, value);
 }
-uint64_t read_memory(int32_t id, uint64_t address, char *buffer,
+uint64_t read_memory(int32_t id, uint64_t address, char* buffer,
                      uint64_t length) {
   return RenodeAgent::Instance()->ReadMemory(id, address, buffer, length);
 }
-uint64_t write_memory(int32_t id, uint64_t address, const char *buffer,
+uint64_t write_memory(int32_t id, uint64_t address, const char* buffer,
                       uint64_t length) {
   return RenodeAgent::Instance()->WriteMemory(id, address, buffer, length);
 }
-uint64_t step(int32_t id, uint64_t num_to_step, int32_t *status) {
+uint64_t step(int32_t id, uint64_t num_to_step, int32_t* status) {
   return RenodeAgent::Instance()->Step(id, num_to_step, status);
 }
-int32_t halt(int32_t id, int32_t *status) {
+int32_t halt(int32_t id, int32_t* status) {
   return RenodeAgent::Instance()->Halt(id, status);
 }
 
 namespace kelvin::sim::renode {
 
-RenodeAgent *RenodeAgent::instance_ = nullptr;
+RenodeAgent* RenodeAgent::instance_ = nullptr;
 uint32_t RenodeAgent::count_ = 0;
 
 // Create the debug instance by calling the factory function.
 int32_t RenodeAgent::Construct(int32_t max_name_length) {
   std::string name = absl::StrCat("renode", count_);
-  auto *dbg = CreateKelvinSim(name);
+  auto* dbg = CreateKelvinSim(name);
   if (dbg == nullptr) {
     return -1;
   }
@@ -110,9 +110,9 @@ int32_t RenodeAgent::Construct(int32_t max_name_length) {
 int32_t RenodeAgent::Construct(int32_t max_name_length,
                                uint64_t memory_block_size_bytes,
                                uint64_t memory_size_bytes,
-                               uint8_t **mem_block_ptr_list) {
+                               uint8_t** mem_block_ptr_list) {
   std::string name = absl::StrCat("renode", count_);
-  auto *dbg = CreateKelvinSim(name, memory_block_size_bytes, memory_size_bytes,
+  auto* dbg = CreateKelvinSim(name, memory_block_size_bytes, memory_size_bytes,
                               mem_block_ptr_list);
   if (dbg == nullptr) {
     return -1;
@@ -144,17 +144,17 @@ int32_t RenodeAgent::GetRegisterInfoSize(int32_t id) const {
   // Check for valid instance.
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) return -1;
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   return dbg->GetRenodeRegisterInfoSize();
 }
 
-int32_t RenodeAgent::GetRegisterInfo(int32_t id, int32_t index, char *name,
-                                     RenodeCpuRegister *info) {
+int32_t RenodeAgent::GetRegisterInfo(int32_t id, int32_t index, char* name,
+                                     RenodeCpuRegister* info) {
   // Check for valid instance.
   if (info == nullptr) return -1;
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) return -1;
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   int32_t max_len = name_length_map_.at(id);
   auto result = dbg->GetRenodeRegisterInfo(index, max_len, name, *info);
   if (!result.ok()) return -1;
@@ -163,13 +163,13 @@ int32_t RenodeAgent::GetRegisterInfo(int32_t id, int32_t index, char *name,
 
 // Read the register given by the id.
 int32_t RenodeAgent::ReadRegister(int32_t id, uint32_t reg_id,
-                                  uint64_t *value) {
+                                  uint64_t* value) {
   // Check for valid instance.
   if (value == nullptr) return -1;
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) return -1;
   // Read register.
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   auto result = dbg->ReadRegister(reg_id);
   if (!result.ok()) return -1;
   *value = result.value();
@@ -182,13 +182,13 @@ int32_t RenodeAgent::WriteRegister(int32_t id, uint32_t reg_id,
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) return -1;
   // Write register.
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   auto result = dbg->WriteRegister(reg_id, value);
   if (!result.ok()) return -1;
   return 0;
 }
 
-uint64_t RenodeAgent::ReadMemory(int32_t id, uint64_t address, char *buffer,
+uint64_t RenodeAgent::ReadMemory(int32_t id, uint64_t address, char* buffer,
                                  uint64_t length) {
   // Check for valid desktop.
   auto dbg_iter = core_dbg_instances_.find(id);
@@ -196,28 +196,28 @@ uint64_t RenodeAgent::ReadMemory(int32_t id, uint64_t address, char *buffer,
     LOG(ERROR) << "No such core dbg instance: " << id;
     return 0;
   }
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   auto res = dbg->ReadMemory(address, buffer, length);
   if (!res.ok()) return 0;
   return res.value();
 }
 
 uint64_t RenodeAgent::WriteMemory(int32_t id, uint64_t address,
-                                  const char *buffer, uint64_t length) {
+                                  const char* buffer, uint64_t length) {
   // Check for valid desktop.
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) {
     LOG(ERROR) << "No such core dbg instance: " << id;
     return 0;
   }
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   auto res = dbg->WriteMemory(address, buffer, length);
   if (!res.ok()) return 0;
   return res.value();
 }
 
-uint64_t RenodeAgent::LoadExecutable(int32_t id, const char *file_name,
-                                     int32_t *status) {
+uint64_t RenodeAgent::LoadExecutable(int32_t id, const char* file_name,
+                                     int32_t* status) {
   // Check for valid desktop.
   auto dbg_iter = core_dbg_instances_.find(id);
   if (dbg_iter == core_dbg_instances_.end()) {
@@ -226,7 +226,7 @@ uint64_t RenodeAgent::LoadExecutable(int32_t id, const char *file_name,
     return 0;
   }
   // Instantiate loader and try to load the file.
-  auto *dbg = dbg_iter->second;
+  auto* dbg = dbg_iter->second;
   mpact::sim::util::ElfProgramLoader loader(dbg);
   auto load_res = loader.LoadProgram(file_name);
   if (!load_res.ok()) {
@@ -244,7 +244,7 @@ uint64_t RenodeAgent::LoadExecutable(int32_t id, const char *file_name,
   return entry;
 }
 
-int32_t RenodeAgent::LoadImage(int32_t id, const char *file_name,
+int32_t RenodeAgent::LoadImage(int32_t id, const char* file_name,
                                uint64_t address) {
   // Get the debug interface.
   auto dbg_iter = core_dbg_instances_.find(id);
@@ -252,8 +252,8 @@ int32_t RenodeAgent::LoadImage(int32_t id, const char *file_name,
     LOG(ERROR) << "No such core dbg instance: " << id;
     return -1;
   }
-  auto *dbg = dbg_iter->second;
-  auto res = dbg->LoadImage(std::string(file_name), address);
+  auto* dbg = dbg_iter->second;
+  auto res = dbg->LoadImage(file_name, address);
   if (!res.ok()) {
     LOG(ERROR) << "Failed to load image: " << res.message();
     return -1;
@@ -261,14 +261,14 @@ int32_t RenodeAgent::LoadImage(int32_t id, const char *file_name,
   return 0;
 }
 
-uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
+uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t* status) {
   // Set the default execution status
   if (status != nullptr) {
     *status = static_cast<int32_t>(ExecutionResult::kAborted);
   }
 
   // Get the core debug if object.
-  auto *dbg = RenodeAgent::Instance()->core_dbg(id);
+  auto* dbg = RenodeAgent::Instance()->core_dbg(id);
   // Is the debug interface valid?
   if (dbg == nullptr) {
     return 0;
@@ -358,9 +358,9 @@ uint64_t RenodeAgent::Step(int32_t id, uint64_t num_to_step, int32_t *status) {
 }
 
 // Signal the simulator to halt.
-int32_t RenodeAgent::Halt(int32_t id, int32_t *status) {
+int32_t RenodeAgent::Halt(int32_t id, int32_t* status) {
   // Get the core debug if object.
-  auto *dbg = RenodeAgent::Instance()->core_dbg(id);
+  auto* dbg = RenodeAgent::Instance()->core_dbg(id);
   // Is the debug interface valid?
   if (dbg == nullptr) {
     return -1;

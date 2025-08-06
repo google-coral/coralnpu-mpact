@@ -14,6 +14,8 @@
 
 # Build Renode interface for kelvin
 
+
+
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -32,7 +34,6 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",
-        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
     ],

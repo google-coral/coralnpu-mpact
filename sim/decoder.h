@@ -39,7 +39,7 @@ namespace kelvin::sim {
 class KelvinIsaFactory : public isa32::KelvinInstructionSetFactory {
  public:
   std::unique_ptr<isa32::KelvinSlot> CreateKelvinSlot(
-      mpact::sim::generic::ArchState *state) override {
+      mpact::sim::generic::ArchState* state) override {
     return std::make_unique<isa32::KelvinSlot>(state);
   }
 };
@@ -51,14 +51,14 @@ class KelvinDecoder : public mpact::sim::generic::DecoderInterface {
   using SlotEnum = isa32::SlotEnum;
   using OpcodeEnum = isa32::OpcodeEnum;
 
-  KelvinDecoder(KelvinState *state, mpact::sim::util::MemoryInterface *memory);
+  KelvinDecoder(KelvinState* state, mpact::sim::util::MemoryInterface* memory);
   KelvinDecoder() = delete;
   ~KelvinDecoder() override;
 
   // This will always return a valid instruction that can be executed. In the
   // case of a decode error, the semantic function in the instruction object
   // instance will raise an internal simulator error when executed.
-  mpact::sim::generic::Instruction *DecodeInstruction(
+  mpact::sim::generic::Instruction* DecodeInstruction(
       uint64_t address) override;
 
   // Return the number of opcodes supported by this decoder.
@@ -66,21 +66,21 @@ class KelvinDecoder : public mpact::sim::generic::DecoderInterface {
     return static_cast<int>(OpcodeEnum::kPastMaxValue);
   }
   // Return the name of the opcode at the given index.
-  const char *GetOpcodeName(int index) const override {
+  const char* GetOpcodeName(int index) const override {
     return isa32::kOpcodeNames[index];
   }
 
   // Getter.
-  isa32::KelvinEncoding *kelvin_encoding() const { return kelvin_encoding_; }
+  isa32::KelvinEncoding* kelvin_encoding() const { return kelvin_encoding_; }
 
  private:
-  KelvinState *state_;
-  mpact::sim::util::MemoryInterface *memory_;
+  KelvinState* state_;
+  mpact::sim::util::MemoryInterface* memory_;
   std::unique_ptr<mpact::sim::generic::ProgramError> decode_error_;
-  mpact::sim::generic::DataBuffer *inst_db_;
-  isa32::KelvinEncoding *kelvin_encoding_;
-  KelvinIsaFactory *kelvin_isa_factory_;
-  isa32::KelvinInstructionSet *kelvin_isa_;
+  mpact::sim::generic::DataBuffer* inst_db_;
+  isa32::KelvinEncoding* kelvin_encoding_;
+  KelvinIsaFactory* kelvin_isa_factory_;
+  isa32::KelvinInstructionSet* kelvin_isa_;
 };
 
 }  // namespace kelvin::sim

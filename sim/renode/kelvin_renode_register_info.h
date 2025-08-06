@@ -29,15 +29,15 @@ namespace kelvin::sim {
 class KelvinRenodeRegisterInfo {
  public:
   using RenodeRegisterInfo = std::vector<renode::RenodeCpuRegister>;
-  static const RenodeRegisterInfo &GetRenodeRegisterInfo();
+  static const RenodeRegisterInfo& GetRenodeRegisterInfo();
 
  private:
   KelvinRenodeRegisterInfo();
-  static KelvinRenodeRegisterInfo *Instance();
+  static KelvinRenodeRegisterInfo* Instance();
   void InitializeRenodeRegisterInfo();
-  const RenodeRegisterInfo &GetRenodeRegisterInfoPrivate();
+  const RenodeRegisterInfo& GetRenodeRegisterInfoPrivate();
 
-  static KelvinRenodeRegisterInfo *instance_;
+  static KelvinRenodeRegisterInfo* instance_;
   RenodeRegisterInfo renode_register_info_;
 };
 

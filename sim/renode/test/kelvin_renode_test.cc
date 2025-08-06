@@ -47,7 +47,7 @@ class KelvinRenodeTest : public testing::Test {
 
   ~KelvinRenodeTest() override { delete top_; }
 
-  RenodeDebugInterface *top_ = nullptr;
+  RenodeDebugInterface* top_ = nullptr;
 };
 
 // Test the implementation of the added methods in the RenodeDebugInterface.
@@ -74,7 +74,7 @@ TEST_F(KelvinRenodeTest, RegisterIds) {
 TEST_F(KelvinRenodeTest, RunElfProgram) {
   std::string file_name = absl::StrCat(kDepotPath, "testfiles/", kFileName);
   // Load the program.
-  auto *loader = new mpact::sim::util::ElfProgramLoader(top_);
+  auto* loader = new mpact::sim::util::ElfProgramLoader(top_);
   auto result = loader->LoadProgram(file_name);
   CHECK_OK(result);
   auto entry_point = result.value();
@@ -98,7 +98,7 @@ TEST_F(KelvinRenodeTest, RunEbreakElfProgram) {
   std::string file_name =
       absl::StrCat(kDepotPath, "testfiles/", kEbreakFileName);
   // Load the program.
-  auto *loader = new mpact::sim::util::ElfProgramLoader(top_);
+  auto* loader = new mpact::sim::util::ElfProgramLoader(top_);
   auto result = loader->LoadProgram(file_name);
   CHECK_OK(result);
   auto entry_point = result.value();
@@ -151,7 +151,7 @@ TEST_F(KelvinRenodeTest, RunBinProgramWithExternalMemory) {
   // Setup the external memory.
   constexpr uint64_t kMemoryBlockSize = 0x40000;  // 256KB
   constexpr uint64_t kNumBlock = 16;              // 4MB / 256KB
-  uint8_t *memory_block[kNumBlock] = {nullptr};
+  uint8_t* memory_block[kNumBlock] = {nullptr};
   // Allocate memory blocks.
   for (int i = 0; i < kNumBlock; ++i) {
     memory_block[i] = new uint8_t[kMemoryBlockSize];

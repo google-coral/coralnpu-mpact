@@ -37,7 +37,7 @@ int32_t construct(int32_t max_name_length);
 int32_t construct_with_memory(int32_t max_name_length,
                               uint64_t memory_block_size_bytes,
                               uint64_t memory_size_bytes,
-                              uint8_t **mem_block_ptr_list);
+                              uint8_t** mem_block_ptr_list);
 // Destruct the given debug instance. A negative return value indicates an
 // error.
 int32_t destruct(int32_t id);
@@ -45,31 +45,31 @@ int32_t destruct(int32_t id);
 int32_t get_reg_info_size(int32_t id);
 // Return the register entry with the given index. The info pointer should
 // store an object of type RenodeCpuRegister.
-int32_t get_reg_info(int32_t id, int32_t index, char *name, void *info);
+int32_t get_reg_info(int32_t id, int32_t index, char* name, void* info);
 // Load the given executable into the instance with the given id. Return the
 // entry point.
-uint64_t load_executable(int32_t id, const char *elf_file_name,
-                         int32_t *status);
+uint64_t load_executable(int32_t id, const char* elf_file_name,
+                         int32_t* status);
 // Load the content of the given file into memory, starting at the given
 // address.
-int32_t load_image(int32_t id, const char *file_name, uint64_t address);
+int32_t load_image(int32_t id, const char* file_name, uint64_t address);
 // Read register reg_id in the instance id, store the value in the pointer
 // given. A return value < 0 is an error.
-int32_t read_register(int32_t id, uint32_t reg_id, uint64_t *value);
+int32_t read_register(int32_t id, uint32_t reg_id, uint64_t* value);
 // Write register reg_id in the instance id. A return value < 0 is an error.
 int32_t write_register(int32_t id, uint32_t reg_id, uint64_t value);
 
-uint64_t read_memory(int32_t id, uint64_t address, char *buffer,
+uint64_t read_memory(int32_t id, uint64_t address, char* buffer,
                      uint64_t length);
-uint64_t write_memory(int32_t id, uint64_t address, const char *buffer,
+uint64_t write_memory(int32_t id, uint64_t address, const char* buffer,
                       uint64_t length);
 // Reset the instance. A return value < 0 is an error.
 int32_t reset(int32_t id);
 // Step the instance id by num_to_step instructions. Return the number of
 // instructions stepped. The status is written to the pointer *status.
-uint64_t step(int32_t id, uint64_t num_to_step, int32_t *status);
+uint64_t step(int32_t id, uint64_t num_to_step, int32_t* status);
 // Halt a free running simulator.
-int32_t halt(int32_t id, int32_t *status);
+int32_t halt(int32_t id, int32_t* status);
 }
 
 namespace kelvin::sim::renode {
@@ -91,7 +91,7 @@ class RenodeAgent {
   using RenodeCpuRegister = kelvin::sim::renode::RenodeCpuRegister;
   constexpr static size_t kBufferSize = 64 * 1024;
   // This is a singleton class, so need a static Instance method.
-  static RenodeAgent *Instance() {
+  static RenodeAgent* Instance() {
     if (instance_ != nullptr) return instance_;
     instance_ = new RenodeAgent();
     return instance_;
@@ -99,35 +99,35 @@ class RenodeAgent {
   // These methods correspond to the C methods defined above.
   int32_t Construct(int32_t max_name_length);
   int32_t Construct(int32_t max_name_length, uint64_t memory_block_size_bytes,
-                    uint64_t memory_size_bytes, uint8_t **mem_block_ptr_list);
+                    uint64_t memory_size_bytes, uint8_t** mem_block_ptr_list);
   int32_t Destroy(int32_t id);
   int32_t Reset(int32_t id);
   int32_t GetRegisterInfoSize(int32_t id) const;
-  int32_t GetRegisterInfo(int32_t id, int32_t index, char *name,
-                          RenodeCpuRegister *info);
-  int32_t ReadRegister(int32_t id, uint32_t reg_id, uint64_t *value);
+  int32_t GetRegisterInfo(int32_t id, int32_t index, char* name,
+                          RenodeCpuRegister* info);
+  int32_t ReadRegister(int32_t id, uint32_t reg_id, uint64_t* value);
   int32_t WriteRegister(int32_t id, uint32_t reg_id, uint64_t value);
-  uint64_t ReadMemory(int32_t id, uint64_t address, char *buffer,
+  uint64_t ReadMemory(int32_t id, uint64_t address, char* buffer,
                       uint64_t length);
-  uint64_t WriteMemory(int32_t id, uint64_t address, const char *buffer,
+  uint64_t WriteMemory(int32_t id, uint64_t address, const char* buffer,
                        uint64_t length);
-  uint64_t LoadExecutable(int32_t id, const char *elf_file_name,
-                          int32_t *status);
-  int32_t LoadImage(int32_t id, const char *file_name, uint64_t address);
-  uint64_t Step(int32_t id, uint64_t num_to_step, int32_t *status);
-  int32_t Halt(int32_t id, int32_t *status);
+  uint64_t LoadExecutable(int32_t id, const char* elf_file_name,
+                          int32_t* status);
+  int32_t LoadImage(int32_t id, const char* file_name, uint64_t address);
+  uint64_t Step(int32_t id, uint64_t num_to_step, int32_t* status);
+  int32_t Halt(int32_t id, int32_t* status);
   // Accessor.
-  kelvin::sim::renode::RenodeDebugInterface *core_dbg(int32_t id) const {
+  kelvin::sim::renode::RenodeDebugInterface* core_dbg(int32_t id) const {
     auto ptr = core_dbg_instances_.find(id);
     if (ptr != core_dbg_instances_.end()) return ptr->second;
     return nullptr;
   }
 
  private:
-  static RenodeAgent *instance_;
+  static RenodeAgent* instance_;
   static uint32_t count_;
   RenodeAgent() = default;
-  absl::flat_hash_map<uint32_t, kelvin::sim::renode::RenodeDebugInterface *>
+  absl::flat_hash_map<uint32_t, kelvin::sim::renode::RenodeDebugInterface*>
       core_dbg_instances_;
   absl::flat_hash_map<uint32_t, int32_t> name_length_map_;
 };

@@ -15,6 +15,8 @@
 # This project contains a small set of tests to test the functionality of
 # the MPACT-Sim/Renode interface.
 
+
+
 cc_test(
     name = "renode_mpact_test",
     size = "small",

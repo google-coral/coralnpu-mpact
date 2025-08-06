@@ -40,10 +40,10 @@ using ::mpact::sim::generic::ReferenceCount;
 class KelvinRenodeMemory : public mpact::sim::util::MemoryInterface {
  public:
   KelvinRenodeMemory(uint64_t block_size_bytes, uint64_t memory_size_bytes,
-                     uint8_t **block_ptr_list, uint64_t base_address,
+                     uint8_t** block_ptr_list, uint64_t base_address,
                      unsigned addressable_unit_size);
   KelvinRenodeMemory(uint64_t block_size_bytes, uint64_t memory_size_bytes,
-                     uint8_t **block_ptr_list)
+                     uint8_t** block_ptr_list)
       : KelvinRenodeMemory(block_size_bytes, memory_size_bytes, block_ptr_list,
                            0, 1) {}
 
@@ -52,34 +52,34 @@ class KelvinRenodeMemory : public mpact::sim::util::MemoryInterface {
   ~KelvinRenodeMemory() override = default;
 
   // Implementation of the MemoryInterface methods.
-  void Load(uint64_t address, DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(uint64_t address, DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
 
-  void Load(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-            DataBuffer *db, Instruction *inst,
-            ReferenceCount *context) override;
+  void Load(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+            DataBuffer* db, Instruction* inst,
+            ReferenceCount* context) override;
 
   // Convenience template function that calls the above function with the
   // element size as the sizeof() the template parameter type.
   template <typename T>
-  void Load(DataBuffer *address_db, DataBuffer *mask_db, DataBuffer *db,
-            Instruction *inst, ReferenceCount *context) {
+  void Load(DataBuffer* address_db, DataBuffer* mask_db, DataBuffer* db,
+            Instruction* inst, ReferenceCount* context) {
     Load(address_db, mask_db, sizeof(T), db, inst, context);
   }
 
-  void Store(uint64_t address, DataBuffer *db) override;
-  void Store(DataBuffer *address_db, DataBuffer *mask_db, int el_size,
-             DataBuffer *db) override;
+  void Store(uint64_t address, DataBuffer* db) override;
+  void Store(DataBuffer* address_db, DataBuffer* mask_db, int el_size,
+             DataBuffer* db) override;
 
   // Convenience template function that calls the above function with the
   // element size as the sizeof() the template parameter type.
   template <typename T>
-  void Store(DataBuffer *address_db, DataBuffer *mask_db, DataBuffer *db) {
+  void Store(DataBuffer* address_db, DataBuffer* mask_db, DataBuffer* db) {
     Store(address_db, mask_db, sizeof(T), db);
   }
 
  private:
-  void LoadStoreHelper(uint64_t address, uint8_t *byte_ptr, int size_in_units,
+  void LoadStoreHelper(uint64_t address, uint8_t* byte_ptr, int size_in_units,
                        bool is_load);
   bool IsValidAddress(uint64_t address, uint64_t high_address);
 
@@ -90,7 +90,7 @@ class KelvinRenodeMemory : public mpact::sim::util::MemoryInterface {
   uint64_t base_address_;
   uint64_t max_address_;
 
-  std::vector<uint8_t *> block_map_;
+  std::vector<uint8_t*> block_map_;
 };
 
 }  // namespace kelvin::sim::renode

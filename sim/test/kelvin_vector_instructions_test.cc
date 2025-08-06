@@ -282,7 +282,7 @@ struct VAddOp {
     int64_t vs2_ext = static_cast<int64_t>(vs2);
     return static_cast<Vd>(vs1_ext + vs2_ext);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAdd<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -298,7 +298,7 @@ struct VSubOp {
     int64_t vs2_ext = static_cast<int64_t>(vs2);
     return static_cast<Vd>(vs1_ext - vs2_ext);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSub<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -314,7 +314,7 @@ struct VRSubOp {
     int64_t vs2_ext = static_cast<int64_t>(vs2);
     return static_cast<Vd>(vs2_ext - vs1_ext);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVRSub<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -326,7 +326,7 @@ TEST_F(KelvinVectorInstructionsTest, VRsub) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VEqOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 == vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVEq<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -338,7 +338,7 @@ TEST_F(KelvinVectorInstructionsTest, VEq) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VNeOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 != vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVNe<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -350,7 +350,7 @@ TEST_F(KelvinVectorInstructionsTest, VNe) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VLtOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 < vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVLt<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -367,7 +367,7 @@ TEST_F(KelvinVectorInstructionsTest, VLtu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VLeOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 <= vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVLe<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -384,7 +384,7 @@ TEST_F(KelvinVectorInstructionsTest, VLeu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VGtOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 > vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVGt<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -401,7 +401,7 @@ TEST_F(KelvinVectorInstructionsTest, VGtu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VGeOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 >= vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVGe<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -423,7 +423,7 @@ struct VAbsdOp {
     auto result = vs1_ext > vs2_ext ? vs1_ext - vs2_ext : vs2_ext - vs1_ext;
     return static_cast<Vd>(result);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAbsd<Vs1>(scalar, strip_mine, inst);
   }
 };
@@ -442,7 +442,7 @@ TEST_F(KelvinVectorInstructionsTest, VAbsdu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VMaxOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return std::max(vs1, vs2); }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMax<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -459,7 +459,7 @@ TEST_F(KelvinVectorInstructionsTest, VMaxu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VMinOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return std::min(vs1, vs2); }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMin<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -481,7 +481,7 @@ struct VAdd3Op {
     int64_t vd_ext = static_cast<int64_t>(vd);
     return static_cast<Vd>(vd_ext + vs1_ext + vs2_ext);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAdd3<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -500,7 +500,7 @@ struct VAddsOp {
         std::max<int64_t>(std::numeric_limits<Vd>::min(), sum),
         std::numeric_limits<Vd>::max());
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAdds<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -516,7 +516,7 @@ struct VAddsuOp {
     uint64_t sum = static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2);
     return std::min<uint64_t>(std::numeric_limits<Vd>::max(), sum);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAddsu<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -536,7 +536,7 @@ struct VSubsOp {
         std::max<int64_t>(std::numeric_limits<Vd>::min(), sub),
         std::numeric_limits<Vd>::max());
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSubs<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -549,7 +549,7 @@ TEST_F(KelvinVectorInstructionsTest, VSubs) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSubsuOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 < vs2 ? 0 : vs1 - vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSubsu<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -564,7 +564,7 @@ struct VAddwOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return static_cast<Vd>(vs1) + static_cast<Vd>(vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAddw<Vd, Vs1>(scalar, strip_mine, inst);
   }
 };
@@ -585,7 +585,7 @@ struct VSubwOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return static_cast<Vd>(vs1) - static_cast<Vd>(vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSubw<Vd, Vs1>(scalar, strip_mine, inst);
   }
 };
@@ -608,7 +608,7 @@ struct VAccOp {
     int64_t vs2_ext = static_cast<int64_t>(vs2);
     return static_cast<Vd>(vs1_ext + vs2_ext);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAcc<Vd, Vs2>(scalar, strip_mine, inst);
   }
 };
@@ -628,8 +628,8 @@ template <typename T>
 static std::pair<T, T> PairwiseOpArgsGetter(
     int num_ops, int op_num, int dest_reg_sub_index, int element_index,
     int vd_size, bool widen_dst, int src1_widen_factor, int vs1_size,
-    const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
-    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    const std::vector<T>& vs1_value, int vs2_size, bool s2_scalar,
+    const std::vector<T>& vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
   int start_index = (op_num * vs1_size) + (2 * element_index);
   if (dest_reg_sub_index == 0) {
@@ -645,7 +645,7 @@ struct VPaddOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return static_cast<Vd>(vs1) + static_cast<Vd>(vs2);
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVPadd<Vd, Vs2>(strip_mine, inst);
   }
 };
@@ -666,7 +666,7 @@ struct VPsubOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return static_cast<Vd>(vs1) - static_cast<Vd>(vs2);
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVPsub<Vd, Vs2>(strip_mine, inst);
   }
 };
@@ -693,7 +693,7 @@ struct VHaddOp {
     return static_cast<Vd>(
         (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2)) >> 1);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVHadd<Vd>(scalar, strip_mine, false /* round */, inst);
   }
 };
@@ -718,7 +718,7 @@ struct VHaddrOp {
     return static_cast<Vd>(
         (static_cast<uint64_t>(vs1) + static_cast<uint64_t>(vs2) + 1) >> 1);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVHadd<Vd>(scalar, strip_mine, true /* round */, inst);
   }
 };
@@ -743,7 +743,7 @@ struct VHsubOp {
     return static_cast<Vd>(
         (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2)) >> 1);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVHsub<Vd>(scalar, strip_mine, false /* round */, inst);
   }
 };
@@ -768,7 +768,7 @@ struct VHsubrOp {
     return static_cast<Vd>(
         (static_cast<uint64_t>(vs1) - static_cast<uint64_t>(vs2) + 1) >> 1);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVHsub<Vd>(scalar, strip_mine, true /* round */, inst);
   }
 };
@@ -785,7 +785,7 @@ TEST_F(KelvinVectorInstructionsTest, VHsubur) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VAndOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 & vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVAnd<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -798,7 +798,7 @@ TEST_F(KelvinVectorInstructionsTest, VAnd) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VOrOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 | vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVOr<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -811,7 +811,7 @@ TEST_F(KelvinVectorInstructionsTest, VOr) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VXorOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 ^ vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVXor<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -824,7 +824,7 @@ TEST_F(KelvinVectorInstructionsTest, VXor) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSllOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 << (vs2 & (sizeof(Vd) * 8 - 1)); }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSll<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -837,7 +837,7 @@ TEST_F(KelvinVectorInstructionsTest, VSll) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSrlOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 >> (vs2 & (sizeof(Vd) * 8 - 1)); }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSrl<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -850,7 +850,7 @@ TEST_F(KelvinVectorInstructionsTest, VSrl) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSraOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) { return vs1 >> (vs2 & (sizeof(Vd) * 8 - 1)); }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSra<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -874,7 +874,7 @@ struct VRevOp {
     if (count & 16) r = ((r & 0x0000FFFF) << 16) | ((r & 0xFFFF0000) >> 16);
     return r;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVRev<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -896,7 +896,7 @@ struct VRorOp {
     }
     return r;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVRor<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -911,7 +911,7 @@ TEST_F(KelvinVectorInstructionsTest, VRor) {
 template <typename T>
 struct VMvpOp {
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMvp<T>(scalar, strip_mine, inst);
   }
 };
@@ -1020,7 +1020,7 @@ struct VShiftOp {
   }
 
   static void KelvinOp(bool round, bool scalar, bool strip_mine,
-                       Instruction *inst) {
+                       Instruction* inst) {
     KelvinVShift<Vd>(round, scalar, strip_mine, inst);
   }
 };
@@ -1034,7 +1034,7 @@ TEST_F(KelvinVectorInstructionsTest, VShift) {
 template <typename Vd, typename Vs>
 struct VNotOp {
   static Vd Op(Vs vs) { return ~vs; }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVNot<Vs>(strip_mine, inst);
   }
 };
@@ -1058,7 +1058,7 @@ struct VClbOp {
     }
     return n;
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVClb<Vs>(strip_mine, inst);
   }
 };
@@ -1080,7 +1080,7 @@ struct VClzOp {
     }
     return n;
   }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVClz<Vs>(strip_mine, inst);
   }
 };
@@ -1094,7 +1094,7 @@ TEST_F(KelvinVectorInstructionsTest, VClz) {
 template <typename Vd, typename Vs>
 struct VCpopOp {
   static Vd Op(Vs vs) { return absl::popcount(vs); }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVCpop<Vs>(strip_mine, inst);
   }
 };
@@ -1108,7 +1108,7 @@ TEST_F(KelvinVectorInstructionsTest, VCpop) {
 template <typename Vd, typename Vs>
 struct VMvOp {
   static Vd Op(Vs vs) { return vs; }
-  static void KelvinOp(bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool strip_mine, Instruction* inst) {
     KelvinVMv<Vs>(strip_mine, inst);
   }
 };
@@ -1137,7 +1137,7 @@ struct VSransOp {
     if (zero) return 0;
     return res;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSrans<Vd, Vs1>(kNonRounding, scalar, strip_mine, inst);
   }
 };
@@ -1169,7 +1169,7 @@ struct VSransrOp {
     if (zero) return 0;
     return res;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSrans<Vd, Vs1>(kIsRounding, scalar, strip_mine, inst);
   }
 };
@@ -1202,7 +1202,7 @@ struct VMulOp {
     return static_cast<Vd>(static_cast<uint64_t>(vs1) *
                            static_cast<uint64_t>(vs2));
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMul<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -1226,7 +1226,7 @@ struct VMulsOp {
     m = std::min(static_cast<uint64_t>(std::numeric_limits<Vd>::max()), m);
     return m;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMuls<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -1245,7 +1245,7 @@ struct VMulwOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return static_cast<Vd>(vs1) * static_cast<Vd>(vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMulw<Vd, Vs1>(scalar, strip_mine, inst);
   }
 };
@@ -1273,7 +1273,7 @@ struct VMulhOp {
     uint64_t result = static_cast<uint64_t>(vs1) * static_cast<uint64_t>(vs2);
     return result >> n;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMulh<Vd>(scalar, strip_mine, false /* round */, inst);
   }
 };
@@ -1302,7 +1302,7 @@ struct VMulhrOp {
     result += 1ull << (n - 1);
     return result >> n;
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMulh<Vd>(scalar, strip_mine, true /* round */, inst);
   }
 };
@@ -1341,7 +1341,7 @@ struct VDmulhOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return KelvinVDmulhHelper<Vd>(kNonRounding, false /* round_neg*/, vs1, vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVDmulh<Vd>(scalar, strip_mine, kNonRounding, false /* round_neg*/,
                      inst);
   }
@@ -1352,7 +1352,7 @@ struct VDmulhrOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return KelvinVDmulhHelper<Vd>(kIsRounding, false /* round_neg*/, vs1, vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVDmulh<Vd>(scalar, strip_mine, kIsRounding, false /* round_neg*/,
                      inst);
   }
@@ -1363,7 +1363,7 @@ struct VDmulhrnOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     return KelvinVDmulhHelper<Vd>(kIsRounding, true /* round_neg*/, vs1, vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVDmulh<Vd>(scalar, strip_mine, kIsRounding, true /* round_neg*/,
                      inst);
   }
@@ -1388,7 +1388,7 @@ struct VMaccOp {
     return static_cast<int64_t>(vd) +
            static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMacc<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -1404,7 +1404,7 @@ struct VMaddOp {
     return static_cast<int64_t>(vs1) +
            static_cast<int64_t>(vd) * static_cast<int64_t>(vs2);
   }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVMadd<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -1418,8 +1418,8 @@ template <typename T>
 static std::pair<T, T> SlidenArgsGetter(
     bool horizontal, int index, int num_ops, int op_num, int dest_reg_sub_index,
     int element_index, int vd_size, bool widen_dst, int src1_widen_factor,
-    int vs1_size, const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
-    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    int vs1_size, const std::vector<T>& vs1_value, int vs2_size, bool s2_scalar,
+    const std::vector<T>& vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
   assert(!s2_scalar && !halftype_op && !vmvp_op && dest_reg_sub_index == 0);
 
@@ -1458,7 +1458,7 @@ template <typename T>
 struct VSlidehnOp {
   static constexpr auto kArgsGetter = SlidenArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction* inst) {
     KelvinVSlidehn<T>(index, inst);
   }
 };
@@ -1472,7 +1472,7 @@ template <typename T>
 struct VSlidevnOp {
   static constexpr auto kArgsGetter = SlidenArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction* inst) {
     KelvinVSlidevn<T>(index, strip_mine, inst);
   }
 };
@@ -1532,7 +1532,7 @@ template <typename T>
 struct VSlidehpOp {
   static constexpr auto kArgsGetter = SlidepArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction* inst) {
     KelvinVSlidehp<T>(index, inst);
   }
 };
@@ -1546,7 +1546,7 @@ template <typename T>
 struct VSlidevpOp {
   static constexpr auto kArgsGetter = SlidepArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(int index, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(int index, bool strip_mine, Instruction* inst) {
     KelvinVSlidevp<T>(index, strip_mine, inst);
   }
 };
@@ -1565,7 +1565,7 @@ TEST_F(KelvinVectorInstructionsTest, VSlidevp) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VSelOp {
   static Vd Op(Vd vd, Vs1 vs1, Vs2 vs2) { return vs1 & 1 ? vd : vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVSel<Vd>(scalar, strip_mine, inst);
   }
 };
@@ -1578,8 +1578,8 @@ template <typename T>
 static std::pair<T, T> EvnOddOpArgsGetter(
     int num_ops, int op_num, int dest_reg_sub_index, int element_index,
     int vd_size, bool widen_dst, int src1_widen_factor, int vs1_size,
-    const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
-    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    const std::vector<T>& vs1_value, int vs2_size, bool s2_scalar,
+    const std::vector<T>& vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
   const int combined_element_index = (op_num * vs1_size + element_index) * 2;
   const int elts_per_src = num_ops * vs1_size;
@@ -1602,7 +1602,7 @@ template <typename T>
 struct VEvnOp {
   static constexpr auto kArgsGetter = EvnOddOpArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVEvn<T>(scalar, strip_mine, inst);
   }
 };
@@ -1614,7 +1614,7 @@ template <typename T>
 struct VOddOp {
   static constexpr auto kArgsGetter = EvnOddOpArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs2; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVOdd<T>(scalar, strip_mine, inst);
   }
 };
@@ -1626,7 +1626,7 @@ template <typename T>
 struct VEvnoddOp {
   static constexpr auto kArgsGetter = EvnOddOpArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVEvnodd<T>(scalar, strip_mine, inst);
   }
 };
@@ -1640,8 +1640,8 @@ template <typename T>
 static std::pair<T, T> ZipOpArgsGetter(
     int num_ops, int op_num, int dest_reg_sub_index, int element_index,
     int vd_size, bool widen_dst, int src1_widen_factor, int vs1_size,
-    const std::vector<T> &vs1_value, int vs2_size, bool s2_scalar,
-    const std::vector<T> &vs2_value, T rs2_value, bool halftype_op,
+    const std::vector<T>& vs1_value, int vs2_size, bool s2_scalar,
+    const std::vector<T>& vs2_value, T rs2_value, bool halftype_op,
     bool vmvp_op) {
   auto src_index = (op_num * vs1_size + element_index +
                     dest_reg_sub_index * vs1_size * num_ops) /
@@ -1660,7 +1660,7 @@ template <typename T>
 struct VZipOp {
   static constexpr auto kArgsGetter = ZipOpArgsGetter<T>;
   static T Op(T vs1, T vs2) { return vs1; }
-  static void KelvinOp(bool scalar, bool strip_mine, Instruction *inst) {
+  static void KelvinOp(bool scalar, bool strip_mine, Instruction* inst) {
     KelvinVZip<T>(scalar, strip_mine, inst);
   }
 };

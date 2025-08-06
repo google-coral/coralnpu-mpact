@@ -55,7 +55,7 @@ class KelvinDecoderTest : public testing::Test {
     auto result = loader_.LoadProgram(input_file);
     CHECK_OK(result.status());
     elf_reader_.load(input_file);
-    auto *symtab = elf_reader_.sections[".symtab"];
+    auto* symtab = elf_reader_.sections[".symtab"];
     CHECK_NE(symtab, nullptr);
     symbol_accessor_ = new SymbolAccessor(elf_reader_, symtab);
   }
@@ -67,7 +67,7 @@ class KelvinDecoderTest : public testing::Test {
   kelvin::sim::KelvinState state_;
   mpact::sim::util::ElfProgramLoader loader_;
   kelvin::sim::KelvinDecoder decoder_;
-  SymbolAccessor *symbol_accessor_;
+  SymbolAccessor* symbol_accessor_;
 };
 
 // This test is really pretty simple. It decodes the instructions in "main".
@@ -88,15 +88,15 @@ TEST_F(KelvinDecoderTest, HelloWorldMain) {
   while (address < value + size) {
     LOG(INFO) << "Address: " << std::hex << address;
     EXPECT_FALSE(state_.program_error_controller()->HasError());
-    auto *inst = decoder_.DecodeInstruction(address);
+    auto* inst = decoder_.DecodeInstruction(address);
     ASSERT_NE(inst, nullptr);
     inst->Execute(nullptr);
     if (state_.program_error_controller()->HasError()) {
       auto errvec = state_.program_error_controller()->GetUnmaskedErrorNames();
-      for (auto &err : errvec) {
+      for (auto& err : errvec) {
         LOG(INFO) << "Error: " << err;
         auto msgvec = state_.program_error_controller()->GetErrorMessages(err);
-        for (auto &msg : msgvec) {
+        for (auto& msg : msgvec) {
           LOG(INFO) << "    " << msg;
         }
       }
@@ -111,7 +111,7 @@ TEST_F(KelvinDecoderTest, HelloWorldMain) {
 
 // Even with a bad address, a valid instruction object should be returned.
 TEST_F(KelvinDecoderTest, BadAddress) {
-  auto *inst = decoder_.DecodeInstruction(0x4321);
+  auto* inst = decoder_.DecodeInstruction(0x4321);
   ASSERT_NE(inst, nullptr);
   inst->Execute(nullptr);
   inst->DecRef();

@@ -40,7 +40,7 @@ TEST_F(KelvinLogInstructionsTest, SimplePrint) {
   constexpr char kHelloString[] = "Hello World!\n";
 
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<char>(sizeof(kHelloString));
+  auto* db = state_->db_factory()->Allocate<char>(sizeof(kHelloString));
   for (int i = 0; i < sizeof(kHelloString); ++i) {
     db->Set<char>(i, kHelloString[i]);
   }
@@ -65,7 +65,7 @@ TEST_F(KelvinLogInstructionsTest, PrintUnsignedNumber) {
   constexpr uint32_t kPrintNum = 2200000000;  // a number > INT32_MAX
 
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
+  auto* db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
   for (int i = 0; i < sizeof(kFormatString); ++i) {
     db->Set<char>(i, kFormatString[i]);
   }
@@ -102,7 +102,7 @@ TEST_F(KelvinLogInstructionsTest, PrintSignedNumber) {
   constexpr int32_t kPrintNum = -1337;
 
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
+  auto* db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
   for (int i = 0; i < sizeof(kFormatString); ++i) {
     db->Set<char>(i, kFormatString[i]);
   }
@@ -139,7 +139,7 @@ TEST_F(KelvinLogInstructionsTest, PrintCharacterStream) {
   constexpr uint32_t kCharStream[] = {0x6c6c6548, 0x0000006f};  // "Hello"
 
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
+  auto* db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
   for (int i = 0; i < sizeof(kFormatString); ++i) {
     db->Set<char>(i, kFormatString[i]);
   }
@@ -179,7 +179,7 @@ TEST_F(KelvinLogInstructionsTest, PrintTwoArguments) {
   constexpr uint32_t kPrintNum = 0xbaddecaf;
 
   // Initialize memory.
-  auto *db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
+  auto* db = state_->db_factory()->Allocate<char>(sizeof(kFormatString));
   for (int i = 0; i < sizeof(kFormatString); ++i) {
     db->Set<char>(i, kFormatString[i]);
   }
@@ -189,7 +189,7 @@ TEST_F(KelvinLogInstructionsTest, PrintTwoArguments) {
       CreateInstruction(), CreateInstruction(), CreateInstruction()};
 
   // Also store the kCharStream elsewhere in the memory.
-  auto *str_db = state_->db_factory()->Allocate<uint32_t>(sizeof(1));
+  auto* str_db = state_->db_factory()->Allocate<uint32_t>(sizeof(1));
   str_db->Set<uint32_t>(0, kCharStream);
   str_db->DecRef();
 

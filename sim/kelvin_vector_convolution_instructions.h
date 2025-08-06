@@ -48,9 +48,9 @@ typedef struct KelvinVDwconvCmd {
   uint32_t sdata2 : 1;    // 31
 } vdwconv_u8_t;
 
-void KelvinVConv(Instruction *inst);
+void KelvinVConv(Instruction* inst);
 
-void KelvinVDwconv(bool write_acc, Instruction *inst);
+void KelvinVDwconv(bool write_acc, Instruction* inst);
 
 }  // namespace kelvin::sim
 

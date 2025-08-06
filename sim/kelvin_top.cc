@@ -78,13 +78,13 @@ using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
 constexpr char kKelvinName[] = "Kelvin";
 
 // Local helper function used to execute instructions.
-static inline bool ExecuteInstruction(mpact::sim::util::Instruction *inst) {
-  for (auto *resource : inst->ResourceHold()) {
+static inline bool ExecuteInstruction(mpact::sim::util::Instruction* inst) {
+  for (auto* resource : inst->ResourceHold()) {
     if (!resource->IsFree()) {
       return false;
     }
   }
-  for (auto *resource : inst->ResourceAcquire()) {
+  for (auto* resource : inst->ResourceAcquire()) {
     resource->Acquire();
   }
   inst->Execute(nullptr);
@@ -102,7 +102,7 @@ KelvinTop::KelvinTop(std::string name)
 
 KelvinTop::KelvinTop(std::string name, uint64_t memory_block_size_bytes,
                      uint64_t memory_size_bytes,
-                     uint8_t **memory_block_ptr_list)
+                     uint8_t** memory_block_ptr_list)
     : Component(std::move(name)),
       counter_num_instructions_{"num_instructions", 0},
       counter_num_cycles_{"num_cycles", 0} {
@@ -176,7 +176,7 @@ void KelvinTop::Initialize() {
       mpact::sim::riscv::RiscVArmSemihost::BitWidth::kWord32, memory_, memory_);
   // Set the software breakpoint callback.
   state_->AddEbreakHandler(
-      [this](const mpact::sim::generic::Instruction *inst) -> bool {
+      [this](const mpact::sim::generic::Instruction* inst) -> bool {
         if (inst != nullptr) {
           if (absl::GetFlag(FLAGS_use_semihost) &&
               semihost_->IsSemihostingCall(inst)) {
@@ -195,7 +195,7 @@ void KelvinTop::Initialize() {
       });
 
   state_->AddMpauseHandler(
-      [this](const mpact::sim::generic::Instruction *inst) -> bool {
+      [this](const mpact::sim::generic::Instruction* inst) -> bool {
         if (inst != nullptr) {
           std::cout << "Program exits properly" << '\n';
           RequestHalt(HaltReason::kUserRequest, inst);
@@ -207,7 +207,7 @@ void KelvinTop::Initialize() {
   // Set trap callbacks.
   state_->set_on_trap([this](bool is_interrupt, uint64_t trap_value,
                              uint64_t exception_code, uint64_t epc,
-                             const Instruction *inst) -> bool {
+                             const Instruction* inst) -> bool {
     auto code = static_cast<mpact::sim::riscv::ExceptionCode>(exception_code);
     bool result = false;
     switch (code) {
@@ -237,24 +237,24 @@ void KelvinTop::Initialize() {
   // Connect counters to instret(h) and mcycle(h) CSRs.
   auto csr_res = state_->csr_set()->GetCsr("minstret");
   // Minstret/minstreth.
-  auto *minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState> *>(
+  auto* minstret = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState>*>(
       csr_res.value());
   minstret->set_counter(&counter_num_instructions_);
   csr_res = state_->csr_set()->GetCsr("minstreth");
   CHECK_OK(csr_res.status()) << "Failed to get minstret CSR";
-  auto *minstreth =
-      reinterpret_cast<RiscVCounterCsrHigh<KelvinState> *>(csr_res.value());
+  auto* minstreth =
+      reinterpret_cast<RiscVCounterCsrHigh<KelvinState>*>(csr_res.value());
   minstreth->set_counter(&counter_num_instructions_);
   // Mcycle/mcycleh.
   csr_res = state_->csr_set()->GetCsr("mcycle");
   CHECK_OK(csr_res.status()) << "Failed to get mcycle CSR";
-  auto *mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState> *>(
+  auto* mcycle = reinterpret_cast<RiscVCounterCsr<uint32_t, KelvinState>*>(
       csr_res.value());
   mcycle->set_counter(&counter_num_cycles_);
   csr_res = state_->csr_set()->GetCsr("mcycleh");
   CHECK_OK(csr_res.status()) << "Failed to get mcycleh CSR";
-  auto *mcycleh =
-      reinterpret_cast<RiscVCounterCsrHigh<KelvinState> *>(csr_res.value());
+  auto* mcycleh =
+      reinterpret_cast<RiscVCounterCsrHigh<KelvinState>*>(csr_res.value());
   mcycleh->set_counter(&counter_num_cycles_);
 
   semihost_->set_exit_callback(
@@ -344,7 +344,7 @@ absl::StatusOr<int> KelvinTop::Step(int num) {
   uint64_t next_seq_pc;
   while (!halted_ && (count < num)) {
     pc = next_pc;
-    auto *inst = decode_cache_->GetDecodedInstruction(pc);
+    auto* inst = decode_cache_->GetDecodedInstruction(pc);
     next_seq_pc = pc + inst->size();
     // Set the PC destination operand to next_seq_pc. Any branch that is
     // executed will overwrite this.
@@ -424,7 +424,7 @@ absl::Status KelvinTop::Run() {
 
     std::fstream trace_file;
     proto::TraceData trace_data;
-    auto *inst_db = db_factory_.Allocate<uint32_t>(1);
+    auto* inst_db = db_factory_.Allocate<uint32_t>(1);
     if (absl::GetFlag(FLAGS_trace)) {
       std::string trace_path = absl::GetFlag(FLAGS_trace_path);
       std::string trace_dir =
@@ -442,7 +442,7 @@ absl::Status KelvinTop::Run() {
 
     while (!halted_) {
       pc = next_pc;
-      auto *inst = decode_cache_->GetDecodedInstruction(pc);
+      auto* inst = decode_cache_->GetDecodedInstruction(pc);
       next_seq_pc = pc + inst->size();
       // Set the PC destination operand to next_seq_pc. Any branch that is
       // executed will overwrite this.
@@ -454,7 +454,7 @@ absl::Status KelvinTop::Run() {
           // Set trace entry {address, instruction}
           memory_->Load(pc, inst_db, nullptr, nullptr);
           auto inst_word = inst_db->Get<uint32_t>(0);
-          proto::TraceEntry *trace_entry = trace_data.add_entry();
+          proto::TraceEntry* trace_entry = trace_data.add_entry();
           trace_entry->set_address(pc);
           trace_entry->set_opcode(inst_word);
           if (absl::GetFlag(FLAGS_trace_disasm)) {
@@ -528,7 +528,7 @@ absl::StatusOr<KelvinTop::HaltReasonValueType> KelvinTop::GetLastHaltReason() {
   return halt_reason_;
 }
 
-absl::StatusOr<uint64_t> KelvinTop::ReadRegister(const std::string &name) {
+absl::StatusOr<uint64_t> KelvinTop::ReadRegister(const std::string& name) {
   // The registers aren't protected by a mutex, so let's not read them while
   // the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -543,11 +543,11 @@ absl::StatusOr<uint64_t> KelvinTop::ReadRegister(const std::string &name) {
       return absl::NotFoundError(
           absl::StrCat("Register '", name, "' not found"));
     }
-    auto *csr = *result;
+    auto* csr = *result;
     return csr->GetUint32();
   }
 
-  auto *db = (iter->second)->data_buffer();
+  auto* db = (iter->second)->data_buffer();
   uint64_t value;
   switch (db->size<uint8_t>()) {
     case 1:
@@ -568,7 +568,7 @@ absl::StatusOr<uint64_t> KelvinTop::ReadRegister(const std::string &name) {
   return value;
 }
 
-absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
+absl::Status KelvinTop::WriteRegister(const std::string& name, uint64_t value) {
   // The registers aren't protected by a mutex, so let's not write them while
   // the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -582,7 +582,7 @@ absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
       return absl::NotFoundError(
           absl::StrCat("Register '", name, "' not found"));
     }
-    auto *csr = *result;
+    auto* csr = *result;
     csr->Set(static_cast<uint32_t>(value));
     return absl::OkStatus();
   }
@@ -593,7 +593,7 @@ absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
     halt_reason_ = *HaltReason::kNone;
   }
 
-  auto *db = (iter->second)->data_buffer();
+  auto* db = (iter->second)->data_buffer();
   switch (db->size<uint8_t>()) {
     case 1:
       db->Set<uint8_t>(0, static_cast<uint8_t>(value));
@@ -613,8 +613,8 @@ absl::Status KelvinTop::WriteRegister(const std::string &name, uint64_t value) {
   return absl::OkStatus();
 }
 
-absl::StatusOr<DataBuffer *> KelvinTop::GetRegisterDataBuffer(
-    const std::string &name) {
+absl::StatusOr<DataBuffer*> KelvinTop::GetRegisterDataBuffer(
+    const std::string& name) {
   // The registers aren't protected by a mutex, so let's not access them while
   // the simulator is running.
   if (run_status_ != RunStatus::kHalted) {
@@ -628,7 +628,7 @@ absl::StatusOr<DataBuffer *> KelvinTop::GetRegisterDataBuffer(
   return iter->second->data_buffer();
 }
 
-absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
+absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void* buffer,
                                              size_t length) {
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("ReadMemory: Core must be halted");
@@ -638,7 +638,7 @@ absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
   }
   length =
       std::min<size_t>(length, state_->max_physical_address() - address + 1);
-  auto *db = db_factory_.Allocate(length);
+  auto* db = db_factory_.Allocate(length);
   // Load bypassing any watch points/semihosting.
   state_->memory()->Load(address, db, nullptr, nullptr);
   std::memcpy(buffer, db->raw_ptr(), length);
@@ -647,7 +647,7 @@ absl::StatusOr<size_t> KelvinTop::ReadMemory(uint64_t address, void *buffer,
 }
 
 absl::StatusOr<size_t> KelvinTop::WriteMemory(uint64_t address,
-                                              const void *buffer,
+                                              const void* buffer,
                                               size_t length) {
   if (run_status_ != RunStatus::kHalted) {
     return absl::FailedPreconditionError("WriteMemory: Core must be halted");
@@ -657,7 +657,7 @@ absl::StatusOr<size_t> KelvinTop::WriteMemory(uint64_t address,
   }
   length =
       std::min<size_t>(length, state_->max_physical_address() - address + 1);
-  auto *db = db_factory_.Allocate(length);
+  auto* db = db_factory_.Allocate(length);
   std::memcpy(db->raw_ptr(), buffer, length);
   // Store bypassing any watch points/semihosting.
   state_->memory()->Store(address, db);
@@ -708,7 +708,7 @@ absl::Status KelvinTop::ClearAllSwBreakpoints() {
   return absl::OkStatus();
 }
 
-absl::StatusOr<mpact::sim::generic::Instruction *> KelvinTop::GetInstruction(
+absl::StatusOr<mpact::sim::generic::Instruction*> KelvinTop::GetInstruction(
     uint64_t address) {
   auto inst = decode_cache_->GetDecodedInstruction(address);
   return inst;
@@ -720,7 +720,7 @@ absl::StatusOr<std::string> KelvinTop::GetDisassembly(uint64_t address) {
     return absl::FailedPreconditionError("GetDissasembly: Core must be halted");
   }
 
-  mpact::sim::generic::Instruction *inst = nullptr;
+  mpact::sim::generic::Instruction* inst = nullptr;
   // If requesting the disassembly for an instruction at a breakpoint, return
   // that of the original instruction instead.
   // If requesting the disassembly for an instruction at an action point, return
@@ -743,7 +743,7 @@ absl::StatusOr<std::string> KelvinTop::GetDisassembly(uint64_t address) {
   return disasm;
 }
 
-absl::Status KelvinTop::LoadImage(const std::string &image_path,
+absl::Status KelvinTop::LoadImage(const std::string& image_path,
                                   uint64_t start_address) {
   std::ifstream image_file;
   constexpr size_t kBufferSize = 4096;
@@ -776,7 +776,7 @@ absl::Status KelvinTop::LoadImage(const std::string &image_path,
 }
 
 void KelvinTop::RequestHalt(HaltReasonValueType halt_reason,
-                            const mpact::sim::generic::Instruction *inst) {
+                            const mpact::sim::generic::Instruction* inst) {
   // First set the halt_reason_, then the halt flag.
   halt_reason_ = halt_reason;
   halted_ = true;
@@ -789,7 +789,7 @@ void KelvinTop::RequestHalt(HaltReasonValueType halt_reason,
 }
 
 void KelvinTop::RequestHalt(HaltReason halt_reason,
-                            const mpact::sim::generic::Instruction *inst) {
+                            const mpact::sim::generic::Instruction* inst) {
   RequestHalt(*halt_reason, inst);
 }
 

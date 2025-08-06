@@ -14,6 +14,9 @@
 
 # Unit tests for kelvin simulator.
 
+
+
+
 exports_files(
     srcs = [
         "testfiles/hello_world_mpause.bin",
@@ -199,5 +202,14 @@ cc_test(
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
+    ],
+)
+
+cc_test(
+    name = "kelvin_cosim_dpi_wrapper_test",
+    srcs = ["kelvin_cosim_dpi_wrapper_test.cc"],
+    deps = [
+        "//sim/cosim:kelvin_cosim_lib",
+        "@com_google_googletest//:gtest_main",
     ],
 )

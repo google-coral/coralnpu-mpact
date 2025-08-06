@@ -61,38 +61,38 @@ using DwAccArray = std::array<uint32_t, 32>;
 class KelvinState : public mpact::sim::riscv::RiscVState {
  public:
   KelvinState(absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
-              mpact::sim::util::MemoryInterface *memory,
-              mpact::sim::util::AtomicMemoryOpInterface *atomic_memory);
+              mpact::sim::util::MemoryInterface* memory,
+              mpact::sim::util::AtomicMemoryOpInterface* atomic_memory);
   KelvinState(absl::string_view id, mpact::sim::riscv::RiscVXlen xlen,
-              mpact::sim::util::MemoryInterface *memory);
+              mpact::sim::util::MemoryInterface* memory);
   ~KelvinState() override = default;
 
   // Deleted Constructors and operators.
 
-  KelvinState(const KelvinState &) = delete;
-  KelvinState(KelvinState &&) = delete;
-  KelvinState &operator=(const KelvinState &) = delete;
-  KelvinState &operator=(KelvinState &&) = delete;
+  KelvinState(const KelvinState&) = delete;
+  KelvinState(KelvinState&&) = delete;
+  KelvinState& operator=(const KelvinState&) = delete;
+  KelvinState& operator=(KelvinState&&) = delete;
 
   void set_vector_length(uint32_t length) { vector_length_ = length; }
   uint32_t vector_length() const { return vector_length_; }
 
-  AccArrayType *acc_vec(int index) { return &(acc_register_[index]); }
+  AccArrayType* acc_vec(int index) { return &(acc_register_[index]); }
   AccArrayTemplate<AccArrayType> acc_register() const { return acc_register_; }
 
-  uint32_t *dw_acc_vec(int i) { return &depthwise_acc_register_[i]; }
-  DwAccArray &dw_acc_register() { return depthwise_acc_register_; }
-  const DwAccArray &dw_acc_register() const { return depthwise_acc_register_; }
+  uint32_t* dw_acc_vec(int i) { return &depthwise_acc_register_[i]; }
+  DwAccArray& dw_acc_register() { return depthwise_acc_register_; }
+  const DwAccArray& dw_acc_register() const { return depthwise_acc_register_; }
 
   void SetLogArgs(std::any data) { log_args_.emplace_back(std::move(data)); }
-  std::string *clog_string() { return &clog_string_; }
+  std::string* clog_string() { return &clog_string_; }
   void PrintLog(absl::string_view format_string);
 
   // Extra Kelvin terminating state.
-  void MPause(const Instruction *inst);
+  void MPause(const Instruction* inst);
 
   // Add terminating state handler.
-  void AddMpauseHandler(absl::AnyInvocable<bool(const Instruction *)> handler) {
+  void AddMpauseHandler(absl::AnyInvocable<bool(const Instruction*)> handler) {
     on_mpause_.emplace_back(std::move(handler));
   }
 
@@ -103,7 +103,7 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   std::vector<std::any> log_args_;
   std::string clog_string_;
   // Extra state handlers
-  std::vector<absl::AnyInvocable<bool(const Instruction *)>> on_mpause_;
+  std::vector<absl::AnyInvocable<bool(const Instruction*)>> on_mpause_;
 
   // Convolution accumulation register, set to be uint32[VLENW][VLENW].
   AccArrayTemplate<AccArrayType> acc_register_;
@@ -115,8 +115,8 @@ class KelvinState : public mpact::sim::riscv::RiscVState {
   mpact::sim::riscv::RiscV32SimpleCsr kisa_;
 
   // minstret CSR.
-  mpact::sim::riscv::RiscVCsrInterface *minstret_;
-  mpact::sim::riscv::RiscVCsrInterface *minstreth_;
+  mpact::sim::riscv::RiscVCsrInterface* minstret_;
+  mpact::sim::riscv::RiscVCsrInterface* minstreth_;
 };
 
 }  // namespace kelvin::sim

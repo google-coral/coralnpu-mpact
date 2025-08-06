@@ -75,7 +75,7 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
     state_ =
         new KelvinState("test", mpact::sim::riscv::RiscVXlen::RV32, memory_);
     // Initialize a portion of memory with a known pattern.
-    auto *db = state_->db_factory()->Allocate(8192);
+    auto* db = state_->db_factory()->Allocate(8192);
     auto span = db->Get<uint8_t>();
     for (int i = 0; i < 8192; i++) {
       span[i] = i & 0xff;
@@ -116,8 +116,8 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   static std::pair<Vs1, Vs2> CommonBinaryOpArgsGetter(
       int num_ops, int op_num, int dest_reg_sub_index, int element_index,
       int vd_size, bool widen_dst, int src1_widen_factor, int vs1_size,
-      const std::vector<Vs1> &vs1_value, int vs2_size, bool s2_scalar,
-      const std::vector<Vs2> &vs2_value, Vs2 rs2_value, bool halftype_op,
+      const std::vector<Vs1>& vs1_value, int vs2_size, bool s2_scalar,
+      const std::vector<Vs2>& vs2_value, Vs2 rs2_value, bool halftype_op,
       bool vmvp_op) {
     auto src1_element_index =
         op_num * vs1_size + element_index * sizeof(Vd) / sizeof(Vs1);
@@ -395,7 +395,7 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   // Fill the span with random values.
   template <typename T>
   void FillArrayWithRandomValues(absl::Span<T> span) {
-    for (auto &val : span) {
+    for (auto& val : span) {
       val = RandomValue<T>();
     }
   }
@@ -406,9 +406,9 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   template <typename T>
   void SetVectorRegisterValues(
       absl::Span<const std::tuple<std::string, Span<const T>>> values) {
-    for (auto &[vreg_name, span] : values) {
-      auto *vreg = state_->GetRegister<RVVectorRegister>(vreg_name).first;
-      auto *db = state_->db_factory()->MakeCopyOf(vreg->data_buffer());
+    for (auto& [vreg_name, span] : values) {
+      auto* vreg = state_->GetRegister<RVVectorRegister>(vreg_name).first;
+      auto* db = state_->db_factory()->MakeCopyOf(vreg->data_buffer());
       db->template Set<T>(span);
       vreg->SetDataBuffer(db);
       db->DecRef();
@@ -419,9 +419,9 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
   template <typename T, typename RegisterType = RV32Register>
   void SetRegisterValues(
       absl::Span<const std::tuple<std::string, const T>> values) {
-    for (auto &[reg_name, value] : values) {
-      auto *reg = state_->GetRegister<RegisterType>(reg_name).first;
-      auto *db =
+    for (auto& [reg_name, value] : values) {
+      auto* reg = state_->GetRegister<RegisterType>(reg_name).first;
+      auto* db =
           state_->db_factory()->Allocate<typename RegisterType::ValueType>(1);
       db->template Set<T>(0, value);
       reg->SetDataBuffer(db);
@@ -431,28 +431,28 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
 
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and appends them to the given instruction.
-  void AppendRegisterOperands(Instruction *inst,
+  void AppendRegisterOperands(Instruction* inst,
                               absl::Span<const std::string> sources,
                               absl::Span<const std::string> destinations) {
-    for (auto &reg_name : sources) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& reg_name : sources) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendSource(reg->CreateSourceOperand());
     }
-    for (auto &reg_name : destinations) {
-      auto *reg = state_->GetRegister<RV32Register>(reg_name).first;
+    for (auto& reg_name : destinations) {
+      auto* reg = state_->GetRegister<RV32Register>(reg_name).first;
       inst->AppendDestination(reg->CreateDestinationOperand(0));
     }
   }
 
   // Creates source and destination scalar register operands for the registers
   // named in the two vectors and appends them to the given instruction.
-  void AppendVectorRegisterOperands(Instruction *inst, const uint32_t num_ops,
+  void AppendVectorRegisterOperands(Instruction* inst, const uint32_t num_ops,
                                     int src1_widen_factor, int src1_reg,
                                     absl::Span<const int> other_sources,
                                     bool widen_dst,
                                     absl::Span<const int> destinations) {
     {
-      std::vector<RegisterBase *> reg_vec;
+      std::vector<RegisterBase*> reg_vec;
       auto regs_count = src1_widen_factor * num_ops;
       for (int i = 0; (i < regs_count) && (i + src1_reg < kNumVectorRegister);
            i++) {
@@ -460,23 +460,23 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
         reg_vec.push_back(
             state_->GetRegister<RVVectorRegister>(reg_name).first);
       }
-      auto *op = new RV32VectorSourceOperand(
-          absl::Span<RegisterBase *>(reg_vec), absl::StrCat("v", src1_reg));
+      auto* op = new RV32VectorSourceOperand(absl::Span<RegisterBase*>(reg_vec),
+                                             absl::StrCat("v", src1_reg));
       inst->AppendSource(op);
     }
-    for (auto &reg_no : other_sources) {
-      std::vector<RegisterBase *> reg_vec;
+    for (auto& reg_no : other_sources) {
+      std::vector<RegisterBase*> reg_vec;
       for (int i = 0; (i < num_ops) && (i + reg_no < kNumVectorRegister); i++) {
         std::string reg_name = absl::StrCat("v", i + reg_no);
         reg_vec.push_back(
             state_->GetRegister<RVVectorRegister>(reg_name).first);
       }
-      auto *op = new RV32VectorSourceOperand(
-          absl::Span<RegisterBase *>(reg_vec), absl::StrCat("v", reg_no));
+      auto* op = new RV32VectorSourceOperand(absl::Span<RegisterBase*>(reg_vec),
+                                             absl::StrCat("v", reg_no));
       inst->AppendSource(op);
     }
-    for (auto &reg_no : destinations) {
-      std::vector<RegisterBase *> reg_vec;
+    for (auto& reg_no : destinations) {
+      std::vector<RegisterBase*> reg_vec;
       auto regs_count = widen_dst ? num_ops * 2 : num_ops;
       for (int i = 0; (i < regs_count) && (i + reg_no < kNumVectorRegister);
            i++) {
@@ -484,25 +484,25 @@ class KelvinVectorInstructionsTestBase : public testing::Test {
         reg_vec.push_back(
             state_->GetRegister<RVVectorRegister>(reg_name).first);
       }
-      auto *op = new RV32VectorDestinationOperand(
-          absl::Span<RegisterBase *>(reg_vec), 0, absl::StrCat("v", reg_no));
+      auto* op = new RV32VectorDestinationOperand(
+          absl::Span<RegisterBase*>(reg_vec), 0, absl::StrCat("v", reg_no));
       inst->AppendDestination(op);
     }
   }
 
-  using InstructionPtr = std::unique_ptr<Instruction, void (*)(Instruction *)>;
+  using InstructionPtr = std::unique_ptr<Instruction, void (*)(Instruction*)>;
   InstructionPtr CreateInstruction() {
     InstructionPtr inst(new Instruction(next_instruction_address_, state_),
-                        [](Instruction *inst) { inst->DecRef(); });
+                        [](Instruction* inst) { inst->DecRef(); });
     inst->set_size(4);
     next_instruction_address_ += 4;
     return inst;
   }
 
-  RVVectorRegister *vreg_[kNumVectorRegister];
-  RV32Register *xreg_[32];
-  KelvinState *state_;
-  FlatDemandMemory *memory_;
+  RVVectorRegister* vreg_[kNumVectorRegister];
+  RV32Register* xreg_[32];
+  KelvinState* state_;
+  FlatDemandMemory* memory_;
   absl::BitGen bitgen_;
   uint32_t next_instruction_address_ = kInstAddress;
 };
