@@ -213,3 +213,101 @@ cc_binary(
         "@com_googlesource_code_re2//:re2",
     ],
 )
+
+cc_library(
+    name = "kelvin_v2_state",
+    srcs = [
+        "kelvin_v2_state.cc",
+    ],
+    hdrs = [
+        "kelvin_v2_state.h",
+    ],
+    copts = [
+        "-O3",
+    ],
+    deps = [
+        "@com_google_absl//absl/base:nullability",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+mpact_isa_decoder(
+    name = "kelvin_v2_isa",
+    src = "kelvin_v2.isa",
+    includes = [
+        "@com_google_mpact-riscv//riscv:riscv32g.isa",
+        "@com_google_mpact-riscv//riscv:riscv32zb.isa",
+        "@com_google_mpact-riscv//riscv:riscv_vector.isa",
+    ],
+    isa_name = "KelvinV2",
+    deps = [
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_mpact-riscv//riscv:riscv_bitmanip_instructions",
+        "@com_google_mpact-riscv//riscv:riscv_g",
+        "@com_google_mpact-riscv//riscv:riscv_v",
+    ],
+)
+
+mpact_bin_fmt_decoder(
+    name = "kelvin_v2_bin_fmt",
+    src = "kelvin_v2.bin_fmt",
+    decoder_name = "KelvinV2",
+    includes = [
+        "@com_google_mpact-riscv//riscv:riscv32g.bin_fmt",
+        "@com_google_mpact-riscv//riscv:riscv_format16.bin_fmt",
+        "@com_google_mpact-riscv//riscv:riscv_format32.bin_fmt",
+        "@com_google_mpact-riscv//riscv:riscv_vector.bin_fmt",
+    ],
+    deps = [
+        ":kelvin_v2_isa",
+    ],
+)
+
+cc_library(
+    name = "kelvin_v2_user_decoder",
+    srcs = [
+        "kelvin_v2_encoding.cc",
+        "kelvin_v2_user_decoder.cc",
+    ],
+    hdrs = [
+        "kelvin_v2_encoding.h",
+        "kelvin_v2_user_decoder.h",
+    ],
+    copts = ["-O3"],
+    deps = [
+        ":kelvin_v2_bin_fmt",
+        ":kelvin_v2_getters",
+        ":kelvin_v2_isa",
+        ":kelvin_v2_state",
+        "@com_google_absl//absl/base:nullability",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_mpact-riscv//riscv:riscv_encoding_common",
+        "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:arch_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
+        "@com_google_mpact-sim//mpact/sim/generic:program_error",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_library(
+    name = "kelvin_v2_getters",
+    hdrs = ["kelvin_v2_getters.h"],
+    deps = [
+        "@com_google_absl//absl/base:nullability",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_mpact-riscv//riscv:riscv_encoding_common",
+        "@com_google_mpact-riscv//riscv:riscv_getters",
+        "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/generic:type_helpers",
+    ],
+)

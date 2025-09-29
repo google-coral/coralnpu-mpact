@@ -37,6 +37,10 @@ extern "C" {
 // Return 0 on success, non-zero on failure.
 int mpact_init();
 
+// Loads an ELF file into the simulation memory.
+// Return 0 on success, non-zero on failure.
+int mpact_load_program(const char* elf_file);
+
 // Reset the MPACT simulator's architectural state.
 // Return 0 on success, non-zero on failure.
 int mpact_reset();
@@ -51,18 +55,11 @@ int mpact_step(const svLogicVecVal* instruction);
 // Currently unimplemented and always returns false.
 bool mpact_is_halted();
 
-// Return the current value of the Program Counter (PC).
-// On error, returns 0 and logs an error.
-uint32_t mpact_get_pc();
-
-// Return the value of the specified GPR. GPRs are selected by their index,
-// where 0 is x0, 1 is x1, and so on.
-// On error, returns 0 and logs an error.
-uint32_t mpact_get_gpr(uint32_t index);
-
-// Return the value of the specified CSR. CSRs are selected by their address.
-// On error, returns 0 and logs an error.
-uint32_t mpact_get_csr(uint32_t address);
+// Return the value of the specified register. Register names are provided as
+// null-terminated c-style strings.
+// Returns 0 on success, non-zero on failure.
+// The register value is returned in the uint32_t argument.
+int mpact_get_register(const char* name, uint32_t* value);
 
 // Finalize and clean up MPACT simulator resources.
 // Return 0 on success, non-zero on failure.

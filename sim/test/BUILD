@@ -206,8 +206,25 @@ cc_test(
 )
 
 cc_test(
+    name = "kelvin_v2_user_decoder_test",
+    srcs = ["kelvin_v2_user_decoder_test.cc"],
+    copts = ["-Werror"],
+    deps = [
+        "//sim:kelvin_v2_isa",
+        "//sim:kelvin_v2_state",
+        "//sim:kelvin_v2_user_decoder",
+        "@com_google_absl//absl/memory",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-riscv//riscv:riscv_state",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+cc_test(
     name = "kelvin_cosim_dpi_wrapper_test",
     srcs = ["kelvin_cosim_dpi_wrapper_test.cc"],
+    copts = ["-Werror"],
     deps = [
         "//sim/cosim:kelvin_cosim_lib",
         "@com_google_googletest//:gtest_main",

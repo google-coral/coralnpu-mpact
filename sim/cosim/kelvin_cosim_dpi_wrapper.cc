@@ -16,11 +16,12 @@
 #include <memory>
 #include <string>
 
+#include "sim/kelvin_v2_state.h"
+#include "sim/kelvin_v2_user_decoder.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "riscv/riscv32g_vec_decoder.h"
-#include "riscv/riscv_csr.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
@@ -30,6 +31,7 @@
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
+#include "mpact/sim/util/program_loader/elf_program_loader.h"
 #include "external/svdpi_h_file/file/svdpi.h"
 
 // Include the DPI-C contract header.
@@ -39,9 +41,11 @@ constexpr int kKelvinVectorByteLength = 16;
 constexpr uint32_t kKelvinStartAddress = 0;
 
 namespace {
+using ::kelvin::sim::KelvinV2State;
+using ::kelvin::sim::KelvinV2UserDecoder;
 using ::mpact::sim::generic::DecoderInterface;
+using ::mpact::sim::riscv::kFRegisterAliases;
 using ::mpact::sim::riscv::kXRegisterAliases;
-using ::mpact::sim::riscv::RiscV32GVecDecoder;
 using ::mpact::sim::riscv::RiscVFPState;
 using ::mpact::sim::riscv::RiscVState;
 using ::mpact::sim::riscv::RiscVTop;
@@ -49,6 +53,7 @@ using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVFpRegister;
+using ::mpact::sim::util::ElfProgramLoader;
 using ::mpact::sim::util::FlatDemandMemory;
 using ::mpact::sim::util::MemoryInterface;
 
@@ -56,69 +61,85 @@ class MpactHandle {
  public:
   MpactHandle()
       : memory_(std::make_unique<FlatDemandMemory>()),
-        rv_state_(CreateRVState(memory_.get())),
-        rv_fp_state_(CreateFPState(rv_state_.get())),
-        rvv_state_(CreateVectorState(rv_state_.get())),
-        rv_decoder_(CreateDecoder(rv_state_.get(), memory_.get())),
-        rv_top_(CreateRiscVTop(rv_state_.get(), rv_decoder_.get())) {
+        state_(CreateState(memory_.get())),
+        rv_fp_state_(CreateFPState(state_.get())),
+        rvv_state_(CreateVectorState(state_.get())),
+        rv_decoder_(CreateDecoder(state_.get(), memory_.get())),
+        rv_top_(CreateRiscVTop(state_.get(), rv_decoder_.get())),
+        elf_loader_(std::make_unique<ElfProgramLoader>(memory_.get())) {
     absl::Status pc_write = rv_top_->WriteRegister("pc", kKelvinStartAddress);
     CHECK_OK(pc_write) << "Error writing to pc.";
+  }
+
+  absl::Status load_program(const std::string& elf_file) {
+    auto load_result = elf_loader_->LoadProgram(elf_file);
+    if (!load_result.ok()) {
+      return absl::InternalError(
+          absl::StrCat("Failed to load program '", elf_file,
+                       "': ", load_result.status().message()));
+    }
+    return absl::OkStatus();
   }
 
   uint32_t get_pc() {
     absl::StatusOr<uint64_t> read_reg_status = rv_top_->ReadRegister("pc");
     CHECK_OK(read_reg_status);
-    if (!read_reg_status.ok()) {
-      LOG(ERROR) << "[DPI] Failed to read pc.";
-      return 0;
-    }
     return static_cast<uint32_t>(read_reg_status.value());
   }
 
   RiscVTop* rv_top() { return rv_top_.get(); }
 
-  RiscVState* rv_state() { return rv_state_.get(); }
+  KelvinV2State* rv_state() { return state_.get(); }
+
+  ElfProgramLoader* elf_loader() { return elf_loader_.get(); }
 
  private:
-  std::unique_ptr<RiscVState> CreateRVState(MemoryInterface* memory) {
-    auto rv_state =
-        std::make_unique<RiscVState>("RiscV32GV", RiscVXlen::RV32, memory);
+  std::unique_ptr<KelvinV2State> CreateState(MemoryInterface* memory) {
+    auto state =
+        std::make_unique<KelvinV2State>("KelvinV2", RiscVXlen::RV32, memory);
     // Make sure the architectural and abi register aliases are added.
     std::string reg_name;
     for (int i = 0; i < 32; i++) {
       reg_name = absl::StrCat(RiscVState::kXregPrefix, i);
-      (void)rv_state->AddRegister<RV32Register>(reg_name);
-      (void)rv_state->AddRegisterAlias<RV32Register>(reg_name,
-                                                     kXRegisterAliases[i]);
+      [[maybe_unused]] RV32Register* xreg =
+          state->AddRegister<RV32Register>(reg_name);
+      CHECK_OK(state->AddRegisterAlias<RV32Register>(reg_name,
+                                                     kXRegisterAliases[i]));
+
+      reg_name = absl::StrCat(RiscVState::kFregPrefix, i);
+      [[maybe_unused]] RVFpRegister* freg =
+          state->AddRegister<RVFpRegister>(reg_name);
+      CHECK_OK(state->AddRegisterAlias<RVFpRegister>(reg_name,
+                                                     kFRegisterAliases[i]));
     }
-    return rv_state;
+    return state;
   }
 
-  std::unique_ptr<RiscVFPState> CreateFPState(RiscVState* rv_state) {
-    return std::make_unique<RiscVFPState>(rv_state->csr_set(), rv_state);
+  std::unique_ptr<RiscVFPState> CreateFPState(KelvinV2State* state) {
+    return std::make_unique<RiscVFPState>(state->csr_set(), state);
   }
 
-  std::unique_ptr<RiscVVectorState> CreateVectorState(RiscVState* rv_state) {
-    return std::make_unique<RiscVVectorState>(rv_state,
-                                              kKelvinVectorByteLength);
+  std::unique_ptr<RiscVVectorState> CreateVectorState(KelvinV2State* state) {
+    return std::make_unique<RiscVVectorState>(state, kKelvinVectorByteLength);
   }
 
-  std::unique_ptr<DecoderInterface> CreateDecoder(RiscVState* rv_state,
+  std::unique_ptr<DecoderInterface> CreateDecoder(KelvinV2State* state,
                                                   MemoryInterface* memory) {
-    return std::make_unique<RiscV32GVecDecoder>(rv_state, memory);
+    return std::make_unique<KelvinV2UserDecoder>(state, memory);
   }
 
-  std::unique_ptr<RiscVTop> CreateRiscVTop(RiscVState* rv_state,
+  std::unique_ptr<RiscVTop> CreateRiscVTop(KelvinV2State* state,
                                            DecoderInterface* decoder) {
-    return std::make_unique<RiscVTop>("KelvinPlaceholder", rv_state, decoder);
+    return std::make_unique<RiscVTop>("KelvinPlaceholder", state, decoder);
   }
 
   const std::unique_ptr<MemoryInterface> memory_;
-  const std::unique_ptr<RiscVState> rv_state_;
+  const std::unique_ptr<KelvinV2State> state_;
   const std::unique_ptr<RiscVFPState> rv_fp_state_;
   const std::unique_ptr<RiscVVectorState> rvv_state_;
   const std::unique_ptr<DecoderInterface> rv_decoder_;
   const std::unique_ptr<RiscVTop> rv_top_;
+  const std::unique_ptr<ElfProgramLoader> elf_loader_;
 };
 
 MpactHandle* g_mpact_handle = nullptr;
@@ -131,6 +152,20 @@ int mpact_init() {
     return -1;
   }
   g_mpact_handle = new MpactHandle();
+  return 0;
+}
+
+int mpact_load_program(const char* elf_file) {
+  if (elf_file == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_init: received a null elf program.";
+    return -1;
+  }
+  absl::Status status = g_mpact_handle->load_program(elf_file);
+  if (!status.ok()) {
+    LOG(ERROR) << "[DPI] Failed to load elf program '" << elf_file
+               << "': " << status.message();
+    return -1;
+  }
   return 0;
 }
 
@@ -171,46 +206,32 @@ bool mpact_is_halted() {
   return false;
 }
 
-uint32_t mpact_get_pc() {
-  if (g_mpact_handle == nullptr) {
-    LOG(ERROR) << "[DPI] mpact_get_pc: g_mpact_handle is null.";
-    return 0;
+int mpact_get_register(const char* name, uint32_t* value) {
+  if (value == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_register: value is null.";
+    return -1;
   }
-  return g_mpact_handle->get_pc();
-}
-
-uint32_t mpact_get_gpr(uint32_t index) {
-  if (g_mpact_handle == nullptr) {
-    LOG(ERROR) << "[DPI] mpact_get_gpr: g_mpact_handle is null.";
-    return 0;
+  if (name == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_register: name is null.";
+    return -3;
   }
-  std::string reg_name =
-      absl::StrCat(mpact::sim::riscv::RiscVState::kXregPrefix, index);
-  mpact::sim::riscv::RiscVTop* rv_top = g_mpact_handle->rv_top();
+  *value = 0;
+  if (g_mpact_handle == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_register: g_mpact_handle is null.";
+    return -2;
+  }
+  std::string reg_name(name);
+  RiscVTop* rv_top = g_mpact_handle->rv_top();
   absl::StatusOr<uint64_t> read_reg_status = rv_top->ReadRegister(reg_name);
   if (!read_reg_status.ok()) {
-    LOG(ERROR) << "[DPI] mpact_get_gpr: Failed to read register: " << reg_name;
-    return 0;
+    LOG(ERROR) << "[DPI] mpact_get_register: Failed to read register: "
+               << reg_name;
+    return -3;
   }
-  return static_cast<uint32_t>(read_reg_status.value());
-}
-
-uint32_t mpact_get_csr(uint32_t address) {
-  if (g_mpact_handle == nullptr) {
-    LOG(ERROR) << "[DPI] mpact_get_csr: g_mpact_handle is null.";
-    return 0;
-  }
-  uint64_t csr_index = static_cast<uint64_t>(address);
-
-  absl::StatusOr<mpact::sim::riscv::RiscVCsrInterface*> get_csr_status =
-      g_mpact_handle->rv_state()->csr_set()->GetCsr(csr_index);
-
-  if (!get_csr_status.ok()) {
-    LOG(ERROR) << "[DPI] mpact_get_csr: Failed to get CSR: " << address;
-    return 0;
-  }
-  mpact::sim::riscv::RiscVCsrInterface* csr = get_csr_status.value();
-  return csr->AsUint32();
+  // Kelvin V2 is a 32bit system. RiscVTop::ReadRegister outputs 64bit values
+  // for both 32bit and 64bit systems. We can safely cast the value to uint32_t.
+  *value = static_cast<uint32_t>(*read_reg_status);
+  return 0;
 }
 
 int mpact_fini() {
