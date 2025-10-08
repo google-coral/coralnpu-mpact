@@ -34,14 +34,13 @@ static inline uint64_t StretchMisa32(uint32_t value) {
   return value64;
 }
 
-constexpr uint32_t kKelvinV2MisaInitialValue = 0x40201120;
-
 KelvinV2State::KelvinV2State(
     absl::string_view id, RiscVXlen xlen, MemoryInterface* /*absl_nonnull*/ memory,
     AtomicMemoryOpInterface* /*absl_nullable*/ atomic_memory)
     : RiscVState(id, xlen, memory, atomic_memory) {
   // Set the initial value of the misa CSR to the Kelvin V2 ISA value.
   misa()->Set(StretchMisa32(kKelvinV2MisaInitialValue));
+  set_vector_register_width(kKelvinV2VectorByteLength);
 }
 KelvinV2State::~KelvinV2State() = default;
 

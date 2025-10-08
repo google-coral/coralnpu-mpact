@@ -15,12 +15,18 @@
 #ifndef SIM_KELVIN_V2_STATE_H_
 #define SIM_KELVIN_V2_STATE_H_
 
+#include <cstdint>
+
 #include "absl/base/nullability.h"
 #include "absl/strings/string_view.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 
 namespace kelvin::sim {
+
+constexpr uint32_t kKelvinV2MisaInitialValue = 0x40201120;
+constexpr int kKelvinV2VectorByteLength = 16;
+
 class KelvinV2State : public ::mpact::sim::riscv::RiscVState {
  public:
   using AtomicMemoryOpInterface = ::mpact::sim::util::AtomicMemoryOpInterface;

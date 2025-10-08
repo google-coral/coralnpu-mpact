@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <vector>
 
 #include "sim/cosim/kelvin_cosim_dpi.h"
 #include "googletest/include/gtest/gtest.h"
@@ -8,6 +9,8 @@ namespace {
 
 constexpr uint32_t kLoadImmediateToX5 = 0b11011110101011011011'00101'0110111;
 constexpr uint32_t kFmvX5ToF5 = 0b1111000'00000'00101'000'00101'1010011;
+constexpr uint32_t kVsetivli_e32_m1 = 0b11'0011010000'01111'111'00110'1010111;
+constexpr uint32_t kVmvX5ToV1 = 0b010111'1'00000'00101'100'00001'1010111;
 constexpr uint32_t kAddImmediateToX5_2047 =
     0b011111111111'00101'000'00101'0010011;
 constexpr uint32_t kAddImmediateToX5_1776 =
@@ -103,6 +106,45 @@ TEST_F(CosimFixture, GetMisaCsr) {
   uint32_t misa_value = 0;
   EXPECT_EQ(mpact_get_register("misa", &misa_value), 0);
   EXPECT_EQ(misa_value, kExpectedMisaValue);
+}
+
+TEST_F(CosimFixture, GetVectorRegister) {
+  uint32_t x5_val = 0;
+  EXPECT_EQ(add_test_values_to_x5(), 0);
+  EXPECT_EQ(mpact_get_register("x5", &x5_val), 0);
+  EXPECT_EQ(x5_val, kExpectedX5Value);
+  // Configure the vector unit for 4 x 32 bit elements.
+  EXPECT_EQ(mpact_step_wrapper(kVsetivli_e32_m1), 0);
+  // Move the value in x5 into v1.
+  EXPECT_EQ(mpact_step_wrapper(kVmvX5ToV1), 0);
+
+  svLogicVecVal result[4];
+  EXPECT_EQ(mpact_get_vector_register("v1", result), 0);
+
+  std::vector<uint32_t> expected_avals(4, kExpectedX5Value);
+  std::vector<uint32_t> result_avals;
+  for (int i = 0; i < 4; ++i) {
+    result_avals.push_back(result[i].aval);
+    // Verilator doesn't support 4 state logic values. bval != 0 represent
+    // states `x` and `z` we only expect `0` and `1` states.
+    EXPECT_EQ(result[i].bval, 0);
+  }
+  EXPECT_EQ(result_avals, expected_avals);
+}
+
+TEST_F(CosimFixture, GetVectorRegisterErrors_NullValue) {
+  EXPECT_NE(mpact_get_vector_register("v1", nullptr), 0);
+}
+
+TEST_F(CosimFixture, GetVectorRegisterErrors_NullRegName) {
+  svLogicVecVal result[4];
+  EXPECT_NE(mpact_get_vector_register(nullptr, result), 0);
+}
+
+TEST_F(CosimFixture, GetVectorRegisterErrors_HandleNotInitialized) {
+  mpact_fini();  // Reset the handle to test the uninitialized case.
+  svLogicVecVal result[4];
+  EXPECT_NE(mpact_get_vector_register("v1", result), 0);
 }
 
 }  // namespace

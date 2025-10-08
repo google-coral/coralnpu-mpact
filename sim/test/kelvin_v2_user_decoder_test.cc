@@ -16,12 +16,15 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "sim/kelvin_v2_encoding.h"
 #include "sim/kelvin_v2_enums.h"
 #include "sim/kelvin_v2_state.h"
 #include "googletest/include/gtest/gtest.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
@@ -46,6 +49,8 @@ using ::mpact::sim::util::MemoryInterface;
 
 // addi x1, x1, 0
 constexpr uint32_t kNopAddiInstruction = 0b000000000000'00001'000'00001'0010011;
+// vsetivli x0, 4, e32, m1, ta, ma
+constexpr uint32_t kVsetivli_e32_m1 = 0b11'0000100000'00100'111'00000'1010111;
 
 class KelvinV2UserDecoderFixture : public ::testing::Test {
  public:
@@ -55,6 +60,42 @@ class KelvinV2UserDecoderFixture : public ::testing::Test {
                                              memory_.get());
     decoder_ =
         std::make_unique<KelvinV2UserDecoder>(state_.get(), memory_.get());
+  }
+
+  std::string DoVerifyShiftInstructionSourceOps(uint32_t base_instruction,
+                                                OpcodeEnum expected_opcode) {
+    std::string failure_string;
+    for (int i = 0; i < 32; i++) {
+      uint32_t shift_amount = i;
+      uint64_t test_address = 4 * i;
+      uint32_t instruction_word = base_instruction | (shift_amount << 20);
+      DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
+      inst_db->Set<uint32_t>(/*index=*/0, instruction_word);
+      memory_->Store(test_address, inst_db);
+
+      std::unique_ptr<Instruction> instruction =
+          absl::WrapUnique(decoder_->DecodeInstruction(test_address));
+      if (instruction->opcode() != *expected_opcode) {
+        absl::StrAppend(&failure_string, "Opcode mismatch.",
+                        " expected: ", *expected_opcode,
+                        " observed: ", instruction->opcode(),
+                        " instruction_word: ",
+                        absl::StrFormat("%08x", instruction_word), "\n");
+      }
+
+      uint32_t observed_shift_amount = instruction->Source(1)->AsInt32(0);
+      if (shift_amount != observed_shift_amount) {
+        absl::StrAppend(
+            &failure_string,
+            "Shift amount mismatch for shift amount: ", shift_amount,
+            " observed: ", observed_shift_amount,
+            " instruction: ", instruction->AsString(),
+            " instruction_word: ", absl::StrFormat("%08x", instruction_word),
+            "\n");
+      }
+      inst_db->DecRef();
+    }
+    return failure_string;
   }
 
  protected:
@@ -76,6 +117,62 @@ TEST_F(KelvinV2UserDecoderFixture, DecodeInstruction) {
       absl::WrapUnique(decoder_->DecodeInstruction(test_address));
   EXPECT_NE(instruction.get(), nullptr);
   EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kAddi);
+  inst_db->DecRef();
+}
+
+TEST_F(KelvinV2UserDecoderFixture, VerifySRLIInstructionSourceOps) {
+  // imm[11:5] - Hard coded to 0 for SRLI
+  // uimim5 - shift amount
+  // rs1 - source register
+  // f3 - 101 for srli instruction
+  // rd - destination register
+  // opcode - 1110011 for srli instruction
+  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  uint32_t srli_instruction = 0b0000000'00000'11111'101'11111'0010011;
+  std::string shift_failures =
+      DoVerifyShiftInstructionSourceOps(srli_instruction, OpcodeEnum::kSrli);
+  EXPECT_TRUE(shift_failures.empty()) << shift_failures;
+}
+
+TEST_F(KelvinV2UserDecoderFixture, VerifySLLIInstructionSourceOps) {
+  // imm[11:5] - Hard coded to 0 for SRLI
+  // uimim5 - shift amount
+  // rs1 - source register
+  // f3 - 001 for slli instruction
+  // rd - destination register
+  // opcode - 1110011 for slli instruction
+  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  uint32_t slli_instruction = 0b0000000'00000'11111'001'11111'0010011;
+  std::string shift_failures =
+      DoVerifyShiftInstructionSourceOps(slli_instruction, OpcodeEnum::kSlli);
+  EXPECT_TRUE(shift_failures.empty()) << shift_failures;
+}
+
+TEST_F(KelvinV2UserDecoderFixture, VerifySRAIInstructionSourceOps) {
+  // imm[11:5] - Hard coded to 0b0100000 for SRAI
+  // uimim5 - shift amount
+  // rs1 - source register
+  // f3 - 101 for srai instruction
+  // rd - destination register
+  // opcode - 1110011 for srai instruction
+  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  uint32_t srai_instruction = 0b0100000'00000'11111'101'11111'0010011;
+  std::string shift_failures =
+      DoVerifyShiftInstructionSourceOps(srai_instruction, OpcodeEnum::kSrai);
+  EXPECT_TRUE(shift_failures.empty()) << shift_failures;
+}
+
+TEST_F(KelvinV2UserDecoderFixture, DecodeVectorInstruction) {
+  uint64_t test_address = 0;
+  DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
+  // vsetivli x0, 4, e32, m1, ta, ma
+  inst_db->Set<uint32_t>(/*index=*/0, kVsetivli_e32_m1);
+  memory_->Store(test_address, inst_db);
+  std::unique_ptr<Instruction> instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(test_address));
+  // Verify the vsetivli instruction was correctly decoded.
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kVsetivli);
   inst_db->DecRef();
 }
 

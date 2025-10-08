@@ -66,17 +66,17 @@ slot riscv32i {
       resources: TwoOp,
       disasm: "xori", "%rd, %rs1, %I_imm12",
       semfunc: "&::mpact::sim::riscv::RV32::RiscVIXor";
-    slli{: rs1, I_uimm5 : rd},
+    slli{: rs1, r_uimm5 : rd},
       resources: TwoOp,
-      disasm: "slli", "%rd, %rs1, 0x%(I_uimm5:x)",
+      disasm: "slli", "%rd, %rs1, 0x%(r_uimm5:x)",
       semfunc: "&::mpact::sim::riscv::RV32::RiscVISll";
-    srli{: rs1, I_uimm5 : rd},
+    srli{: rs1, r_uimm5 : rd},
       resources: TwoOp,
-      disasm: "srli", "%rd  %rs1, 0x%(I_uimm5:x)",
+      disasm: "srli", "%rd  %rs1, 0x%(r_uimm5:x)",
       semfunc: "&::mpact::sim::riscv::RV32::RiscVISrl";
-    srai{: rs1, I_uimm5 : rd},
+    srai{: rs1, r_uimm5 : rd},
       resources: TwoOp,
-      disasm: "srai", "%rd, %rs1, 0x%(I_uimm5:x)",
+      disasm: "srai", "%rd, %rs1, 0x%(r_uimm5:x)",
       semfunc: "&::mpact::sim::riscv::RV32::RiscVISra";
     lui{: U_imm20 : rd},
       resources: { next_pc : rd[0..]},

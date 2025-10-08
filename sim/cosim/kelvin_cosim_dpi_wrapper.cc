@@ -22,12 +22,14 @@
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
 #include "riscv/riscv_fp_state.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_register_aliases.h"
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "riscv/riscv_vector_state.h"
+#include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -37,12 +39,12 @@
 // Include the DPI-C contract header.
 #include "sim/cosim/kelvin_cosim_dpi.h"
 
-constexpr int kKelvinVectorByteLength = 16;
 constexpr uint32_t kKelvinStartAddress = 0;
 
 namespace {
 using ::kelvin::sim::KelvinV2State;
 using ::kelvin::sim::KelvinV2UserDecoder;
+using ::kelvin::sim::kKelvinV2VectorByteLength;
 using ::mpact::sim::generic::DecoderInterface;
 using ::mpact::sim::riscv::kFRegisterAliases;
 using ::mpact::sim::riscv::kXRegisterAliases;
@@ -53,6 +55,7 @@ using ::mpact::sim::riscv::RiscVVectorState;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
 using ::mpact::sim::riscv::RVFpRegister;
+using ::mpact::sim::riscv::RVVectorRegister;
 using ::mpact::sim::util::ElfProgramLoader;
 using ::mpact::sim::util::FlatDemandMemory;
 using ::mpact::sim::util::MemoryInterface;
@@ -68,6 +71,7 @@ class MpactHandle {
         rv_top_(CreateRiscVTop(state_.get(), rv_decoder_.get())),
         elf_loader_(std::make_unique<ElfProgramLoader>(memory_.get())) {
     absl::Status pc_write = rv_top_->WriteRegister("pc", kKelvinStartAddress);
+    state_->set_rv_fp(rv_fp_state_.get());
     CHECK_OK(pc_write) << "Error writing to pc.";
   }
 
@@ -111,6 +115,11 @@ class MpactHandle {
           state->AddRegister<RVFpRegister>(reg_name);
       CHECK_OK(state->AddRegisterAlias<RVFpRegister>(reg_name,
                                                      kFRegisterAliases[i]));
+
+      reg_name = absl::StrCat(RiscVState::kVregPrefix, i);
+      [[maybe_unused]] RVVectorRegister* vreg =
+          state->AddRegister<RVVectorRegister>(reg_name,
+                                               kKelvinV2VectorByteLength);
     }
     return state;
   }
@@ -120,7 +129,7 @@ class MpactHandle {
   }
 
   std::unique_ptr<RiscVVectorState> CreateVectorState(KelvinV2State* state) {
-    return std::make_unique<RiscVVectorState>(state, kKelvinVectorByteLength);
+    return std::make_unique<RiscVVectorState>(state, kKelvinV2VectorByteLength);
   }
 
   std::unique_ptr<DecoderInterface> CreateDecoder(KelvinV2State* state,
@@ -206,6 +215,38 @@ bool mpact_is_halted() {
   return false;
 }
 
+int mpact_get_vector_register(const char* name, svLogicVecVal* value) {
+  if (value == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_vector_register: value is null.";
+    return -1;
+  }
+  if (name == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_vector_register: name is null.";
+    return -3;
+  }
+  if (g_mpact_handle == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_get_vector_register: g_mpact_handle is null.";
+    return -2;
+  }
+  std::string reg_name(name);
+  RiscVTop* rv_top = g_mpact_handle->rv_top();
+  absl::StatusOr<::mpact::sim::generic::DataBuffer*> vector_db =
+      rv_top->GetRegisterDataBuffer(reg_name);
+  if (!vector_db.ok()) {
+    LOG(ERROR)
+        << "[DPI] mpact_get_vector_register: Failed to get register data "
+           "buffer: "
+        << reg_name;
+    return -4;
+  }
+  absl::Span<uint32_t> vector_data = (*vector_db)->Get<uint32_t>();
+  for (int i = 0; i < vector_data.size(); ++i) {
+    value[i].aval = vector_data[i];
+    value[i].bval = 0;
+  }
+  return 0;
+}
+
 int mpact_get_register(const char* name, uint32_t* value) {
   if (value == nullptr) {
     LOG(ERROR) << "[DPI] mpact_get_register: value is null.";
@@ -226,7 +267,7 @@ int mpact_get_register(const char* name, uint32_t* value) {
   if (!read_reg_status.ok()) {
     LOG(ERROR) << "[DPI] mpact_get_register: Failed to read register: "
                << reg_name;
-    return -3;
+    return -4;
   }
   // Kelvin V2 is a 32bit system. RiscVTop::ReadRegister outputs 64bit values
   // for both 32bit and 64bit systems. We can safely cast the value to uint32_t.

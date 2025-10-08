@@ -61,6 +61,12 @@ bool mpact_is_halted();
 // The register value is returned in the uint32_t argument.
 int mpact_get_register(const char* name, uint32_t* value);
 
+// Return the value of the specified vector register. Register names are
+// provided as null-terminated c-style strings.
+// Returns 0 on success, non-zero on failure.
+// The register value is returned in the svLogicVecVal argument.
+int mpact_get_vector_register(const char* name, svLogicVecVal* value);
+
 // Finalize and clean up MPACT simulator resources.
 // Return 0 on success, non-zero on failure.
 int mpact_fini();
