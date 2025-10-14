@@ -26,14 +26,14 @@
 #include "absl/strings/str_cat.h"
 #include "riscv/riscv_debug_info.h"
 
-// This file contains a test of the RenodeMpact interface using kelvin.
+// This file contains a test of the RenodeMpact interface using coralnpu.
 
 namespace {
 
-using kelvin::sim::renode::ExecutionResult;
+using coralnpu::sim::renode::ExecutionResult;
 using mpact::sim::riscv::DebugRegisterEnum;
 
-constexpr char kEbreakExecutableFileName[] = "kelvin_ebreak.elf";
+constexpr char kEbreakExecutableFileName[] = "coralnpu_ebreak.elf";
 constexpr char kExecutableFileName[] = "hello_world_mpause.elf";
 constexpr char kBinFileName[] = "hello_world_mpause.bin";
 constexpr uint64_t kBinFileAddress = 0x0;

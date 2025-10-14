@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Build rules for Kelvin simulator code.
+# Build rules for CoralNPU simulator code.
 load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fmt_decoder", "mpact_isa_decoder")
 
 
@@ -20,12 +20,12 @@ load("@com_google_mpact-sim//mpact/sim/decoder:mpact_sim_isa.bzl", "mpact_bin_fm
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "kelvin_state",
+    name = "coralnpu_state",
     srcs = [
-        "kelvin_state.cc",
+        "coralnpu_state.cc",
     ],
     hdrs = [
-        "kelvin_state.h",
+        "coralnpu_state.h",
     ],
     copts = [
         "-O3",
@@ -45,22 +45,22 @@ cc_library(
 )
 
 cc_library(
-    name = "kelvin_instructions",
+    name = "coralnpu_instructions",
     srcs = [
-        "kelvin_instructions.cc",
-        "kelvin_vector_convolution_instructions.cc",
-        "kelvin_vector_instructions.cc",
-        "kelvin_vector_memory_instructions.cc",
+        "coralnpu_instructions.cc",
+        "coralnpu_vector_convolution_instructions.cc",
+        "coralnpu_vector_instructions.cc",
+        "coralnpu_vector_memory_instructions.cc",
     ],
     hdrs = [
-        "kelvin_instructions.h",
-        "kelvin_vector_convolution_instructions.h",
-        "kelvin_vector_instructions.h",
-        "kelvin_vector_memory_instructions.h",
+        "coralnpu_instructions.h",
+        "coralnpu_vector_convolution_instructions.h",
+        "coralnpu_vector_instructions.h",
+        "coralnpu_vector_memory_instructions.h",
     ],
     copts = ["-O3"],
     deps = [
-        ":kelvin_state",
+        ":coralnpu_state",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/numeric:bits",
@@ -74,19 +74,19 @@ cc_library(
 )
 
 mpact_isa_decoder(
-    name = "kelvin_isa",
-    src = "kelvin.isa",
+    name = "coralnpu_isa",
+    src = "coralnpu.isa",
     includes = [
-        "kelvin_arith.isa",
-        "kelvin_base.isa",
-        "kelvin_memory.isa",
-        "kelvin_mul.isa",
-        "kelvin_shift.isa",
+        "coralnpu_arith.isa",
+        "coralnpu_base.isa",
+        "coralnpu_memory.isa",
+        "coralnpu_mul.isa",
+        "coralnpu_shift.isa",
         "@com_google_mpact-riscv//riscv:riscv32zb.isa",
     ],
-    isa_name = "Kelvin",
+    isa_name = "CoralNPU",
     deps = [
-        ":kelvin_instructions",
+        ":coralnpu_instructions",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_mpact-riscv//riscv:riscv_bitmanip_instructions",
         "@com_google_mpact-riscv//riscv:riscv_g",
@@ -94,39 +94,39 @@ mpact_isa_decoder(
 )
 
 mpact_bin_fmt_decoder(
-    name = "kelvin_bin_fmt",
-    src = "kelvin.bin_fmt",
-    decoder_name = "Kelvin",
+    name = "coralnpu_bin_fmt",
+    src = "coralnpu.bin_fmt",
+    decoder_name = "CoralNPU",
     includes = [
-        "kelvin_arith.bin_fmt",
-        "kelvin_base.bin_fmt",
-        "kelvin_conv.bin_fmt",
-        "kelvin_format.bin_fmt",
-        "kelvin_memory.bin_fmt",
-        "kelvin_mul.bin_fmt",
-        "kelvin_shift.bin_fmt",
+        "coralnpu_arith.bin_fmt",
+        "coralnpu_base.bin_fmt",
+        "coralnpu_conv.bin_fmt",
+        "coralnpu_format.bin_fmt",
+        "coralnpu_memory.bin_fmt",
+        "coralnpu_mul.bin_fmt",
+        "coralnpu_shift.bin_fmt",
         "@com_google_mpact-riscv//riscv:riscv32zb.bin_fmt",
     ],
     deps = [
-        ":kelvin_isa",
+        ":coralnpu_isa",
     ],
 )
 
 cc_library(
-    name = "kelvin_decoder",
+    name = "coralnpu_decoder",
     srcs = [
+        "coralnpu_encoding.cc",
         "decoder.cc",
-        "kelvin_encoding.cc",
     ],
     hdrs = [
+        "coralnpu_encoding.h",
         "decoder.h",
-        "kelvin_encoding.h",
     ],
     copts = ["-O3"],
     deps = [
-        ":kelvin_bin_fmt",
-        ":kelvin_isa",
-        ":kelvin_state",
+        ":coralnpu_bin_fmt",
+        ":coralnpu_isa",
+        ":coralnpu_state",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/log",
@@ -143,22 +143,22 @@ cc_library(
 )
 
 cc_library(
-    name = "kelvin_top",
+    name = "coralnpu_top",
     srcs = [
-        "kelvin_action_point_memory_interface.cc",
-        "kelvin_top.cc",
+        "coralnpu_action_point_memory_interface.cc",
+        "coralnpu_top.cc",
     ],
     hdrs = [
-        "kelvin_action_point_memory_interface.h",
-        "kelvin_top.h",
+        "coralnpu_action_point_memory_interface.h",
+        "coralnpu_top.h",
     ],
     copts = ["-O3"],
     deps = [
-        ":kelvin_decoder",
-        ":kelvin_isa",
-        ":kelvin_state",
+        ":coralnpu_decoder",
+        ":coralnpu_isa",
+        ":coralnpu_state",
         "//sim/proto:trace_cc_proto",
-        "//sim/renode:kelvin_renode_memory",
+        "//sim/renode:coralnpu_renode_memory",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/functional:any_invocable",
@@ -169,7 +169,6 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
-        "@com_google_mpact-riscv//riscv:riscv_action_point_memory_interface",
         "@com_google_mpact-riscv//riscv:riscv_arm_semihost",
         "@com_google_mpact-riscv//riscv:riscv_fp_state",
         "@com_google_mpact-riscv//riscv:riscv_state",
@@ -186,8 +185,8 @@ cc_library(
 )
 
 cc_binary(
-    name = "kelvin_sim",
-    srcs = ["kelvin_sim.cc"],
+    name = "coralnpu_sim",
+    srcs = ["coralnpu_sim.cc"],
     copts = ["-O3"],
     data = [
         "//sim/test:testfiles/hello_world_rv32imf.elf",
@@ -196,8 +195,8 @@ cc_binary(
         "//sim/test:testfiles/rv32soft_fp.elf",
     ],
     deps = [
-        ":kelvin_state",
-        ":kelvin_top",
+        ":coralnpu_state",
+        ":coralnpu_top",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/flags:usage",
@@ -208,19 +207,18 @@ cc_binary(
         "@com_google_absl//absl/time",
         "@com_google_mpact-riscv//riscv:debug_command_shell",
         "@com_google_mpact-riscv//riscv:riscv_state",
-        "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
         "@com_googlesource_code_re2//:re2",
     ],
 )
 
 cc_library(
-    name = "kelvin_v2_state",
+    name = "coralnpu_v2_state",
     srcs = [
-        "kelvin_v2_state.cc",
+        "coralnpu_v2_state.cc",
     ],
     hdrs = [
-        "kelvin_v2_state.h",
+        "coralnpu_v2_state.h",
     ],
     copts = [
         "-O3",
@@ -234,14 +232,14 @@ cc_library(
 )
 
 mpact_isa_decoder(
-    name = "kelvin_v2_isa",
-    src = "kelvin_v2.isa",
+    name = "coralnpu_v2_isa",
+    src = "coralnpu_v2.isa",
     includes = [
         "@com_google_mpact-riscv//riscv:riscv32g.isa",
         "@com_google_mpact-riscv//riscv:riscv32zb.isa",
         "@com_google_mpact-riscv//riscv:riscv_vector.isa",
     ],
-    isa_name = "KelvinV2",
+    isa_name = "CoralNPUV2",
     deps = [
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_mpact-riscv//riscv:riscv_bitmanip_instructions",
@@ -251,9 +249,9 @@ mpact_isa_decoder(
 )
 
 mpact_bin_fmt_decoder(
-    name = "kelvin_v2_bin_fmt",
-    src = "kelvin_v2.bin_fmt",
-    decoder_name = "KelvinV2",
+    name = "coralnpu_v2_bin_fmt",
+    src = "coralnpu_v2.bin_fmt",
+    decoder_name = "CoralNPUV2",
     includes = [
         "@com_google_mpact-riscv//riscv:riscv32g.bin_fmt",
         "@com_google_mpact-riscv//riscv:riscv_format16.bin_fmt",
@@ -261,26 +259,28 @@ mpact_bin_fmt_decoder(
         "@com_google_mpact-riscv//riscv:riscv_vector.bin_fmt",
     ],
     deps = [
-        ":kelvin_v2_isa",
+        ":coralnpu_v2_isa",
     ],
 )
 
 cc_library(
-    name = "kelvin_v2_user_decoder",
+    name = "coralnpu_v2_user_decoder",
     srcs = [
-        "kelvin_v2_encoding.cc",
-        "kelvin_v2_user_decoder.cc",
+        "coralnpu_v2_encoding.cc",
+        "coralnpu_v2_user_decoder.cc",
     ],
     hdrs = [
-        "kelvin_v2_encoding.h",
-        "kelvin_v2_user_decoder.h",
+        "coralnpu_v2_encoding.h",
+        "coralnpu_v2_user_decoder.h",
     ],
-    copts = ["-O3"],
+    copts = [
+        "-O3",
+    ],
     deps = [
-        ":kelvin_v2_bin_fmt",
-        ":kelvin_v2_getters",
-        ":kelvin_v2_isa",
-        ":kelvin_v2_state",
+        ":coralnpu_v2_bin_fmt",
+        ":coralnpu_v2_getters",
+        ":coralnpu_v2_isa",
+        ":coralnpu_v2_state",
         "@com_google_absl//absl/base:nullability",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/functional:any_invocable",
@@ -296,8 +296,8 @@ cc_library(
 )
 
 cc_library(
-    name = "kelvin_v2_getters",
-    hdrs = ["kelvin_v2_getters.h"],
+    name = "coralnpu_v2_getters",
+    hdrs = ["coralnpu_v2_getters.h"],
     deps = [
         "@com_google_absl//absl/base:nullability",
         "@com_google_absl//absl/container:flat_hash_map",

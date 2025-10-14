@@ -1,0 +1,519 @@
+// This file define the coralnpu base isa for mpact-sim. For more info on mpact-sim
+// isa format, check: go/mpact-sim-codelabs-riscv-instruction-decoder
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+slot coralnpu_memory {
+  includes {
+    #include "sim/coralnpu_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    flushall{},
+      disasm: "flushall",
+      semfunc: "&coralnpu::sim::CoralNPUNopInstruction";
+    flushat{: rs1 :},
+      disasm: "flushat", "%rs1",
+      semfunc: "&coralnpu::sim::CoralNPUNopInstruction";
+  }
+}
+
+// CoralNPU simd instructions:
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/coralnpu_isa.md
+// Load / Store
+slot coralnpu_vector_memory {
+  includes {
+    #include "sim/coralnpu_vector_memory_instructions.h"
+    #include "absl/functional/bind_front.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  resources TwoOp = { next_pc, rs1 : rd[..rd]};
+  resources ThreeOp = { next_pc, rs1, rs2 : rd[..rd]};
+  opcodes {
+    getmaxvl_b{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.b", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ false, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getmaxvl_h{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.h", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ false, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getmaxvl_w{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.w", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ false, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getvl_b_x{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.b.x", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_h_x{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.h.x", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_w_x{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.w.x", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_b_xx{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.b.xx", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ true)";
+    getvl_h_xx{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.h.xx", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ true)";
+    getvl_w_xx{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.w.xx", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ false, /*is_rs1*/ true, /*is_rs2*/ true)";
+    getmaxvl_b_m{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.b.m", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ true, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getmaxvl_h_m{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.h.m", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ true, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getmaxvl_w_m{: : rd},
+      resources: { next_pc : rd[0..]},
+      disasm: "getmaxvl.w.m", "%rd",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ true, /*is_rs1*/ false, /*is_rs2*/ false)";
+    getvl_b_x_m{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.b.x.m", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_h_x_m{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.h.x.m", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_w_x_m{: rs1 : rd},
+      resources: TwoOp,
+      disasm: "getvl.w.x.m", "%rd, %rs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ false)";
+    getvl_b_xx_m{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.b.xx.m", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int8_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ true)";
+    getvl_h_xx_m{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.h.xx.m", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int16_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ true)";
+    getvl_w_xx_m{: rs1, rs2 : rd},
+      resources: ThreeOp,
+      disasm: "getvl.w.xx.m", "%rd, %rs1, %rs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUGetVl<int32_t>, /*strip_mine*/ true, /*is_rs1*/ true, /*is_rs2*/ true)";
+
+    //vld
+    vld_b_x{(: vs1 :), (: : vd)},
+      disasm: "vld.b.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>, /*strip_mine*/ false)";
+    vld_h_x{(: vs1 :), (: : vd)},
+      disasm: "vld.h.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_x{(: vs1 :), (: : vd)},
+      disasm: "vld.w.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_x_m{(: vs1 :), (: : vd)},
+      disasm: "vld.b.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_x_m{(: vs1 :), (: : vd)},
+      disasm: "vld.h.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_x_m{(: vs1 :), (: : vd)},
+      disasm: "vld.w.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_p_x{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.b.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ false)";
+    vld_h_p_x{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.h.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_p_x{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.w.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_p_x_m{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.b.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_p_x_m{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.h.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_p_x_m{(: vs1 : vs1), (: : vd)},
+      disasm: "vld.w.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_p_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ false)";
+    vld_h_p_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_p_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_p_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_p_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_p_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_l_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.b.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>, /*strip_mine*/ false)";
+    vld_h_l_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.h.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_l_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.w.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_l_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.b.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_l_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.h.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_l_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.w.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_lp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ false)";
+    vld_h_lp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_lp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_lp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_lp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_lp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_s_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.b.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>, /*strip_mine*/ false)";
+    vld_h_s_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.h.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_s_xx{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.w.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_s_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.b.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_s_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.h.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_s_xx_m{(: vs1, vs2 :), (: : vd)},
+      disasm: "vld.w.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_sp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ false)";
+    vld_h_sp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_sp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_sp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_sp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_sp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+    vld_b_tp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ false)";
+    vld_h_tp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ false)";
+    vld_w_tp_xx{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ false)";
+    vld_b_tp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.b.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int8_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int8_t>,/*strip_mine*/ true)";
+    vld_h_tp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.h.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int16_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int16_t>,/*strip_mine*/ true)";
+    vld_w_tp_xx_m{(: vs1, vs2 : vs1), (: : vd)},
+      disasm: "vld.w.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVLd<int32_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)",
+             "absl::bind_front(&coralnpu::sim::CoralNPUVLdRegWrite<int32_t>,/*strip_mine*/ true)";
+
+    //vst, note `vd` is actually the source vector register, and `vs1` is actually the scaler register.
+    vst_b_x{: vd, vs1 :},
+      disasm: "vst.b.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_h_x{: vd, vs1 :},
+      disasm: "vst.h.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_w_x{: vd, vs1 :},
+      disasm: "vst.w.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_b_x_m{: vd, vs1 :},
+      disasm: "vst.b.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_h_x_m{: vd, vs1 :},
+      disasm: "vst.h.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_w_x_m{: vd, vs1 :},
+      disasm: "vst.w.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_b_p_x{: vd, vs1 : vs1},
+      disasm: "vst.b.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_h_p_x{: vd, vs1 : vs1},
+      disasm: "vst.h.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_w_p_x{: vd, vs1 : vs1},
+      disasm: "vst.w.p.x", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_b_p_x_m{: vd, vs1 : vs1},
+      disasm: "vst.b.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_h_p_x_m{: vd, vs1 : vs1},
+      disasm: "vst.h.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_w_p_x_m{: vd, vs1 : vs1},
+      disasm: "vst.w.p.x.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_b_p_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_h_p_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_w_p_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.p.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ false)";
+    vst_b_p_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_h_p_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_w_p_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vld.w.p.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ false, /*strip_mine*/ true)";
+    vst_b_l_xx{: vd, vs1, vs2 :},
+      disasm: "vst.b.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_h_l_xx{: vd, vs1, vs2 :},
+      disasm: "vst.h.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_w_l_xx{: vd, vs1, vs2 :},
+      disasm: "vst.w.l.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_b_l_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.b.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_h_l_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.h.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_w_l_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.w.l.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_b_lp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_h_lp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_w_lp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.lp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ false)";
+    vst_b_lp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_h_lp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_w_lp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.lp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ false, /*strip_mine*/ true)";
+    vst_b_s_xx{: vd, vs1, vs2 :},
+      disasm: "vst.b.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_h_s_xx{: vd, vs1, vs2 :},
+      disasm: "vst.h.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_w_s_xx{: vd, vs1, vs2 :},
+      disasm: "vst.w.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_b_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.b.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_h_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.h.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_w_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vst.w.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_b_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_h_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_w_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.sp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ false)";
+    vst_b_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_h_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_w_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.sp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ false, /*stride*/ true, /*strip_mine*/ true)";
+    vst_b_tp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)";
+    vst_h_tp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)";
+    vst_w_tp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.tp.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ false)";
+    vst_b_tp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.b.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int8_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)";
+    vst_h_tp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.h.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int16_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)";
+    vst_w_tp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vst.w.tp.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVSt<int32_t>, /*len*/ true, /*stride*/ true, /*strip_mine*/ true)";
+    vstq_b_s_xx{: vd, vs1, vs2 :},
+      disasm: "vstq.b.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int8_t>, /*strip_mine*/ false)";
+    vstq_h_s_xx{: vd, vs1, vs2 :},
+      disasm: "vstq.h.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int16_t>, /*strip_mine*/ false)";
+    vstq_w_s_xx{: vd, vs1, vs2 :},
+      disasm: "vstq.w.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int32_t>, /*strip_mine*/ false)";
+    vstq_b_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.b.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int8_t>, /*strip_mine*/ false)";
+    vstq_h_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.h.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int16_t>, /*strip_mine*/ false)";
+    vstq_w_sp_xx{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.w.s.xx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int32_t>, /*strip_mine*/ false)";
+    vstq_b_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vstq.b.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int8_t>, /*strip_mine*/ true)";
+    vstq_h_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vstq.h.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int16_t>, /*strip_mine*/ true)";
+    vstq_w_s_xx_m{: vd, vs1, vs2 :},
+      disasm: "vstq.w.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int32_t>, /*strip_mine*/ true)";
+    vstq_b_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.b.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int8_t>, /*strip_mine*/ true)";
+    vstq_h_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.h.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int16_t>, /*strip_mine*/ true)";
+    vstq_w_sp_xx_m{: vd, vs1, vs2 : vs1},
+      disasm: "vstq.w.s.xx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVStQ<int32_t>, /*strip_mine*/ true)";
+    vdup_b_x{: vs2 : vd },
+      disasm: "vdup.b.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int8_t>, /*strip_mine*/ false)";
+    vdup_h_x{: vs2 : vd },
+      disasm: "vdup.h.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int16_t>, /*strip_mine*/ false)";
+    vdup_w_x{: vs2 : vd },
+      disasm: "vdup.w.x", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int32_t>, /*strip_mine*/ false)";
+    vdup_b_x_m{: vs2 : vd },
+      disasm: "vdup.b.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int8_t>, /*strip_mine*/ true)";
+    vdup_h_x_m{: vs2 : vd },
+      disasm: "vdup.h.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int16_t>, /*strip_mine*/ true)";
+    vdup_w_x_m{: vs2 : vd },
+      disasm: "vdup.w.x.m", "%vd, %vs2",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUVDup<int32_t>, /*strip_mine*/ true)";
+
+    // vcget
+    vcget{: : vd},
+      disasm: "vcget", "%vd",
+      semfunc: "&coralnpu::sim::CoralNPUVcGet";
+
+    // acset/actr/adwinit
+    acset{: vs1 : vd},
+      disasm: "acset.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUAcSet, /* is_transpose */ false)";
+    actr{: vs1 : vd},
+      disasm: "actr.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&coralnpu::sim::CoralNPUAcSet, /* is_transpose */ true)";
+    adwinit{: vs1 : vd},
+      disasm: "adwinit.v", "%vd, %vs1",
+      semfunc: "&coralnpu::sim::CoralNPUADwInit";
+  }
+}

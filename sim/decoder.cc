@@ -16,22 +16,22 @@
 
 #include <cstdint>
 
-#include "sim/kelvin_decoder.h"
-#include "sim/kelvin_encoding.h"
-#include "sim/kelvin_enums.h"
-#include "sim/kelvin_state.h"
+#include "sim/coralnpu_decoder.h"
+#include "sim/coralnpu_encoding.h"
+#include "sim/coralnpu_enums.h"
+#include "sim/coralnpu_state.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/program_error.h"
 #include "mpact/sim/generic/type_helpers.h"
 #include "mpact/sim/util/memory/memory_interface.h"
 
-namespace kelvin::sim {
+namespace coralnpu::sim {
 
 using ::mpact::sim::generic::operator*;  // NOLINT: is used below (clang error).
 
-KelvinDecoder::KelvinDecoder(KelvinState* state,
-                             mpact::sim::util::MemoryInterface* memory)
+CoralNPUDecoder::CoralNPUDecoder(CoralNPUState* state,
+                                 mpact::sim::util::MemoryInterface* memory)
     : state_(state), memory_(memory) {
   // Get a handle to the internal error in the program error controller.
   decode_error_ = state->program_error_controller()->GetProgramError(
@@ -42,21 +42,22 @@ KelvinDecoder::KelvinDecoder(KelvinState* state,
   inst_db_ = state_->db_factory()->Allocate<uint32_t>(1);
   // Allocate the isa factory class, the top level isa decoder
   // instance, and the encoding parser.
-  kelvin_isa_factory_ = new KelvinIsaFactory();
-  kelvin_isa_ = new isa32::KelvinInstructionSet(state, kelvin_isa_factory_);
-  kelvin_encoding_ = new isa32::KelvinEncoding(state);
+  coralnpu_isa_factory_ = new CoralNPUIsaFactory();
+  coralnpu_isa_ =
+      new isa32::CoralNPUInstructionSet(state, coralnpu_isa_factory_);
+  coralnpu_encoding_ = new isa32::CoralNPUEncoding(state);
   decode_error_ = state->program_error_controller()->GetProgramError(
       mpact::sim::generic::ProgramErrorController::kInternalErrorName);
 }
 
-KelvinDecoder::~KelvinDecoder() {
+CoralNPUDecoder::~CoralNPUDecoder() {
   inst_db_->DecRef();
-  delete kelvin_isa_;
-  delete kelvin_isa_factory_;
-  delete kelvin_encoding_;
+  delete coralnpu_isa_;
+  delete coralnpu_isa_factory_;
+  delete coralnpu_encoding_;
 }
 
-mpact::sim::generic::Instruction* KelvinDecoder::DecodeInstruction(
+mpact::sim::generic::Instruction* CoralNPUDecoder::DecodeInstruction(
     uint64_t address) {
   // First check that the address is aligned properly. If not, create and return
   // an empty instruction object and raise an exception.
@@ -91,11 +92,11 @@ mpact::sim::generic::Instruction* KelvinDecoder::DecodeInstruction(
   // Read the instruction word from memory and parse it in the encoding parser.
   memory_->Load(address, inst_db_, nullptr, nullptr);
   auto iword = inst_db_->Get<uint32_t>(0);
-  kelvin_encoding_->ParseInstruction(iword);
+  coralnpu_encoding_->ParseInstruction(iword);
 
   // Call the isa decoder to obtain a new instruction object for the instruction
   // word that was parsed above.
-  auto* instruction = kelvin_isa_->Decode(address, kelvin_encoding_);
+  auto* instruction = coralnpu_isa_->Decode(address, coralnpu_encoding_);
   return instruction;
 }
-}  // namespace kelvin::sim
+}  // namespace coralnpu::sim

@@ -1,0 +1,602 @@
+instruction group CoralNPUVectorArithInst[32] : CoralNPUV2ArgsType {
+  // CoralNPU Arithmetic Vector instructions (func1 000/100/001).
+  // vadd
+  vadd_b_vv     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd_b_vx     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vadd_h_vv     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd_h_vx     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vadd_w_vv     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd_w_vx     : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vsub
+  vsub_b_vv     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vsub_b_vx     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vsub_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vsub_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vsub_h_vv     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vsub_h_vx     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vsub_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vsub_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vsub_w_vv     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vsub_w_vx     : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vsub_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vsub_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vrsub
+  vrsub_b_vv     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vrsub_b_vx     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vrsub_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vrsub_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vrsub_h_vv     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vrsub_h_vx     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vrsub_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vrsub_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vrsub_w_vv     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vrsub_w_vx     : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vrsub_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vrsub_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b000'010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // veq
+  veq_b_vv       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  veq_b_vx       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  veq_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  veq_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  veq_h_vv       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  veq_h_vx       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  veq_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  veq_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  veq_w_vv       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  veq_w_vx       : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  veq_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  veq_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b000'110, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vne
+  vne_b_vv      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vne_b_vx      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vne_b_vv_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vne_b_vx_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vne_h_vv      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vne_h_vx      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vne_h_vv_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vne_h_vx_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vne_w_vv      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vne_w_vx      : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vne_w_vv_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vne_w_vx_m    : CoralNPUV2ArgsType : func2 == 0b000'111, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vlt
+  vlt_b_vv       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_b_vx       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vlt_h_vv       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_h_vx       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vlt_w_vv       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_w_vx       : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vltu
+  vlt_u_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_u_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_u_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_u_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vlt_u_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_u_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_u_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_u_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vlt_u_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vlt_u_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vlt_u_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vlt_u_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vle
+  vle_b_vv       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_b_vx       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vle_h_vv       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_h_vx       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vle_w_vv       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_w_vx       : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vleu
+  vle_u_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_u_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_u_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_u_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vle_u_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_u_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_u_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_u_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vle_u_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vle_u_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vle_u_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vle_u_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vgt
+  vgt_b_vv       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_b_vx       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vgt_h_vv       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_h_vx       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vgt_w_vv       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_w_vx       : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1100, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vgtu
+  vgt_u_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_u_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_u_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_u_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vgt_u_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_u_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_u_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_u_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vgt_u_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vgt_u_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vgt_u_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vgt_u_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vge
+  vge_b_vv       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_b_vx       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vge_h_vv       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_h_vx       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vge_w_vv       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_w_vx       : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1110, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vgeu
+  vge_u_b_vv       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_u_b_vx       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_u_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_u_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vge_u_h_vv       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_u_h_vx       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_u_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_u_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vge_u_w_vv       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vge_u_w_vx       : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vge_u_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vge_u_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b00'1111, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vabsd
+  vabsd_b_vv       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_b_vx       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vabsd_h_vv       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_h_vx       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vabsd_w_vv       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_w_vx       : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vabsdu
+  vabsd_u_b_vv    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_u_b_vx    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_u_b_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_u_b_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vabsd_u_h_vv    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_u_h_vx    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_u_h_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_u_h_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vabsd_u_w_vv    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vabsd_u_w_vx    : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vabsd_u_w_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vabsd_u_w_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10001, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vmax
+  vmax_b_vv       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_b_vx       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vmax_h_vv       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_h_vx       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vmax_w_vv       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_w_vx       : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10010, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vmaxu
+  vmax_u_b_vv    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_u_b_vx    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_u_b_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_u_b_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vmax_u_h_vv    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_u_h_vx    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_u_h_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_u_h_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vmax_u_w_vv    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vmax_u_w_vx    : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vmax_u_w_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vmax_u_w_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10011, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vmin
+  vmin_b_vv       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_b_vx       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vmin_h_vv       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_h_vx       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vmin_w_vv       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_w_vx       : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'10100, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vminu
+  vmin_u_b_vv    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_u_b_vx    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_u_b_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_u_b_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vmin_u_h_vv    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_u_h_vx    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_u_h_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_u_h_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vmin_u_w_vv    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vmin_u_w_vx    : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vmin_u_w_vv_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vmin_u_w_vx_m  : CoralNPUV2ArgsType : func2 == 0b0'10101, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  // vadd3
+  vadd3_b_vv       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd3_b_vx       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b00, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd3_b_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd3_b_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b00, m == 0b1, func1 == 0b000, form == 0b10;
+  vadd3_h_vv       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd3_h_vx       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b01, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd3_h_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd3_h_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b01, m == 0b1, func1 == 0b000, form == 0b10;
+  vadd3_w_vv       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b00;
+  vadd3_w_vx       : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b10, m == 0b0, func1 == 0b000, form == 0b10;
+  vadd3_w_vv_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b00;
+  vadd3_w_vx_m     : CoralNPUV2ArgsType : func2 == 0b0'11000, sz == 0b10, m == 0b1, func1 == 0b000, form == 0b10;
+
+  //vadds
+  vadds_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vadds_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vadds_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  // vaddsu
+  vadds_u_b_vv   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_u_b_vx   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_u_b_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_u_b_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vadds_u_h_vv   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_u_h_vx   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_u_h_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_u_h_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vadds_u_w_vv   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vadds_u_w_vx   : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vadds_u_w_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vadds_u_w_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+ //vsubs
+  vsubs_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubs_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubs_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  // vsubsu
+  vsubs_u_b_vv   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_u_b_vx   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_u_b_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_u_b_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubs_u_h_vv   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_u_h_vx   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_u_h_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_u_h_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubs_u_w_vv   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubs_u_w_vx   : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubs_u_w_vv_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubs_u_w_vx_m : CoralNPUV2ArgsType : func2 == 0b00'0011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vaddw
+  vaddw_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vaddw_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vaddw_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vaddw_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vaddw_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vaddw_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vaddw_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vaddw_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vaddwu
+  vaddw_h_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vaddw_h_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vaddw_h_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vaddw_h_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vaddw_w_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vaddw_w_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vaddw_w_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vaddw_w_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vsubw
+  vsubw_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubw_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubw_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubw_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubw_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubw_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubw_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubw_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0110, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vsubwu
+  vsubw_h_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubw_h_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubw_h_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubw_h_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vsubw_w_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vsubw_w_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vsubw_w_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vsubw_w_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0111, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vacc
+  vacc_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vacc_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vacc_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vacc_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vacc_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vacc_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vacc_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vacc_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vaccu
+  vacc_h_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vacc_h_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vacc_h_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vacc_h_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vacc_w_u_vv     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vacc_w_u_vx     : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vacc_w_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vacc_w_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vpadd
+  vpadd_h_v     : CoralNPUV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vpadd_h_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vpadd_w_v     : CoralNPUV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vpadd_w_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1100, vs2 == 0, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vpaddu
+  vpadd_h_u_v     : CoralNPUV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vpadd_h_u_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vpadd_w_u_v     : CoralNPUV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vpadd_w_u_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, vs2 == 0, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vpsub
+  vpsub_h_v     : CoralNPUV2ArgsType : func2 == 0b00'1110, vs2 == 0, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vpsub_h_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1110, vs2 == 0, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vpsub_w_v     : CoralNPUV2ArgsType : func2 == 0b00'1110, vs2 == 0, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vpsub_w_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1110, vs2 == 0, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vpsubu
+  vpsub_h_u_v     : CoralNPUV2ArgsType : func2 == 0b00'1111, vs2 == 0, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vpsub_h_u_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1111, vs2 == 0, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vpsub_w_u_v     : CoralNPUV2ArgsType : func2 == 0b00'1111, vs2 == 0, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vpsub_w_u_v_m   : CoralNPUV2ArgsType : func2 == 0b00'1111, vs2 == 0, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhadd
+  vhadd_b_vv     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_b_vx     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_h_vv     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_h_vx     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_w_vv     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_w_vx     : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0000, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhadd.r
+  vhadd_b_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_b_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_b_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_b_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_h_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_h_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_h_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_h_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_w_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_w_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_w_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_w_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0010, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhadd.u
+  vhadd_b_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_b_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_b_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_b_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_h_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_h_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_h_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_h_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_w_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_w_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_w_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_w_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0001, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhadd.ur
+  vhadd_b_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_b_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_b_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_b_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_h_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_h_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_h_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_h_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhadd_w_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhadd_w_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhadd_w_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhadd_w_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0011, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhsub
+  vhsub_b_vv     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_b_vx     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_h_vv     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_h_vx     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_w_vv     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_w_vx     : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0100, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhsub.r
+  vhsub_b_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_b_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_b_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_b_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_h_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_h_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_h_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_h_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_w_r_vv     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_w_r_vx     : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_w_r_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_w_r_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0110, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhsub.u
+  vhsub_b_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_b_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_b_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_b_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_h_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_h_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_h_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_h_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_w_u_vv     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_w_u_vx     : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_w_u_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_w_u_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0101, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vhsub.ur
+  vhsub_b_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_b_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b00, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_b_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_b_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b00, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_h_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_h_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b01, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_h_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_h_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b01, m == 0b1, func1 == 0b100, form == 0b10;
+  vhsub_w_ur_vv     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b00;
+  vhsub_w_ur_vx     : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b10, m == 0b0, func1 == 0b100, form == 0b10;
+  vhsub_w_ur_vv_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b00;
+  vhsub_w_ur_vx_m   : CoralNPUV2ArgsType : func2 == 0b01'0111, sz == 0b10, m == 0b1, func1 == 0b100, form == 0b10;
+
+  //vand
+  vand_vv       : CoralNPUV2ArgsType : func2 == 0b00'0000, m == 0b0, func1 == 0b001, form == 0b00;
+  vand_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'0000, m == 0b1, func1 == 0b001, form == 0b00;
+  vand_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vand_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vand_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vand_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vand_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vand_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0000, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+
+  //vor
+  vor_vv        : CoralNPUV2ArgsType : func2 == 0b00'0001, m == 0b0, func1 == 0b001, form == 0b00;
+  vor_vv_m      : CoralNPUV2ArgsType : func2 == 0b00'0001, m == 0b1, func1 == 0b001, form == 0b00;
+  vor_b_vx      : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vor_b_vx_m    : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vor_h_vx      : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vor_h_vx_m    : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vor_w_vx      : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vor_w_vx_m    : CoralNPUV2ArgsType : func2 == 0b00'0001, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+
+  //vxor
+  vxor_vv       : CoralNPUV2ArgsType : func2 == 0b00'0010, m == 0b0, func1 == 0b001, form == 0b00;
+  vxor_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'0010, m == 0b1, func1 == 0b001, form == 0b00;
+  vxor_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vxor_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vxor_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vxor_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vxor_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vxor_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0010, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+
+  //vrev
+  vrev_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b00;
+  vrev_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vrev_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b00;
+  vrev_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vrev_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b00;
+  vrev_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vrev_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b00;
+  vrev_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vrev_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b00;
+  vrev_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vrev_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b00;
+  vrev_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0100, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+
+  //vror
+  vror_b_vv     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b00;
+  vror_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vror_b_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b00;
+  vror_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vror_h_vv     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b00;
+  vror_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vror_h_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b00;
+  vror_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vror_w_vv     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b00;
+  vror_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vror_w_vv_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b00;
+  vror_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'0101, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+
+  //vmvp
+  vmvp_vv       : CoralNPUV2ArgsType : func2 == 0b00'1101, m == 0b0, func1 == 0b001, form == 0b00;
+  vmvp_vv_m     : CoralNPUV2ArgsType : func2 == 0b00'1101, m == 0b1, func1 == 0b001, form == 0b00;
+  vmvp_b_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b0, func1 == 0b001, form == 0b10;
+  vmvp_b_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b00, m == 0b1, func1 == 0b001, form == 0b10;
+  vmvp_h_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b0, func1 == 0b001, form == 0b10;
+  vmvp_h_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b01, m == 0b1, func1 == 0b001, form == 0b10;
+  vmvp_w_vx     : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b0, func1 == 0b001, form == 0b10;
+  vmvp_w_vx_m   : CoralNPUV2ArgsType : func2 == 0b00'1101, sz == 0b10, m == 0b1, func1 == 0b001, form == 0b10;
+};

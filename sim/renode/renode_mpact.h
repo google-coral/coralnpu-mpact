@@ -72,7 +72,7 @@ uint64_t step(int32_t id, uint64_t num_to_step, int32_t* status);
 int32_t halt(int32_t id, int32_t* status);
 }
 
-namespace kelvin::sim::renode {
+namespace coralnpu::sim::renode {
 
 // Execution results.
 enum class ExecutionResult : int32_t {
@@ -88,7 +88,7 @@ enum class ExecutionResult : int32_t {
 // of the simulator.
 class RenodeAgent {
  public:
-  using RenodeCpuRegister = kelvin::sim::renode::RenodeCpuRegister;
+  using RenodeCpuRegister = coralnpu::sim::renode::RenodeCpuRegister;
   constexpr static size_t kBufferSize = 64 * 1024;
   // This is a singleton class, so need a static Instance method.
   static RenodeAgent* Instance() {
@@ -117,7 +117,7 @@ class RenodeAgent {
   uint64_t Step(int32_t id, uint64_t num_to_step, int32_t* status);
   int32_t Halt(int32_t id, int32_t* status);
   // Accessor.
-  kelvin::sim::renode::RenodeDebugInterface* core_dbg(int32_t id) const {
+  coralnpu::sim::renode::RenodeDebugInterface* core_dbg(int32_t id) const {
     auto ptr = core_dbg_instances_.find(id);
     if (ptr != core_dbg_instances_.end()) return ptr->second;
     return nullptr;
@@ -127,11 +127,11 @@ class RenodeAgent {
   static RenodeAgent* instance_;
   static uint32_t count_;
   RenodeAgent() = default;
-  absl::flat_hash_map<uint32_t, kelvin::sim::renode::RenodeDebugInterface*>
+  absl::flat_hash_map<uint32_t, coralnpu::sim::renode::RenodeDebugInterface*>
       core_dbg_instances_;
   absl::flat_hash_map<uint32_t, int32_t> name_length_map_;
 };
 
-}  // namespace kelvin::sim::renode
+}  // namespace coralnpu::sim::renode
 
 #endif  // LEARNING_BRAIN_RESEARCH_KELVIN_SIM_RENODE_RENODE_MPACT_H_

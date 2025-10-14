@@ -24,18 +24,18 @@ package(
 )
 
 cc_library(
-    name = "kelvin_cosim_lib",
+    name = "coralnpu_cosim_lib",
     srcs = [
-        "kelvin_cosim_dpi_wrapper.cc",
+        "coralnpu_cosim_dpi_wrapper.cc",
     ],
     hdrs = [
-        "kelvin_cosim_dpi.h",
+        "coralnpu_cosim_dpi.h",
         "@svdpi_h_file//file",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//sim:kelvin_v2_state",
-        "//sim:kelvin_v2_user_decoder",
+        "//sim:coralnpu_v2_state",
+        "//sim:coralnpu_v2_user_decoder",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
@@ -52,18 +52,18 @@ cc_library(
 )
 
 # This rule generates the shared library that is loaded and used by an external UVM testbench to
-# instantiate and control kelvin sim
+# instantiate and control coralnpu sim
 cc_binary(
-    name = "cosim_kelvin",
+    name = "cosim_coralnpu",
     linkshared = True,
     deps = [
-        ":kelvin_cosim_lib",
+        ":coralnpu_cosim_lib",
     ],
 )
 
 cc_static_library(
-    name = "kelvin_cosim_lib_static",
+    name = "coralnpu_cosim_lib_static",
     deps = [
-        ":kelvin_cosim_lib",
+        ":coralnpu_cosim_lib",
     ],
 )

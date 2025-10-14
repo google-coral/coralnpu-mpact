@@ -1,9 +1,9 @@
-# Kelvin Instruction Simulator
+# CoralNPU Instruction Simulator
 
-This project contains the instruction simulator of Kelvin ML core based on
+This project contains the instruction simulator of CoralNPU ML core based on
 [MPACT-Sim](https://github.com/google/mpact-sim) and
 [MPACT-RiscV](https://github.com/google/mpact-riscv). The simulator supports
-RISC-V 32im configuration + Kelvin-specific SIMD instructions. Please review
+RISC-V 32im configuration + CoralNPU-specific SIMD instructions. Please review
 [ISA Spec](https://opensecura.googlesource.com/sw/kelvin/+/master/docs/kelvin_isa.md)
 for more detail
 
@@ -30,5 +30,5 @@ bazel build //...
 Specifically, the simulator standalone binary can be built with
 
 ```bash
-bazel build //sim:kelvin_sim
+bazel build //sim:coralnpu_sim
 ```

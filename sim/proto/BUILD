@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Protobuf for the kelvin sim trace file
+# Protobuf for the coralnpu sim trace file
 
 
 
@@ -22,7 +22,7 @@ package(default_visibility = ["//visibility:public"])
 proto_library(
     name = "trace_proto",
     srcs = [
-        "kelvin_trace.proto",
+        "coralnpu_trace.proto",
     ],
     
 )

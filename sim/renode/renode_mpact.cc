@@ -18,7 +18,7 @@
 #include <limits>
 #include <string>
 
-#include "sim/kelvin_top.h"
+#include "sim/coralnpu_top.h"
 #include "sim/renode/renode_debug_interface.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
@@ -26,16 +26,15 @@
 #include "mpact/sim/util/program_loader/elf_program_loader.h"
 
 // This function must be defined in the library.
-extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(std::string);
+extern coralnpu::sim::renode::RenodeDebugInterface* CreateCoralNPUSim(
+    std::string);
 
-extern kelvin::sim::renode::RenodeDebugInterface* CreateKelvinSim(std::string,
-                                                                  uint64_t,
-                                                                  uint64_t,
-                                                                  uint8_t**);
+extern coralnpu::sim::renode::RenodeDebugInterface* CreateCoralNPUSim(
+    std::string, uint64_t, uint64_t, uint8_t**);
 
 // External "C" functions visible to Renode.
-using kelvin::sim::renode::RenodeAgent;
-using kelvin::sim::renode::RenodeCpuRegister;
+using coralnpu::sim::renode::RenodeAgent;
+using coralnpu::sim::renode::RenodeCpuRegister;
 
 // Implementation of the C interface functions. They each forward the call to
 // the corresponding method in RenodeAgent.
@@ -90,7 +89,7 @@ int32_t halt(int32_t id, int32_t* status) {
   return RenodeAgent::Instance()->Halt(id, status);
 }
 
-namespace kelvin::sim::renode {
+namespace coralnpu::sim::renode {
 
 RenodeAgent* RenodeAgent::instance_ = nullptr;
 uint32_t RenodeAgent::count_ = 0;
@@ -98,7 +97,7 @@ uint32_t RenodeAgent::count_ = 0;
 // Create the debug instance by calling the factory function.
 int32_t RenodeAgent::Construct(int32_t max_name_length) {
   std::string name = absl::StrCat("renode", count_);
-  auto* dbg = CreateKelvinSim(name);
+  auto* dbg = CreateCoralNPUSim(name);
   if (dbg == nullptr) {
     return -1;
   }
@@ -112,8 +111,8 @@ int32_t RenodeAgent::Construct(int32_t max_name_length,
                                uint64_t memory_size_bytes,
                                uint8_t** mem_block_ptr_list) {
   std::string name = absl::StrCat("renode", count_);
-  auto* dbg = CreateKelvinSim(name, memory_block_size_bytes, memory_size_bytes,
-                              mem_block_ptr_list);
+  auto* dbg = CreateCoralNPUSim(name, memory_block_size_bytes,
+                                memory_size_bytes, mem_block_ptr_list);
   if (dbg == nullptr) {
     return -1;
   }
@@ -397,7 +396,7 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t* status) {
       case *HaltReason::kNone:
         *status = static_cast<int32_t>(ExecutionResult::kOk);
         break;
-      case kelvin::sim::kHaltAbort:
+      case coralnpu::sim::kHaltAbort:
         *status = static_cast<int32_t>(ExecutionResult::kAborted);
         break;
       default:
@@ -407,4 +406,4 @@ int32_t RenodeAgent::Halt(int32_t id, int32_t* status) {
   return 0;
 }
 
-}  // namespace kelvin::sim::renode
+}  // namespace coralnpu::sim::renode

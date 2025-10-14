@@ -1,0 +1,8 @@
+instruction group CoralNPUVectorConvInst[32] : CoralNPUV3ArgsType {
+  // vconv
+  aconv_vxv      : CoralNPUV3ArgsType : func3_hi == 0b10, func3_lo == 0b00, vd == 48, vs1_low4 == 0, vs2 != 0, vs3_low3 == 0, m == 0, form == 0b101;
+
+  // vdwconv
+  adwconv_vxv    : CoralNPUV3ArgsType : func3_hi == 0b10, func3_lo == 0b10, vd_low2 == 0b00, vs2_hi1 == 0b1, m == 0, form == 0b101;
+  vdwconv_vxv    : CoralNPUV3ArgsType : func3_hi == 0b10, func3_lo == 0b10, vd_low2 == 0b00, vs2_hi1 == 0b0, m == 0, form == 0b101;
+};

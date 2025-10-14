@@ -24,7 +24,7 @@
 #include "absl/status/statusor.h"
 #include "mpact/sim/generic/core_debug_interface.h"
 
-namespace kelvin::sim::renode {
+namespace coralnpu::sim::renode {
 
 // This structure mirrors the one defined in renode to provide information
 // about the target registers. Do not change, as it maps to the marshaling
@@ -56,6 +56,6 @@ class RenodeDebugInterface : public mpact::sim::generic::CoreDebugInterface {
                                  uint64_t start_address) = 0;
 };
 
-}  // namespace kelvin::sim::renode
+}  // namespace coralnpu::sim::renode
 
 #endif  // LEARNING_BRAIN_RESEARCH_KELVIN_SIM_RENODE_RENODE_DEBUG_INTERFACE_H_

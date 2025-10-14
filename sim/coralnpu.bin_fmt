@@ -1,0 +1,26 @@
+// CoralNPU instruction decoder.
+decoder CoralNPU {
+  namespace coralnpu::sim::encoding;
+  opcode_enum = "isa32::OpcodeEnum";
+  includes {
+    #include "sim/coralnpu_decoder.h"
+  }
+  CoralNPUInst;
+  CoralNPUVectorArithInst;
+  CoralNPUVectorConvInst;
+  CoralNPUVectorMemoryInst;
+  CoralNPUVectorMulInst;
+  CoralNPUVectorShiftInst;
+  RiscVZbbInst32;
+  RiscVZbbInst32Only;
+  RiscVZbbImmInst32;
+};
+
+#include "sim/coralnpu_format.bin_fmt"
+#include "sim/coralnpu_arith.bin_fmt"
+#include "sim/coralnpu_base.bin_fmt"
+#include "sim/coralnpu_conv.bin_fmt"
+#include "sim/coralnpu_memory.bin_fmt"
+#include "sim/coralnpu_mul.bin_fmt"
+#include "sim/coralnpu_shift.bin_fmt"
+#include "external/com_google_mpact-riscv/riscv/riscv32zb.bin_fmt"

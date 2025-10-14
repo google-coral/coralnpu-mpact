@@ -1,0 +1,31 @@
+// This file define the coralnpu isa for mpact-sim. For more info on mpact-sim isa
+// format, check: go/mpact-sim-codelabs-riscv-instruction-decoder
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+int global_latency = 0;
+
+isa CoralNPU {
+  namespace coralnpu::sim::isa32;
+  slots { coralnpu; }
+}
+
+#include "sim/coralnpu_base.isa"
+#include "sim/coralnpu_arith.isa"
+#include "sim/coralnpu_shift.isa"
+#include "sim/coralnpu_memory.isa"
+#include "sim/coralnpu_mul.isa"
+#include "external/com_google_mpact-riscv/riscv/riscv32zb.isa"
+
+// Combining all coralnpu instruction sets.
+slot coralnpu : riscv32i, riscv32m, zicsr, zfencei, privileged, coralnpu_arith,
+    coralnpu_conv, coralnpu_log, coralnpu_memory, coralnpu_mul, coralnpu_shift,
+    coralnpu_vector_memory, riscv32_zbb, riscv32_zbb_imm {
+  includes {
+    #include "sim/coralnpu_instructions.h"
+  }
+  default opcode =
+    disasm: "Illegal instruction at 0x%(@:08x)",
+    semfunc: "&CoralNPUIllegalInstruction";
+}

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Build Renode interface for kelvin
+# Build Renode interface for coralnpu
 
 
 
@@ -30,7 +30,7 @@ cc_library(
     ],
     deps = [
         ":renode_debug_interface",
-        "//sim:kelvin_top",
+        "//sim:coralnpu_top",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",
@@ -51,15 +51,15 @@ cc_library(
 )
 
 cc_library(
-    name = "kelvin_renode_memory",
+    name = "coralnpu_renode_memory",
     srcs = [
-        "kelvin_renode_memory.cc",
+        "coralnpu_renode_memory.cc",
     ],
     hdrs = [
-        "kelvin_renode_memory.h",
+        "coralnpu_renode_memory.h",
     ],
     deps = [
-        "//sim:kelvin_state",
+        "//sim:coralnpu_state",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_mpact-sim//mpact/sim/generic:core",
@@ -69,18 +69,18 @@ cc_library(
 )
 
 cc_library(
-    name = "kelvin_renode",
+    name = "coralnpu_renode",
     srcs = [
-        "kelvin_renode.cc",
-        "kelvin_renode_reigster_info.cc",
+        "coralnpu_renode.cc",
+        "coralnpu_renode_reigster_info.cc",
     ],
     hdrs = [
-        "kelvin_renode.h",
-        "kelvin_renode_register_info.h",
+        "coralnpu_renode.h",
+        "coralnpu_renode_register_info.h",
     ],
     deps = [
         ":renode_debug_interface",
-        "//sim:kelvin_top",
+        "//sim:coralnpu_top",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -94,12 +94,12 @@ cc_library(
 )
 
 # This rule generates the shared library that is loaded and used by Renode to instantiate and
-# control kelvin sim
+# control coralpnu sim
 cc_binary(
-    name = "renode_kelvin",
+    name = "renode_coralnpu",
     linkshared = True,
     deps = [
-        ":kelvin_renode",
+        ":coralnpu_renode",
         ":renode_mpact",
     ],
 )

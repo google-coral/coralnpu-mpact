@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Unit tests for kelvin simulator.
+# Unit tests for CoralNPU simulator.
 
 
 
 
 exports_files(
     srcs = [
+        "testfiles/coralnpu_ebreak.elf",
+        "testfiles/coralnpu_perf_counters.elf",
+        "testfiles/coralnpu_vldvst.elf",
         "testfiles/hello_world_mpause.bin",
         "testfiles/hello_world_mpause.elf",
         "testfiles/hello_world_rv32imf.elf",
-        "testfiles/kelvin_ebreak.elf",
-        "testfiles/kelvin_perf_counters.elf",
-        "testfiles/kelvin_vldvst.elf",
         "testfiles/rv32i.elf",
         "testfiles/rv32m.elf",
         "testfiles/rv32soft_fp.elf",
@@ -34,15 +34,13 @@ exports_files(
 )
 
 cc_test(
-    name = "kelvin_encoding_test",
+    name = "coralnpu_encoding_test",
     size = "small",
-    srcs = [
-        "kelvin_encoding_test.cc",
-    ],
+    srcs = ["coralnpu_encoding_test.cc"],
     deps = [
-        "//sim:kelvin_decoder",
-        "//sim:kelvin_isa",
-        "//sim:kelvin_state",
+        "//sim:coralnpu_decoder",
+        "//sim:coralnpu_isa",
+        "//sim:coralnpu_state",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-riscv//riscv:riscv_state",
         "@com_google_mpact-sim//mpact/sim/generic:arch_state",
@@ -51,17 +49,15 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_decoder_test",
+    name = "coralnpu_decoder_test",
     size = "small",
-    srcs = [
-        "kelvin_decoder_test.cc",
-    ],
+    srcs = ["coralnpu_decoder_test.cc"],
     data = [
         "testfiles/hello_world_rv32imf.elf",
     ],
     deps = [
-        "//sim:kelvin_decoder",
-        "//sim:kelvin_state",
+        "//sim:coralnpu_decoder",
+        "//sim:coralnpu_state",
         "@com_github_serge1_elfio//:elfio",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
@@ -75,32 +71,29 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_top_test",
+    name = "coralnpu_top_test",
     size = "small",
-    srcs = [
-        "kelvin_top_test.cc",
-    ],
+    srcs = ["coralnpu_top_test.cc"],
     data = [
+        "testfiles/coralnpu_ebreak.elf",
+        "testfiles/coralnpu_perf_counters.elf",
+        "testfiles/coralnpu_vldvst.elf",
         "testfiles/hello_world_mpause.bin",
         "testfiles/hello_world_mpause.elf",
         "testfiles/hello_world_rv32imf.elf",
-        "testfiles/kelvin_ebreak.elf",
-        "testfiles/kelvin_perf_counters.elf",
-        "testfiles/kelvin_vldvst.elf",
         "testfiles/rv32i.elf",
         "testfiles/rv32m.elf",
         "testfiles/rv32soft_fp.elf",
         "testfiles/rv32uf_fadd.elf",
     ],
     deps = [
-        "//sim:kelvin_state",
-        "//sim:kelvin_top",
+        "//sim:coralnpu_state",
+        "//sim:coralnpu_top",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
@@ -108,15 +101,15 @@ cc_test(
 )
 
 cc_library(
-    name = "kelvin_vector_instructions_test_base",
+    name = "coralnpu_vector_instructions_test_base",
     testonly = True,
-    hdrs = ["kelvin_vector_instructions_test_base.h"],
+    hdrs = ["coralnpu_vector_instructions_test_base.h"],
     copts = [
         "-Werror",
         "-Wvla-extension",
     ],
     deps = [
-        "//sim:kelvin_state",
+        "//sim:coralnpu_state",
         "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
@@ -130,15 +123,15 @@ cc_library(
 )
 
 cc_test(
-    name = "kelvin_vector_instructions_test",
-    srcs = ["kelvin_vector_instructions_test.cc"],
+    name = "coralnpu_vector_instructions_test",
+    srcs = ["coralnpu_vector_instructions_test.cc"],
     copts = [
         "-Werror",
         "-Wvla-extension",
     ],
     deps = [
-        ":kelvin_vector_instructions_test_base",
-        "//sim:kelvin_instructions",
+        ":coralnpu_vector_instructions_test_base",
+        "//sim:coralnpu_instructions",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
@@ -148,18 +141,18 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_vector_convolution_instructions_test",
+    name = "coralnpu_vector_convolution_instructions_test",
     srcs = [
-        "kelvin_vector_convolution_instructions_test.cc",
-        "testfiles/kelvin_vector_convolution_testdata.h",
+        "coralnpu_vector_convolution_instructions_test.cc",
+        "testfiles/coralnpu_vector_convolution_testdata.h",
     ],
     copts = [
         "-Werror",
         "-Wvla-extension",
     ],
     deps = [
-        ":kelvin_vector_instructions_test_base",
-        "//sim:kelvin_instructions",
+        ":coralnpu_vector_instructions_test_base",
+        "//sim:coralnpu_instructions",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
@@ -170,16 +163,16 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_vector_memory_instructions_test",
-    srcs = ["kelvin_vector_memory_instructions_test.cc"],
+    name = "coralnpu_vector_memory_instructions_test",
+    srcs = ["coralnpu_vector_memory_instructions_test.cc"],
     copts = [
         "-Werror",
         "-Wvla-extension",
     ],
     deps = [
-        ":kelvin_vector_instructions_test_base",
-        "//sim:kelvin_instructions",
-        "//sim:kelvin_state",
+        ":coralnpu_vector_instructions_test_base",
+        "//sim:coralnpu_instructions",
+        "//sim:coralnpu_state",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/random:distributions",
         "@com_google_absl//absl/strings",
@@ -190,15 +183,15 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_log_instructions_test",
-    srcs = ["kelvin_log_instructions_test.cc"],
+    name = "coralnpu_log_instructions_test",
+    srcs = ["coralnpu_log_instructions_test.cc"],
     copts = [
         "-Werror",
         "-Wvla-extension",
     ],
     deps = [
-        ":kelvin_vector_instructions_test_base",
-        "//sim:kelvin_instructions",
+        ":coralnpu_vector_instructions_test_base",
+        "//sim:coralnpu_instructions",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_googletest//:gtest_main",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
@@ -206,13 +199,13 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_v2_user_decoder_test",
-    srcs = ["kelvin_v2_user_decoder_test.cc"],
+    name = "coralnpu_v2_user_decoder_test",
+    srcs = ["coralnpu_v2_user_decoder_test.cc"],
     copts = ["-Werror"],
     deps = [
-        "//sim:kelvin_v2_isa",
-        "//sim:kelvin_v2_state",
-        "//sim:kelvin_v2_user_decoder",
+        "//sim:coralnpu_v2_isa",
+        "//sim:coralnpu_v2_state",
+        "//sim:coralnpu_v2_user_decoder",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -224,11 +217,11 @@ cc_test(
 )
 
 cc_test(
-    name = "kelvin_cosim_dpi_wrapper_test",
-    srcs = ["kelvin_cosim_dpi_wrapper_test.cc"],
+    name = "coralnpu_cosim_dpi_wrapper_test",
+    srcs = ["coralnpu_cosim_dpi_wrapper_test.cc"],
     copts = ["-Werror"],
     deps = [
-        "//sim/cosim:kelvin_cosim_lib",
+        "//sim/cosim:coralnpu_cosim_lib",
         "@com_google_googletest//:gtest_main",
     ],
 )

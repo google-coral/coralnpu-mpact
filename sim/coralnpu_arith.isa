@@ -1,0 +1,1608 @@
+// This file define the coralnpu base isa for mpact-sim. For more info on mpact-sim
+// isa format, check: go/mpact-sim-codelabs-riscv-instruction-decoder
+
+// First disasm field is 18 char wide and left justified.
+disasm widths = {-18};
+
+// CoralNPU simd instructions:
+// https://opensecura.googlesource.com/sw/kelvin/+/master/docs/coralnpu_isa.md
+// Arithmetics/Logical instructions (func1 000/100/001)
+slot coralnpu_arith {
+  includes {
+    #include "sim/coralnpu_instructions.h"
+    #include "sim/coralnpu_vector_instructions.h"
+    #include "absl/functional/bind_front.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  opcodes {
+    // vadd
+    vadd_b_vv{: vs1, vs2 : vd},
+      disasm: "vadd.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vadd.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd_h_vv{: vs1, vs2 : vd},
+      disasm: "vadd.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vadd.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd_w_vv{: vs1, vs2 : vd},
+      disasm: "vadd.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vadd.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd_b_vx{: vs1, vs2 : vd},
+      disasm: "vadd.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vadd.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadd_h_vx{: vs1, vs2 : vd},
+      disasm: "vadd.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vadd.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadd_w_vx{: vs1, vs2 : vd},
+      disasm: "vadd.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vadd.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vsub
+    vsub_b_vv{: vs1, vs2 : vd},
+      disasm: "vsub.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsub_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsub.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsub_h_vv{: vs1, vs2 : vd},
+      disasm: "vsub.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsub_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsub.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsub_w_vv{: vs1, vs2 : vd},
+      disasm: "vsub.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsub_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsub.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsub_b_vx{: vs1, vs2 : vd},
+      disasm: "vsub.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsub_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsub.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsub_h_vx{: vs1, vs2 : vd},
+      disasm: "vsub.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsub_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsub.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsub_w_vx{: vs1, vs2 : vd},
+      disasm: "vsub.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsub_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsub.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSub<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vrsub
+    vrsub_b_vv{: vs1, vs2 : vd},
+      disasm: "vrsub.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrsub_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vrsub.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrsub_h_vv{: vs1, vs2 : vd},
+      disasm: "vrsub.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrsub_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vrsub.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrsub_w_vv{: vs1, vs2 : vd},
+      disasm: "vrsub.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrsub_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vrsub.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrsub_b_vx{: vs1, vs2 : vd},
+      disasm: "vrsub.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrsub_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vrsub.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vrsub_h_vx{: vs1, vs2 : vd},
+      disasm: "vrsub.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrsub_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vrsub.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vrsub_w_vx{: vs1, vs2 : vd},
+      disasm: "vrsub.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrsub_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vrsub.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRSub<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // veq
+    veq_b_vv{: vs1, vs2 : vd},
+      disasm: "veq.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    veq_b_vv_m{: vs1, vs2 : vd},
+      disasm: "veq.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    veq_h_vv{: vs1, vs2 : vd},
+      disasm: "veq.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    veq_h_vv_m{: vs1, vs2 : vd},
+      disasm: "veq.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    veq_w_vv{: vs1, vs2 : vd},
+      disasm: "veq.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    veq_w_vv_m{: vs1, vs2 : vd},
+      disasm: "veq.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    veq_b_vx{: vs1, vs2 : vd},
+      disasm: "veq.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    veq_b_vx_m{: vs1, vs2 : vd},
+      disasm: "veq.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    veq_h_vx{: vs1, vs2 : vd},
+      disasm: "veq.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    veq_h_vx_m{: vs1, vs2 : vd},
+      disasm: "veq.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    veq_w_vx{: vs1, vs2 : vd},
+      disasm: "veq.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    veq_w_vx_m{: vs1, vs2 : vd},
+      disasm: "veq.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVEq<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vne
+    vne_b_vv{: vs1, vs2 : vd},
+      disasm: "vne.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vne_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vne.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vne_h_vv{: vs1, vs2 : vd},
+      disasm: "vne.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vne_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vne.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vne_w_vv{: vs1, vs2 : vd},
+      disasm: "vne.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vne_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vne.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vne_b_vx{: vs1, vs2 : vd},
+      disasm: "vne.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vne_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vne.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vne_h_vx{: vs1, vs2 : vd},
+      disasm: "vne.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vne_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vne.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vne_w_vx{: vs1, vs2 : vd},
+      disasm: "vne.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vne_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vne.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVNe<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vlt
+    vlt_b_vv{: vs1, vs2 : vd},
+      disasm: "vlt.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_h_vv{: vs1, vs2 : vd},
+      disasm: "vlt.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_w_vv{: vs1, vs2 : vd},
+      disasm: "vlt.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_b_vx{: vs1, vs2 : vd},
+      disasm: "vlt.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vlt_h_vx{: vs1, vs2 : vd},
+      disasm: "vlt.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vlt_w_vx{: vs1, vs2 : vd},
+      disasm: "vlt.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vltu
+    vlt_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vlt.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vlt.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vlt.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vlt_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vlt.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vlt_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vlt.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vlt_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vlt.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vlt_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vlt.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vlt_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vlt.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLt<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vle
+    vle_b_vv{: vs1, vs2 : vd},
+      disasm: "vle.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_h_vv{: vs1, vs2 : vd},
+      disasm: "vle.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_w_vv{: vs1, vs2 : vd},
+      disasm: "vle.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_b_vx{: vs1, vs2 : vd},
+      disasm: "vle.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vle_h_vx{: vs1, vs2 : vd},
+      disasm: "vle.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vle_w_vx{: vs1, vs2 : vd},
+      disasm: "vle.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vleu
+    vle_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vle.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vle.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vle.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vle_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vle.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vle_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vle.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vle_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vle.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vle_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vle.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vle_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vle.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVLe<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vgt
+    vgt_b_vv{: vs1, vs2 : vd},
+      disasm: "vgt.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_h_vv{: vs1, vs2 : vd},
+      disasm: "vgt.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_w_vv{: vs1, vs2 : vd},
+      disasm: "vgt.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_b_vx{: vs1, vs2 : vd},
+      disasm: "vgt.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vgt_h_vx{: vs1, vs2 : vd},
+      disasm: "vgt.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vgt_w_vx{: vs1, vs2 : vd},
+      disasm: "vgt.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vgtu
+    vgt_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vgt.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vgt.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vgt.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vgt_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vgt.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vgt_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vgt.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vgt_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vgt.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vgt_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vgt.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vgt_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vgt.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGt<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vge
+    vge_b_vv{: vs1, vs2 : vd},
+      disasm: "vge.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_h_vv{: vs1, vs2 : vd},
+      disasm: "vge.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_w_vv{: vs1, vs2 : vd},
+      disasm: "vge.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_b_vx{: vs1, vs2 : vd},
+      disasm: "vge.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vge_h_vx{: vs1, vs2 : vd},
+      disasm: "vge.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vge_w_vx{: vs1, vs2 : vd},
+      disasm: "vge.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vgeu
+    vge_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vge.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vge.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vge.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vge_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vge.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vge_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vge.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vge_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vge.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vge_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vge.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vge_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vge.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVGe<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vabsd
+    vabsd_b_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_h_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_w_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_b_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vabsd_h_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vabsd_w_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vabsdu
+    vabsd_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vabsd.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vabsd_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vabsd.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vabsd_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vabsd_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vabsd_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vabsd.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vabsd_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vabsd.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAbsd<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vmax
+    vmax_b_vv{: vs1, vs2 : vd},
+      disasm: "vmax.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_h_vv{: vs1, vs2 : vd},
+      disasm: "vmax.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_w_vv{: vs1, vs2 : vd},
+      disasm: "vmax.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_b_vx{: vs1, vs2 : vd},
+      disasm: "vmax.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmax_h_vx{: vs1, vs2 : vd},
+      disasm: "vmax.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmax_w_vx{: vs1, vs2 : vd},
+      disasm: "vmax.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vmaxu
+    vmax_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vmax.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vmax.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vmax.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmax_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vmax.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmax_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vmax.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmax_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vmax.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmax_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vmax.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmax_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vmax.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMax<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vmin
+    vmin_b_vv{: vs1, vs2 : vd},
+      disasm: "vmin.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_h_vv{: vs1, vs2 : vd},
+      disasm: "vmin.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_w_vv{: vs1, vs2 : vd},
+      disasm: "vmin.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_b_vx{: vs1, vs2 : vd},
+      disasm: "vmin.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmin_h_vx{: vs1, vs2 : vd},
+      disasm: "vmin.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmin_w_vx{: vs1, vs2 : vd},
+      disasm: "vmin.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vminu
+    vmin_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vmin.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vmin.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vmin.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmin_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vmin.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmin_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vmin.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmin_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vmin.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmin_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vmin.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmin_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vmin.w.u.vx.m", "%vd, %vs1,V %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMin<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    // vadd3
+    vadd3_b_vv{: vs1, vs2, vd : vd},
+      disasm: "vadd3.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd3_b_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd3_h_vv{: vs1, vs2, vd : vd},
+      disasm: "vadd3.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd3_h_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd3_w_vv{: vs1, vs2, vd : vd},
+      disasm: "vadd3.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadd3_w_vv_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadd3_b_vx{: vs1, vs2, vd : vd},
+      disasm: "vadd3.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd3_b_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadd3_h_vx{: vs1, vs2, vd : vd},
+      disasm: "vadd3.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd3_h_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadd3_w_vx{: vs1, vs2, vd : vd},
+      disasm: "vadd3.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadd3_w_vx_m{: vs1, vs2, vd : vd},
+      disasm: "vadd3.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdd3<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vadds
+    vadds_b_vv{: vs1, vs2 : vd},
+      disasm: "vadds.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_h_vv{: vs1, vs2 : vd},
+      disasm: "vadds.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_w_vv{: vs1, vs2 : vd},
+      disasm: "vadds.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_b_vx{: vs1, vs2 : vd},
+      disasm: "vadds.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadds_h_vx{: vs1, vs2 : vd},
+      disasm: "vadds.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadds_w_vx{: vs1, vs2 : vd},
+      disasm: "vadds.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAdds<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vaddsu
+    vadds_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vadds.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vadds.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vadds.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vadds_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vadds.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vadds_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vadds.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadds_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vadds.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vadds_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vadds.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vadds_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vadds.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddsu<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsubs
+    vsubs_b_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_h_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_w_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_b_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubs_h_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubs_w_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubs<int32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsubsu
+    vsubs_u_b_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_u_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_u_h_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_u_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_u_w_vv{: vs1, vs2 : vd},
+      disasm: "vsubs.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubs_u_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubs.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubs_u_b_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_u_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubs_u_h_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_u_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubs_u_w_vx{: vs1, vs2 : vd},
+      disasm: "vsubs.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubs_u_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubs.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubsu<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vaddw
+    vaddw_h_vv{: vs1, vs2 : vd},
+      disasm: "vaddw.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vaddw_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vaddw.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vaddw_w_vv{: vs1, vs2 : vd},
+      disasm: "vaddw.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vaddw_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vaddw.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vaddw_h_vx{: vs1, vs2 : vd},
+      disasm: "vaddw.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vaddw_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vaddw.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vaddw_w_vx{: vs1, vs2 : vd},
+      disasm: "vaddw.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vaddw_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vaddw.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vaddwu
+    vaddw_h_u_vv{: vs1, vs2 : vd},
+      disasm: "vaddw.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vaddw_h_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vaddw.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vaddw_w_u_vv{: vs1, vs2 : vd},
+      disasm: "vaddw.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vaddw_w_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vaddw.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vaddw_h_u_vx{: vs1, vs2 : vd},
+      disasm: "vaddw.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vaddw_h_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vaddw.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vaddw_w_u_vx{: vs1, vs2 : vd},
+      disasm: "vaddw.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vaddw_w_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vaddw.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAddw<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsubw
+    vsubw_h_vv{: vs1, vs2 : vd},
+      disasm: "vsubw.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubw_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubw.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubw_w_vv{: vs1, vs2 : vd},
+      disasm: "vsubw.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubw_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubw.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubw_h_vx{: vs1, vs2 : vd},
+      disasm: "vsubw.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubw_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubw.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubw_w_vx{: vs1, vs2 : vd},
+      disasm: "vsubw.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubw_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubw.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vsubwu
+    vsubw_h_u_vv{: vs1, vs2 : vd},
+      disasm: "vsubw.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubw_h_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubw.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubw_w_u_vv{: vs1, vs2 : vd},
+      disasm: "vsubw.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vsubw_w_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vsubw.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vsubw_h_u_vx{: vs1, vs2 : vd},
+      disasm: "vsubw.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubw_h_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubw.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vsubw_w_u_vx{: vs1, vs2 : vd},
+      disasm: "vsubw.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vsubw_w_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vsubw.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVSubw<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+   //vacc
+    vacc_h_vv{: vs1, vs2 : vd},
+      disasm: "vacc.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vacc_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vacc.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int16_t, int8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vacc_w_vv{: vs1, vs2 : vd},
+      disasm: "vacc.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vacc_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vacc.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int32_t, int16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vacc_h_vx{: vs1, vs2 : vd},
+      disasm: "vacc.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vacc_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vacc.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int16_t, int8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vacc_w_vx{: vs1, vs2 : vd},
+      disasm: "vacc.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vacc_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vacc.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<int32_t, int16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vaccu
+    vacc_h_u_vv{: vs1, vs2 : vd},
+      disasm: "vacc.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vacc_h_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vacc.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint16_t, uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vacc_w_u_vv{: vs1, vs2 : vd},
+      disasm: "vacc.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vacc_w_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vacc.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint32_t, uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vacc_h_u_vx{: vs1, vs2 : vd},
+      disasm: "vacc.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vacc_h_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vacc.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint16_t, uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vacc_w_u_vx{: vs1, vs2 : vd},
+      disasm: "vacc.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vacc_w_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vacc.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAcc<uint32_t, uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+   //vpadd
+    vpadd_h_v{: vs1 : vd},
+      disasm: "vpadd.h.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<int16_t, int8_t>, /*strip_mine*/ false)";
+    vpadd_h_v_m{: vs1 : vd},
+      disasm: "vpadd.h.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<int16_t, int8_t>, /*strip_mine*/ true)";
+    vpadd_w_v{: vs1 : vd},
+      disasm: "vpadd.w.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<int32_t, int16_t>, /*strip_mine*/ false)";
+    vpadd_w_v_m{: vs1 : vd},
+      disasm: "vpadd.w.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<int32_t, int16_t>, /*strip_mine*/ true)";
+
+   //vpaddu
+    vpadd_h_u_v{: vs1 : vd},
+      disasm: "vpadd.h.u.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<uint16_t, uint8_t>, /*strip_mine*/ false)";
+    vpadd_h_u_v_m{: vs1 : vd},
+      disasm: "vpadd.h.u.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<uint16_t, uint8_t>, /*strip_mine*/ true)";
+    vpadd_w_u_v{: vs1 : vd},
+      disasm: "vpadd.w.u.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<uint32_t, uint16_t>, /*strip_mine*/ false)";
+    vpadd_w_u_v_m{: vs1 : vd},
+      disasm: "vpadd.w.u.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPadd<uint32_t, uint16_t>, /*strip_mine*/ true)";
+
+   //vpsub
+    vpsub_h_v{: vs1 : vd},
+      disasm: "vpsub.h.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<int16_t, int8_t>, /*strip_mine*/ false)";
+    vpsub_h_v_m{: vs1 : vd},
+      disasm: "vpsub.h.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<int16_t, int8_t>, /*strip_mine*/ true)";
+    vpsub_w_v{: vs1 : vd},
+      disasm: "vpsub.w.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<int32_t, int16_t>, /*strip_mine*/ false)";
+    vpsub_w_v_m{: vs1 : vd},
+      disasm: "vpsub.w.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<int32_t, int16_t>, /*strip_mine*/ true)";
+
+    //vpsubu
+    vpsub_h_u_v{: vs1 : vd},
+      disasm: "vpsub.h.u.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<uint16_t, uint8_t>, /*strip_mine*/ false)";
+    vpsub_h_u_v_m{: vs1 : vd},
+      disasm: "vpsub.h.u.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<uint16_t, uint8_t>, /*strip_mine*/ true)";
+    vpsub_w_u_v{: vs1 : vd},
+      disasm: "vpsub.w.u.v", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<uint32_t, uint16_t>, /*strip_mine*/ false)";
+    vpsub_w_u_v_m{: vs1 : vd},
+      disasm: "vpsub.w.u.v.m", "%vd, %vs1",
+      semfunc: "absl::bind_front(&CoralNPUVPsub<uint32_t, uint16_t>, /*strip_mine*/ true)";
+
+    //vhadd
+    vhadd_b_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_h_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_w_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_b_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhadd_h_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhadd_w_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+
+    //vhadd.r
+    vhadd_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_w_r_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.w.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_w_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhadd_h_r_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.h.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_h_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhadd_w_r_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.w.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_w_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<int32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+
+    //vhadd.u
+    vhadd_b_u_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_b_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_h_u_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_h_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_w_u_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhadd_w_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhadd_b_u_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_b_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhadd_h_u_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_h_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhadd_w_u_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhadd_w_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+
+    //vhadd.ru
+    vhadd_b_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.b.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_b_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_h_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.h.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_h_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_w_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhadd.w.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhadd_w_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhadd_b_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.b.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_b_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.b.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhadd_h_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.h.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_h_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.h.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhadd_w_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhadd.w.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhadd_w_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhadd.w.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHadd<uint32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+
+    //vhsub
+    vhsub_b_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_h_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_w_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_b_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhsub_h_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhsub_w_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+
+    //vhsub.r
+    vhsub_b_r_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.b.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_b_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_h_r_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.h.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_h_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_w_r_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.w.r.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_w_r_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.r.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_b_r_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.b.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_b_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhsub_h_r_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.h.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_h_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhsub_w_r_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.w.r.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_w_r_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.r.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<int32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+
+    //vhsub.u
+    vhsub_b_u_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.b.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_b_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_h_u_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.h.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_h_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_w_u_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.w.u.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ false)";
+    vhsub_w_u_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.u.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ false)";
+    vhsub_b_u_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.b.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_b_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhsub_h_u_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.h.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_h_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+    vhsub_w_u_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.w.u.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ false)";
+    vhsub_w_u_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.u.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ false)";
+
+    //vhsub.ru
+    vhsub_b_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.b.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_b_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_h_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.h.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_h_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_w_ur_vv{: vs1, vs2 : vd},
+      disasm: "vhsub.w.ur.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ false, /*strip_mine*/ false, /* round */ true)";
+    vhsub_w_ur_vv_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.ur.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ false, /*strip_mine*/ true, /* round */ true)";
+    vhsub_b_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.b.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_b_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.b.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint8_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhsub_h_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.h.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_h_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.h.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint16_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+    vhsub_w_ur_vx{: vs1, vs2 : vd},
+      disasm: "vhsub.w.ur.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ true, /*strip_mine*/ false, /* round */ true)";
+    vhsub_w_ur_vx_m{: vs1, vs2 : vd},
+      disasm: "vhsub.w.ur.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVHsub<uint32_t>, /*scalar*/ true, /*strip_mine*/ true, /* round */ true)";
+
+    //vand
+    vand_vv{: vs1, vs2 : vd},
+      disasm: "vand.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vand_vv_m{: vs1, vs2 : vd},
+      disasm: "vand.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vand_b_vx{: vs1, vs2 : vd},
+      disasm: "vand.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vand_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vand.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vand_h_vx{: vs1, vs2 : vd},
+      disasm: "vand.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vand_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vand.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vand_w_vx{: vs1, vs2 : vd},
+      disasm: "vand.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vand_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vand.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVAnd<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vor
+    vor_vv{: vs1, vs2 : vd},
+      disasm: "vor.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vor_vv_m{: vs1, vs2 : vd},
+      disasm: "vor.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vor_b_vx{: vs1, vs2 : vd},
+      disasm: "vor.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vor_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vor.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vor_h_vx{: vs1, vs2 : vd},
+      disasm: "vor.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vor_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vor.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vor_w_vx{: vs1, vs2 : vd},
+      disasm: "vor.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vor_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vor.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVOr<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vxor
+    vxor_vv{: vs1, vs2 : vd},
+      disasm: "vxor.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vxor_vv_m{: vs1, vs2 : vd},
+      disasm: "vxor.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vxor_b_vx{: vs1, vs2 : vd},
+      disasm: "vxor.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vxor_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vxor.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vxor_h_vx{: vs1, vs2 : vd},
+      disasm: "vxor.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vxor_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vxor.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vxor_w_vx{: vs1, vs2 : vd},
+      disasm: "vxor.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vxor_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vxor.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVXor<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vrev
+    vrev_b_vv{: vs1, vs2 : vd},
+      disasm: "vrev.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrev_b_vx{: vs1, vs2 : vd},
+      disasm: "vrev.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrev_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vrev.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrev_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vrev.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vrev_h_vv{: vs1, vs2 : vd},
+      disasm: "vrev.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrev_h_vx{: vs1, vs2 : vd},
+      disasm: "vrev.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrev_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vrev.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrev_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vrev.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vrev_w_vv{: vs1, vs2 : vd},
+      disasm: "vrev.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vrev_w_vx{: vs1, vs2 : vd},
+      disasm: "vrev.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vrev_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vrev.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vrev_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vrev.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRev<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vror
+    vror_b_vv{: vs1, vs2 : vd},
+      disasm: "vror.b.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint8_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vror_b_vx{: vs1, vs2 : vd},
+      disasm: "vror.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vror_b_vv_m{: vs1, vs2 : vd},
+      disasm: "vror.b.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint8_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vror_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vror.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vror_h_vv{: vs1, vs2 : vd},
+      disasm: "vror.h.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint16_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vror_h_vx{: vs1, vs2 : vd},
+      disasm: "vror.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vror_h_vv_m{: vs1, vs2 : vd},
+      disasm: "vror.h.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint16_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vror_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vror.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vror_w_vv{: vs1, vs2 : vd},
+      disasm: "vror.w.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vror_w_vx{: vs1, vs2 : vd},
+      disasm: "vror.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vror_w_vv_m{: vs1, vs2 : vd},
+      disasm: "vror.w.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vror_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vror.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVRor<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+
+    //vmvp
+    vmvp_vv{: vs1, vs2 : vd},
+      disasm: "vmvp.vv", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint32_t>, /*scalar*/ false, /*strip_mine*/ false)";
+    vmvp_vv_m{: vs1, vs2 : vd},
+      disasm: "vmvp.vv.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint32_t>, /*scalar*/ false, /*strip_mine*/ true)";
+    vmvp_b_vx{: vs1, vs2 : vd},
+      disasm: "vmvp.b.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint8_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmvp_b_vx_m{: vs1, vs2 : vd},
+      disasm: "vmvp.b.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint8_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmvp_h_vx{: vs1, vs2 : vd},
+      disasm: "vmvp.h.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint16_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmvp_h_vx_m{: vs1, vs2 : vd},
+      disasm: "vmvp.h.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint16_t>, /*scalar*/ true, /*strip_mine*/ true)";
+    vmvp_w_vx{: vs1, vs2 : vd},
+      disasm: "vmvp.w.vx", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint32_t>, /*scalar*/ true, /*strip_mine*/ false)";
+    vmvp_w_vx_m{: vs1, vs2 : vd},
+      disasm: "vmvp.w.vx.m", "%vd, %vs1, %vs2",
+      semfunc: "absl::bind_front(&CoralNPUVMvp<uint32_t>, /*scalar*/ true, /*strip_mine*/ true)";
+  }
+}
