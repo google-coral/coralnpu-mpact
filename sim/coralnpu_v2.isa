@@ -626,7 +626,8 @@ slot riscv32f {
 }
 
 
-// Privileged instructions.
+// Privileged instructions. Only a subset of the privileged instructions are
+// included for CoralNPU V2.
 slot privileged {
   includes {
     #include "external/com_google_mpact-riscv/riscv/riscv_priv_instructions.h"
@@ -634,37 +635,12 @@ slot privileged {
   default size = 4;
   default latency = global_latency;
   opcodes {
-    uret{: : next_pc(0)},
-      disasm: "uret",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivURet";
-    sret{: : next_pc(0)},
-      disasm: "sret",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivSRet";
     mret{: : next_pc(0)},
       disasm: "mret",
       semfunc: "&::mpact::sim::riscv::RV32::RiscVPrivMRet";
     wfi{},
       disasm: "wfi",
       semfunc: "&::mpact::sim::riscv::RiscVPrivWfi";
-    // The sfence instruction has 4 behaviors depending on if rs1 and/or rs2
-    // are 0. These behaviors are split into 4 instructions.
-    sfence_vma_zz{: rs1, rs2},
-      resources: {},
-      disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaZZ";
-    sfence_vma_zn{: rs1, rs2},
-      resources: {rs2},
-      disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaZN";
-    sfence_vma_nz{: rs1, rs2},
-      resources: { rs1 },
-      disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaNZ";
-    sfence_vma_nn{: rs1, rs2},
-      resources: {rs1, rs2},
-      disasm: "sfence.vma", "%rs1, %rs2",
-      semfunc: "&::mpact::sim::riscv::RiscVPrivSFenceVmaNN";
-    // Skipping hypervisor memory management instructions for now.
   }
 }
 
