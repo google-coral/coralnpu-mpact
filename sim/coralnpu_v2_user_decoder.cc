@@ -53,37 +53,28 @@ CoralNPUV2UserDecoder::CoralNPUV2UserDecoder(
   coralnpu_v2_encoding_ = std::make_unique<CoralNPUV2Encoding>(state);
   decode_error_ = state->program_error_controller()->GetProgramError(
       ProgramErrorController::kInternalErrorName);
+  decoder_ = std::make_unique<RiscVGenericDecoder>(
+      state, memory, coralnpu_v2_encoding_.get(), coralnpu_v2_isa_.get());
 }
 
 CoralNPUV2UserDecoder::~CoralNPUV2UserDecoder() { inst_db_->DecRef(); }
 
 Instruction* CoralNPUV2UserDecoder::DecodeInstruction(uint64_t address) {
-  // Address alignment check.
-  if (address & 0x1) {
+  if (!state_->IsAddressInItcmRange(address)) {
     Instruction* inst = new Instruction(0, state_);
     inst->set_size(1);
-    inst->SetDisassemblyString("Misaligned instruction address");
+    inst->SetDisassemblyString("Invalid instruction address");
     inst->set_opcode(*::coralnpu::sim::isa32_v2::OpcodeEnum::kNone);
     inst->set_address(address);
     inst->set_semantic_function([this](Instruction* inst) {
-      state_->Trap(/*is_interrupt*/ false, inst->address(),
-                   *ExceptionCode::kInstructionAddressMisaligned,
-                   inst->address() ^ 0x1, inst);
+      state_->Trap(/*is_interrupt=*/false, /*trap_value=*/0,
+                   *ExceptionCode::kInstructionAccessFault, inst->address(),
+                   inst);
     });
     return inst;
   }
 
-  // TODO - b/442008530: Trigger a decoder failure if address is outside the
-  //                     ITCM range.
-
-  // Read the instruction word from memory and parse it in the encoding parser.
-  memory_->Load(address, inst_db_, nullptr, nullptr);
-  uint32_t iword = inst_db_->Get<uint32_t>(0);
-  coralnpu_v2_encoding_->ParseInstruction(iword);
-
-  // Call the isa decoder to obtain a new instruction object for the instruction
-  // word that was parsed above.
-  return coralnpu_v2_isa_->Decode(address, coralnpu_v2_encoding_.get());
+  return decoder_->DecodeInstruction(address);
 }
 
 int CoralNPUV2UserDecoder::GetNumOpcodes() const {

@@ -41,6 +41,7 @@ using ::coralnpu::sim::isa32_v2::kSourceOpNames;
 using ::coralnpu::sim::isa32_v2::OpcodeEnum;
 using ::coralnpu::sim::isa32_v2::SourceOpEnum;
 using ::mpact::sim::generic::DataBuffer;
+using ::mpact::sim::riscv::ExceptionCode;
 using ::mpact::sim::riscv::Instruction;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::generic::operator*;  // NOLINT: clang-tidy false positive.
@@ -66,9 +67,9 @@ class CoralNPUV2UserDecoderFixture : public ::testing::Test {
                                                 OpcodeEnum expected_opcode) {
     std::string failure_string;
     for (int i = 0; i < 32; i++) {
-      uint32_t shift_amount = i;
-      uint64_t test_address = 4 * i;
-      uint32_t instruction_word = base_instruction | (shift_amount << 20);
+      const uint32_t shift_amount = i;
+      const uint64_t test_address = 4 * i;
+      const uint32_t instruction_word = base_instruction | (shift_amount << 20);
       DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
       inst_db->Set<uint32_t>(/*index=*/0, instruction_word);
       memory_->Store(test_address, inst_db);
@@ -83,7 +84,7 @@ class CoralNPUV2UserDecoderFixture : public ::testing::Test {
                         absl::StrFormat("%08x", instruction_word), "\n");
       }
 
-      uint32_t observed_shift_amount = instruction->Source(1)->AsInt32(0);
+      const uint32_t observed_shift_amount = instruction->Source(1)->AsInt32(0);
       if (shift_amount != observed_shift_amount) {
         absl::StrAppend(
             &failure_string,
@@ -109,7 +110,7 @@ TEST_F(CoralNPUV2UserDecoderFixture, TestGetNumOpcodes) {
 }
 
 TEST_F(CoralNPUV2UserDecoderFixture, DecodeInstruction) {
-  uint64_t test_address = 0;
+  const uint64_t test_address = 0;
   DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
   inst_db->Set<uint32_t>(/*index=*/0, kNopAddiInstruction);
   memory_->Store(test_address, inst_db);
@@ -127,8 +128,8 @@ TEST_F(CoralNPUV2UserDecoderFixture, VerifySRLIInstructionSourceOps) {
   // f3 - 101 for srli instruction
   // rd - destination register
   // opcode - 1110011 for srli instruction
-  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
-  uint32_t srli_instruction = 0b0000000'00000'11111'101'11111'0010011;
+  //                               imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  const uint32_t srli_instruction = 0b0000000'00000'11111'101'11111'0010011;
   std::string shift_failures =
       DoVerifyShiftInstructionSourceOps(srli_instruction, OpcodeEnum::kSrli);
   EXPECT_TRUE(shift_failures.empty()) << shift_failures;
@@ -141,8 +142,8 @@ TEST_F(CoralNPUV2UserDecoderFixture, VerifySLLIInstructionSourceOps) {
   // f3 - 001 for slli instruction
   // rd - destination register
   // opcode - 1110011 for slli instruction
-  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
-  uint32_t slli_instruction = 0b0000000'00000'11111'001'11111'0010011;
+  //                               imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  const uint32_t slli_instruction = 0b0000000'00000'11111'001'11111'0010011;
   std::string shift_failures =
       DoVerifyShiftInstructionSourceOps(slli_instruction, OpcodeEnum::kSlli);
   EXPECT_TRUE(shift_failures.empty()) << shift_failures;
@@ -155,15 +156,15 @@ TEST_F(CoralNPUV2UserDecoderFixture, VerifySRAIInstructionSourceOps) {
   // f3 - 101 for srai instruction
   // rd - destination register
   // opcode - 1110011 for srai instruction
-  //                         imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
-  uint32_t srai_instruction = 0b0100000'00000'11111'101'11111'0010011;
+  //                               imm[11:5] |uimm5| rs1 |f3 | rd  | opcode
+  const uint32_t srai_instruction = 0b0100000'00000'11111'101'11111'0010011;
   std::string shift_failures =
       DoVerifyShiftInstructionSourceOps(srai_instruction, OpcodeEnum::kSrai);
   EXPECT_TRUE(shift_failures.empty()) << shift_failures;
 }
 
 TEST_F(CoralNPUV2UserDecoderFixture, DecodeVectorInstruction) {
-  uint64_t test_address = 0;
+  const uint64_t test_address = 0;
   DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
   // vsetivli x0, 4, e32, m1, ta, ma
   inst_db->Set<uint32_t>(/*index=*/0, kVsetivli_e32_m1);
@@ -173,6 +174,110 @@ TEST_F(CoralNPUV2UserDecoderFixture, DecodeVectorInstruction) {
   // Verify the vsetivli instruction was correctly decoded.
   EXPECT_NE(instruction.get(), nullptr);
   EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kVsetivli);
+  inst_db->DecRef();
+}
+
+TEST_F(CoralNPUV2UserDecoderFixture, DecodeMpauseInstruction) {
+  const uint64_t test_address = 0;
+  DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
+  const uint32_t mpause_instruction = 0b000'0100'00000'00000'000'00000'111'0011;
+  inst_db->Set<uint32_t>(/*index=*/0, mpause_instruction);
+  memory_->Store(test_address, inst_db);
+  std::unique_ptr<Instruction> instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(test_address));
+  // Verify the mpause instruction was correctly decoded.
+  ASSERT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kMpause);
+  inst_db->DecRef();
+}
+
+TEST_F(CoralNPUV2UserDecoderFixture, InstructionItcmRangeDefault) {
+  // Test the instruction decoding for the default ITCM range.
+  state_->set_itcm_length(0x2000);
+
+  // Set up the memory with the nop instruction words.
+  DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
+  inst_db->Set<uint32_t>(/*index=*/0, kNopAddiInstruction);
+  uint64_t base_address = 0x0;
+  uint64_t last_valid_address = base_address + 0x2000 - sizeof(uint32_t);
+  uint64_t first_invalid_address = base_address + 0x2000;
+  std::unique_ptr<Instruction> instruction;
+  memory_->Store(base_address, inst_db);
+  memory_->Store(last_valid_address, inst_db);
+  memory_->Store(first_invalid_address, inst_db);
+
+  // Verify the instruction decoding for the start address of the default ITCM
+  // range.
+  instruction = absl::WrapUnique(decoder_->DecodeInstruction(base_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kAddi);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(), 0);
+
+  // Verify the instruction decoding for the last valid address in the default
+  // ITCM range.
+  instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(last_valid_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kAddi);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(), 0);
+
+  // Verify the instruction decoding for the first invalid address in the
+  // default ITCM range.
+  instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(first_invalid_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kNone);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(),
+            *ExceptionCode::kInstructionAccessFault);
+
+  inst_db->DecRef();
+}
+
+TEST_F(CoralNPUV2UserDecoderFixture, InstructionItcmRangeHighMemory) {
+  // Test the instruction decoding for the high memory ITCM range.
+  state_->set_itcm_length(0x100000);
+
+  // Set up the memory with the nop instruction words.
+  DataBuffer* inst_db = state_->db_factory()->Allocate<uint32_t>(1);
+  inst_db->Set<uint32_t>(/*index=*/0, kNopAddiInstruction);
+  uint64_t base_address = 0x0;
+  uint64_t last_valid_address = base_address + 0x100000 - sizeof(uint32_t);
+  uint64_t first_invalid_address = base_address + 0x100000;
+  std::unique_ptr<Instruction> instruction;
+  memory_->Store(base_address, inst_db);
+  memory_->Store(last_valid_address, inst_db);
+  memory_->Store(first_invalid_address, inst_db);
+
+  // Verify the instruction decoding for the start address of the default ITCM
+  // range.
+  instruction = absl::WrapUnique(decoder_->DecodeInstruction(base_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kAddi);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(), 0);
+
+  // Verify the instruction decoding for the last valid address in the default
+  // ITCM range.
+  instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(last_valid_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kAddi);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(), 0);
+
+  // Verify the instruction decoding for the first invalid address in the
+  // default ITCM range.
+  instruction =
+      absl::WrapUnique(decoder_->DecodeInstruction(first_invalid_address));
+  EXPECT_NE(instruction.get(), nullptr);
+  EXPECT_EQ(instruction->opcode(), *OpcodeEnum::kNone);
+  instruction->Execute(nullptr);
+  EXPECT_EQ(state_->mcause()->AsUint32(),
+            *ExceptionCode::kInstructionAccessFault);
+
   inst_db->DecRef();
 }
 

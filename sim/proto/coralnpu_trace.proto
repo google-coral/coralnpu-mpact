@@ -16,11 +16,7 @@ edition = "2023";
 
 package coralnpu.sim.proto;
 
-
-
-
 option features.utf8_validation = NONE;
-option java_multiple_files = true;
 
 message TraceEntry {
   uint32 address = 1;

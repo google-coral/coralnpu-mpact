@@ -172,40 +172,40 @@ slot riscv32i {
     lw{(: rs1, I_imm12), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lw", "%rd, %I_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lw",
                "&::mpact::sim::riscv::RV32::RiscVILwChild";
     lh{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lh", "%rd, %I_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILh",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lh",
                "&::mpact::sim::riscv::RV32::RiscVILhChild";
     lhu{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lhu", "%rd, %I_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILhu",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lhu",
                "&::mpact::sim::riscv::RV32::RiscVILhuChild";
     lb{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lb", "%rd, %I_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILb",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lb",
                "&::mpact::sim::riscv::RV32::RiscVILbChild";
     lbu{(: rs1, I_imm12 :), (: : rd)},
       resources: { next_pc, rs1 : rd[0..]},
       disasm: "lbu", "%rd, %I_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILbu",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lbu",
                "&::mpact::sim::riscv::RV32::RiscVILbuChild";
     sw{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sw", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVISw";
+      semfunc: "&::coralnpu::sim::CoralNPUV2Sw";
     sh{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sh", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVISh";
+      semfunc: "&::coralnpu::sim::CoralNPUV2Sh";
     sb{: rs1, S_imm12, rs2 : },
       resources: { next_pc, rs1, rs2 : },
       disasm: "sb", "%rs2, %S_imm12(%rs1)",
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVISb";
+      semfunc: "&::coralnpu::sim::CoralNPUV2Sb";
     fence{: pred, succ : },
       disasm: "fence",
       semfunc: "&::mpact::sim::riscv::RiscVIFence";
@@ -1767,6 +1767,11 @@ slot riscv_zve32x {
 // Combining all coralnpu instruction sets.
 slot coralnpu_v2 : riscv32i, riscv32_hints, riscv32m, riscv32f, zicsr, zfencei,
                  privileged, riscv32_zbb, riscv32_zbb_imm, riscv_zve32x {
+  includes {
+    #include "sim/coralnpu_v2_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
   default opcode =
     disasm: "Illegal instruction at 0x%(@:08x)",
     semfunc: "&::mpact::sim::riscv::RiscVIUnimplemented";
@@ -1774,7 +1779,6 @@ slot coralnpu_v2 : riscv32i, riscv32_hints, riscv32m, riscv32f, zicsr, zfencei,
     mpause{},
       disasm: "mpause",
       // mpause is the software breakpoint to terminate the program.
-      
-      semfunc: "&::mpact::sim::riscv::RiscVIUnimplemented";
+      semfunc: "&::coralnpu::sim::CoralNPUV2Mpause";
   }
 }

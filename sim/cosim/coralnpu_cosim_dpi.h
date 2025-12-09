@@ -28,6 +28,14 @@
 
 #include "external/svdpi_h_file/file/svdpi.h"
 
+typedef struct {
+  uint32_t itcm_start_address;  // Start address of the ITCM range.
+  uint32_t itcm_length;         // Length of the ITCM range.
+  uint32_t initial_misa_value;  // Initial value of the misa register.
+  uint32_t dtcm_start_address;  // Start address of the DTCM range.
+  uint32_t dtcm_length;         // Length of the DTCM range.
+} sim_config_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,6 +44,11 @@ extern "C" {
 // other MPACT functions.
 // Return 0 on success, non-zero on failure.
 int mpact_init();
+
+// Configure the MPACT simulator. This function should be called after
+// mpact_init. If not called, the default configuration is used.
+// Return 0 on success, non-zero on failure.
+int mpact_config(sim_config_t* config_data);
 
 // Loads an ELF file into the simulation memory.
 // Return 0 on success, non-zero on failure.

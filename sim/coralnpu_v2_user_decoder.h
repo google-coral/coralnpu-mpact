@@ -20,8 +20,10 @@
 
 #include "sim/coralnpu_v2_decoder.h"
 #include "sim/coralnpu_v2_encoding.h"
+#include "sim/coralnpu_v2_enums.h"
 #include "sim/coralnpu_v2_state.h"
 #include "absl/base/nullability.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
@@ -48,13 +50,19 @@ class CoralNPUV2IsaFactory
 
 class CoralNPUV2UserDecoder : public ::mpact::sim::generic::DecoderInterface {
  public:
-  using DataBuffer = ::mpact::sim::generic::DataBuffer;
-  using Instruction = ::mpact::sim::generic::Instruction;
   using CoralNPUV2Encoding = ::coralnpu::sim::CoralNPUV2Encoding;
   using CoralNPUV2InstructionSet =
       ::coralnpu::sim::isa32_v2::CoralNPUV2InstructionSet;
+  using CoralNPUV2State = ::coralnpu::sim::CoralNPUV2State;
+  using DataBuffer = ::mpact::sim::generic::DataBuffer;
+  using Instruction = ::mpact::sim::generic::Instruction;
   using MemoryInterface = ::mpact::sim::util::MemoryInterface;
+  using OpcodeEnum = ::coralnpu::sim::isa32_v2::OpcodeEnum;
   using ProgramError = ::mpact::sim::generic::ProgramError;
+  using RiscVGenericDecoder =
+      ::mpact::sim::riscv::RiscVGenericDecoder<CoralNPUV2State, OpcodeEnum,
+                                               CoralNPUV2Encoding,
+                                               CoralNPUV2InstructionSet>;
 
   CoralNPUV2UserDecoder(CoralNPUV2State* /*absl_nonnull*/ state,
                         MemoryInterface* /*absl_nonnull*/ memory);
@@ -77,6 +85,7 @@ class CoralNPUV2UserDecoder : public ::mpact::sim::generic::DecoderInterface {
   std::unique_ptr<CoralNPUV2Encoding> coralnpu_v2_encoding_;
   std::unique_ptr<CoralNPUV2IsaFactory> coralnpu_v2_isa_factory_;
   std::unique_ptr<CoralNPUV2InstructionSet> coralnpu_v2_isa_;
+  std::unique_ptr<RiscVGenericDecoder> decoder_;
 };
 
 }  // namespace coralnpu::sim

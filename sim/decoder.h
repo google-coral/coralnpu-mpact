@@ -22,6 +22,7 @@
 #include "sim/coralnpu_encoding.h"
 #include "sim/coralnpu_enums.h"
 #include "sim/coralnpu_state.h"
+#include "riscv/riscv_generic_decoder.h"
 #include "mpact/sim/generic/arch_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/decoder_interface.h"
@@ -76,7 +77,10 @@ class CoralNPUDecoder : public mpact::sim::generic::DecoderInterface {
 
  private:
   CoralNPUState* state_;
-  mpact::sim::util::MemoryInterface* memory_;
+  std::unique_ptr<mpact::sim::riscv::RiscVGenericDecoder<
+      CoralNPUState, isa32::OpcodeEnum, isa32::CoralNPUEncoding,
+      isa32::CoralNPUInstructionSet>>
+      decoder_;
   std::unique_ptr<mpact::sim::generic::ProgramError> decode_error_;
   mpact::sim::generic::DataBuffer* inst_db_;
   isa32::CoralNPUEncoding* coralnpu_encoding_;

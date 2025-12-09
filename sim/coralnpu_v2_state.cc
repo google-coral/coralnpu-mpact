@@ -26,22 +26,36 @@ using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::util::AtomicMemoryOpInterface;
 using ::mpact::sim::util::MemoryInterface;
 
-// StretchMisa32 stretches the 32-bit value into a 64-bit value by moving the
-// upper 2 bits to the lower 32 bits.
-static inline uint64_t StretchMisa32(uint32_t value) {
-  uint64_t value64 = static_cast<uint64_t>(value);
-  value64 = ((value64 & 0xc000'0000) << 32) | (value64 & 0x03ff'ffff);
-  return value64;
-}
-
 CoralNPUV2State::CoralNPUV2State(
     absl::string_view id, RiscVXlen xlen, MemoryInterface* /*absl_nonnull*/ memory,
     AtomicMemoryOpInterface* /*absl_nullable*/ atomic_memory)
     : RiscVState(id, xlen, memory, atomic_memory) {
-  // Set the initial value of the misa CSR to the CoralNPU V2 ISA value.
-  misa()->Set(StretchMisa32(kCoralnpuV2MisaInitialValue));
   set_vector_register_width(kCoralnpuV2VectorByteLength);
 }
 CoralNPUV2State::~CoralNPUV2State() = default;
+
+void CoralNPUV2State::MPause(const Instruction* instruction) {
+  for (auto& handler : on_mpause_) {
+    if (handler(instruction)) return;
+  }
+  // Set the return address to the current instruction.
+  const uint64_t epc = (instruction != nullptr) ? instruction->address() : 0;
+  Trap(/*is_interrupt=*/false, /*trap_value=*/0, /*exception_code=*/3, epc,
+       instruction);
+}
+
+bool CoralNPUV2State::IsLsuAccessValid(uint32_t address, uint32_t size) {
+  uint64_t request_start_address = address;
+  uint64_t request_end_address = address + size;
+  for (const auto& range : lsu_access_ranges_) {
+    uint64_t access_start_address = range.start_address;
+    uint64_t access_end_address = range.start_address + range.length;
+    if (request_start_address >= access_start_address &&
+        request_end_address <= access_end_address) {
+      return true;
+    }
+  }
+  return false;
+}
 
 }  // namespace coralnpu::sim

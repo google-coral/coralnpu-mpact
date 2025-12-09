@@ -24,7 +24,6 @@ proto_library(
     srcs = [
         "coralnpu_trace.proto",
     ],
-    
 )
 
 cc_proto_library(

@@ -18,6 +18,7 @@ constexpr uint32_t kAddImmediateToX5_1776 =
 constexpr uint32_t kExpectedX5Value = 0xdeadbeef;
 constexpr uint32_t kNopInstruction = 0x00000013;  // x0 = x0 + 0 (nop)
 constexpr uint32_t kExpectedMisaValue = 0x40201120;
+constexpr uint32_t kMpause = 0b000'0100'00000'00000'000'00000'111'0011;
 
 class CosimFixture : public ::testing::Test {
  public:
@@ -145,6 +146,40 @@ TEST_F(CosimFixture, GetVectorRegisterErrors_HandleNotInitialized) {
   mpact_fini();  // Reset the handle to test the uninitialized case.
   svLogicVecVal result[4];
   EXPECT_NE(mpact_get_vector_register("v1", result), 0);
+}
+
+TEST_F(CosimFixture, MpauseHaltsCosimulation) {
+  uint32_t pc_value = 0;
+  uint32_t expected_pc_value = 0;
+
+  EXPECT_EQ(mpact_step_wrapper(kNopInstruction), 0);
+  expected_pc_value += 4;
+  EXPECT_EQ(mpact_get_register("pc", &pc_value), 0);
+  EXPECT_EQ(pc_value, expected_pc_value);
+
+  EXPECT_EQ(mpact_step_wrapper(kMpause), 0);
+  EXPECT_EQ(mpact_get_register("pc", &pc_value), 0);
+  // Verify that the pc value is not updated after mpause.
+  EXPECT_EQ(pc_value, expected_pc_value);
+
+  // Verify non-zero return value on step after mpause.
+  EXPECT_NE(mpact_step_wrapper(kNopInstruction), 0);
+  EXPECT_EQ(mpact_get_register("pc", &pc_value), 0);
+  // Verify that the pc value is not updated after mpause.
+  EXPECT_EQ(pc_value, expected_pc_value);
+}
+
+TEST_F(CosimFixture, GetPcWithCustomConfig) {
+  uint32_t test_itcm_start_address = 12345;
+  sim_config_t config_data = {
+      .itcm_start_address = test_itcm_start_address,
+      .itcm_length = 0x100000,
+      .initial_misa_value = 0x0,
+  };
+  EXPECT_EQ(mpact_config(&config_data), 0);
+  uint32_t pc_value = 1;
+  EXPECT_EQ(mpact_get_register("pc", &pc_value), 0);
+  EXPECT_EQ(pc_value, test_itcm_start_address);
 }
 
 }  // namespace

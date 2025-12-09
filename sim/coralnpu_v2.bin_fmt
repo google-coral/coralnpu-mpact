@@ -30,6 +30,7 @@ decoder CoralNPUV2 {
     RiscVZbbInst32Only,
     RiscVZbbImmInst32,
     RiscVPrivInst32,
+    CoralNPUV2CustomInst32,
   };
 };
 
@@ -803,4 +804,9 @@ instruction group RiscVPrivInst32[32] : Inst32Format {
   // CoralNPU V2 only uses a subset of the RiscV32 Privileged instructions.
   mret    : Inst32Format  : bits == 0b001'1000'00010'00000'000'00000, opcode == 0b111'0011;
   wfi     : Inst32Format  : bits == 0b000'1000'00101'00000'000'00000, opcode == 0b111'0011;
+};
+
+instruction group CoralNPUV2CustomInst32[32] : Inst32Format {
+  // Custom instructions for CoralNPU V2.
+  mpause  : Inst32Format  : bits == 0b000'0100'00000'00000'000'00000, opcode == 0b111'0011;
 };
