@@ -376,6 +376,31 @@ int mpact_get_register(const char* name, uint32_t* value) {
   return 0;
 }
 
+int mpact_set_register(const char* name, uint32_t value) {
+  if (name == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_set_register: name is null.";
+    return -3;
+  }
+  if (g_mpact_handle == nullptr) {
+    LOG(ERROR) << "[DPI] mpact_set_register: g_mpact_handle is null.";
+    return -2;
+  }
+  if (!g_mpact_handle->is_initialized()) {
+    LOG(INFO) << "[DPI] mpact_set_register: Lazy initialization of "
+                 "g_mpact_handle.";
+    g_mpact_handle->Init(nullptr);
+  }
+  std::string reg_name(name);
+  RiscVTop* rv_top = g_mpact_handle->rv_top();
+  absl::Status write_reg_status = rv_top->WriteRegister(reg_name, value);
+  if (!write_reg_status.ok()) {
+    LOG(ERROR) << "[DPI] mpact_set_register: Failed to write register: "
+               << reg_name;
+    return -4;
+  }
+  return 0;
+}
+
 int mpact_fini() {
   if (g_mpact_handle == nullptr) {
     LOG(ERROR) << "[DPI] mpact_fini: g_mpact_handle is null.";

@@ -6,9 +6,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file"
 # MPACT-RiscV repo
 http_archive(
     name = "com_google_mpact-riscv",
-    sha256 = "2816c75ac4f61c208fd037efb1d764af6c5db58d6b1f03f2d31b6296e72635ca",
-    strip_prefix = "mpact-riscv-0a106a639391b8af6a7b4189ff3a8b3770e342ab",
-    url = "https://github.com/google/mpact-riscv/archive/0a106a639391b8af6a7b4189ff3a8b3770e342ab.tar.gz",
+    sha256 = "01dac9ff9e7ca6a2666bf3c881f12cb146298925658e75fa351cddf06633fb0a",
+    strip_prefix = "mpact-riscv-336067a7ee0a91c2c180b35f3423d664d9045cc2",
+    url = "https://github.com/google/mpact-riscv/archive/336067a7ee0a91c2c180b35f3423d664d9045cc2.tar.gz",
 )
 
 # Download only the single svdpi.h file.
