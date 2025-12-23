@@ -16,9 +16,9 @@
 
 
 cc_library(
-    name = "kelvin_simulator_headers",
+    name = "coralnpu_simulator_headers",
     hdrs = [
-        "kelvin_simulator.h",
+        "coralnpu_simulator.h",
     ],
 )
 
@@ -27,7 +27,7 @@ cc_library(
     srcs = ["mpact_simulator.cc"],
     linkstatic = True,
     deps = [
-        ":kelvin_simulator_headers",
+        ":coralnpu_simulator_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_mpact-riscv//riscv:riscv32g_vec_decoder",
@@ -41,7 +41,7 @@ cc_library(
 
 # generate libraries for external projects
 cc_binary(
-    name = "libkelvin_simulator_mpact.so",
+    name = "libcoralnpu_simulator_mpact.so",
     linkshared = True,
     visibility = ["//visibility:public"],
     deps = [":mpact_simulator"],

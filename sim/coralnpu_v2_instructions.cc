@@ -20,6 +20,7 @@
 #include "sim/coralnpu_v2_state.h"
 #include "absl/base/nullability.h"
 #include "absl/log/log.h"
+#include "riscv/riscv_f_instructions.h"
 #include "riscv/riscv_instruction_helpers.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -60,6 +61,7 @@ namespace coralnpu::sim {
 using ::coralnpu::sim::CoralNPUV2State;
 using ::mpact::sim::generic::Instruction;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RVFpRegister;
 
 void CoralNPUV2Mpause(const Instruction* /*absl_nonnull*/ instruction) {
   CoralNPUV2State* state = static_cast<CoralNPUV2State*>(instruction->state());
@@ -137,6 +139,15 @@ void CoralNPUV2Sb(const Instruction* /*absl_nonnull*/ instruction) {
           instruction);
   if (is_store_allowed) {
     ::mpact::sim::riscv::RVStore<RV32Register, uint8_t>(instruction);
+  }
+}
+
+void CoralNPUV2Fsw(const Instruction* /*absl_nonnull*/ instruction) {
+  bool is_store_allowed =
+      AccessCheck<RVFpRegister, uint64_t, ExceptionCode::kStoreAccessFault>(
+          instruction);
+  if (is_store_allowed) {
+    ::mpact::sim::riscv::RV32::RiscVFSw(instruction);
   }
 }
 

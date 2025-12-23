@@ -34,7 +34,7 @@
 namespace {
 
 #ifndef EXPECT_OK
-#define EXPECT_OK(x) EXPECT_TRUE(x.ok())
+#define ABSL_EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif
 
 using ::coralnpu::sim::CoralNPUTop;
@@ -100,9 +100,9 @@ TEST_F(CoralNPUTopTest, CheckDefaultMaxMemorySize) {
 TEST_F(CoralNPUTopTest, RunProgramExceedDefaultMemory) {
   LoadFile(kRV32imfElfFileName);
   testing::internal::CaptureStderr();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -115,9 +115,9 @@ TEST_F(CoralNPUTopTest, RunProgramExceedDefaultMemory) {
 TEST_F(CoralNPUTopTest, RunEbreakProgram) {
   LoadFile(kEbreakElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(halt_result.value(), coralnpu::sim::kHaltAbort);
@@ -131,9 +131,9 @@ TEST_F(CoralNPUTopTest, RunHelloProgramSemihost) {
   coralnpu_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32imfElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -147,9 +147,9 @@ TEST_F(CoralNPUTopTest, RunHelloProgramSemihost) {
 TEST_F(CoralNPUTopTest, RunHelloMpauseProgram) {
   LoadFile(kMpauseElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -183,12 +183,12 @@ TEST_F(CoralNPUTopTest, ReadWriteOutOfBoundMemory) {
   // read operation is successful within the physical memory size range.
   auto result =
       coralnpu_top_->ReadMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   EXPECT_EQ(result.value(), kTestMemerySize);
   // Read at the maximum physical address, so only one byte can be read.
   result = coralnpu_top_->ReadMemory(kMaxPhysicalAddress, mem_bytes,
                                      sizeof(mem_bytes));
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   EXPECT_EQ(result.value(), 1);
   // Read the memory with the staring address out of the physical memory range.
   // The read operation returns error.
@@ -200,12 +200,12 @@ TEST_F(CoralNPUTopTest, ReadWriteOutOfBoundMemory) {
   // write operation is successful within the physical memory size range.
   result =
       coralnpu_top_->WriteMemory(kBinaryAddress, mem_bytes, sizeof(mem_bytes));
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   EXPECT_EQ(result.value(), kTestMemerySize);
   // Write at the maximum physical address, so only one byte can be written.
   result = coralnpu_top_->WriteMemory(kMaxPhysicalAddress, mem_bytes,
                                       sizeof(mem_bytes));
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   EXPECT_EQ(result.value(), 1);
   // Write the memory with the staring address out of the physical memory range.
   // The write operation returns error.
@@ -222,9 +222,9 @@ TEST_F(CoralNPUTopTest, RunHelloMpauseBinaryProgram) {
   testing::internal::CaptureStdout();
   auto result = coralnpu_top_->LoadImage(input_file_name, kBinaryAddress);
   CHECK_OK(result);
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", kBinaryEntryPoint));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", kBinaryEntryPoint));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -239,9 +239,9 @@ TEST_F(CoralNPUTopTest, RunRV32IProgram) {
   coralnpu_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32iElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -257,9 +257,9 @@ TEST_F(CoralNPUTopTest, RunRV32MProgram) {
   coralnpu_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32mElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -275,9 +275,9 @@ TEST_F(CoralNPUTopTest, RunRV32SoftFProgram) {
   coralnpu_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   LoadFile(kRV32SoftFloatElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -292,9 +292,9 @@ TEST_F(CoralNPUTopTest, RunRV32SoftFProgram) {
 TEST_F(CoralNPUTopTest, RunIllegalRV32FProgram) {
   LoadFile(kRV32fElfFileName);
   testing::internal::CaptureStderr();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -307,10 +307,10 @@ TEST_F(CoralNPUTopTest, RunIllegalRV32FProgram) {
 TEST_F(CoralNPUTopTest, StepProgram) {
   LoadFile(kEbreakElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
 
   auto res = coralnpu_top_->Step(10000);
-  EXPECT_OK(res.status());
+  ABSL_EXPECT_OK(res.status());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(halt_result.value(), coralnpu::sim::kHaltAbort);
@@ -324,18 +324,18 @@ TEST_F(CoralNPUTopTest, SetAndClearBreakpoint) {
   LoadFile(kRV32imfElfFileName);
   coralnpu_top_->state()->set_max_physical_address(kRiscv32MaxAddress);
   auto result = loader_->GetSymbol("printf");
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   auto address = result.value().first;
   EXPECT_EQ(coralnpu_top_->ClearSwBreakpoint(address).code(),
             absl::StatusCode::kNotFound);
-  EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
+  ABSL_EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
   EXPECT_EQ(coralnpu_top_->SetSwBreakpoint(address).code(),
             absl::StatusCode::kAlreadyExists);
-  EXPECT_OK(coralnpu_top_->ClearSwBreakpoint(address));
+  ABSL_EXPECT_OK(coralnpu_top_->ClearSwBreakpoint(address));
   EXPECT_EQ(coralnpu_top_->ClearSwBreakpoint(address).code(),
             absl::StatusCode::kNotFound);
-  EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
-  EXPECT_OK(coralnpu_top_->ClearAllSwBreakpoints());
+  ABSL_EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
+  ABSL_EXPECT_OK(coralnpu_top_->ClearAllSwBreakpoints());
   EXPECT_EQ(coralnpu_top_->ClearSwBreakpoint(address).code(),
             absl::StatusCode::kNotFound);
 }
@@ -348,16 +348,16 @@ TEST_F(CoralNPUTopTest, RunWithBreakpoint) {
 
   // Set breakpoint at printf.
   auto result = loader_->GetSymbol("printf");
-  EXPECT_OK(result);
+  ABSL_EXPECT_OK(result);
   auto address = result.value().first;
-  EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
+  ABSL_EXPECT_OK(coralnpu_top_->SetSwBreakpoint(address));
 
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
 
   // Run to printf.
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
 
   // Should be stopped at breakpoint, but nothing printed.
   auto halt_result = coralnpu_top_->GetLastHaltReason();
@@ -368,8 +368,8 @@ TEST_F(CoralNPUTopTest, RunWithBreakpoint) {
 
   // Run to the end of the program.
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
 
   // Should be stopped due to semihost halt request. Captured 'Hello World!
   // 7\n'.
@@ -387,10 +387,10 @@ TEST_F(CoralNPUTopTest, Memory) {
   uint16_t half_data = 0xabcd;
   uint32_t word_data = 0xba5eba11;
   uint64_t dword_data = 0x5ca1ab1e'0ddball;
-  EXPECT_OK(coralnpu_top_->WriteMemory(0x1000, &byte_data, sizeof(byte_data)));
-  EXPECT_OK(coralnpu_top_->WriteMemory(0x1004, &half_data, sizeof(half_data)));
-  EXPECT_OK(coralnpu_top_->WriteMemory(0x1008, &word_data, sizeof(word_data)));
-  EXPECT_OK(
+  ABSL_EXPECT_OK(coralnpu_top_->WriteMemory(0x1000, &byte_data, sizeof(byte_data)));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteMemory(0x1004, &half_data, sizeof(half_data)));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteMemory(0x1008, &word_data, sizeof(word_data)));
+  ABSL_EXPECT_OK(
       coralnpu_top_->WriteMemory(0x1010, &dword_data, sizeof(dword_data)));
 
   uint8_t byte_value;
@@ -398,10 +398,10 @@ TEST_F(CoralNPUTopTest, Memory) {
   uint32_t word_value;
   uint64_t dword_value;
 
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &byte_value, sizeof(byte_value)));
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1004, &half_value, sizeof(half_value)));
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1008, &word_value, sizeof(word_value)));
-  EXPECT_OK(
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &byte_value, sizeof(byte_value)));
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1004, &half_value, sizeof(half_value)));
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1008, &word_value, sizeof(word_value)));
+  ABSL_EXPECT_OK(
       coralnpu_top_->ReadMemory(0x1010, &dword_value, sizeof(dword_value)));
 
   EXPECT_EQ(byte_data, byte_value);
@@ -409,10 +409,10 @@ TEST_F(CoralNPUTopTest, Memory) {
   EXPECT_EQ(word_data, word_value);
   EXPECT_EQ(dword_data, dword_value);
 
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &byte_value, sizeof(byte_value)));
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &half_value, sizeof(half_value)));
-  EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &word_value, sizeof(word_value)));
-  EXPECT_OK(
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &byte_value, sizeof(byte_value)));
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &half_value, sizeof(half_value)));
+  ABSL_EXPECT_OK(coralnpu_top_->ReadMemory(0x1000, &word_value, sizeof(word_value)));
+  ABSL_EXPECT_OK(
       coralnpu_top_->ReadMemory(0x1000, &dword_value, sizeof(dword_value)));
 
   EXPECT_EQ(byte_data, byte_value);
@@ -428,9 +428,9 @@ TEST_F(CoralNPUTopTest, RegisterNames) {
   for (int i = 0; i < 32; i++) {
     std::string name = absl::StrCat("x", i);
     auto result = coralnpu_top_->ReadRegister(name);
-    EXPECT_OK(result.status());
+    ABSL_EXPECT_OK(result.status());
     word_value = result.value();
-    EXPECT_OK(coralnpu_top_->WriteRegister(name, word_value));
+    ABSL_EXPECT_OK(coralnpu_top_->WriteRegister(name, word_value));
   }
   // Not found.
   EXPECT_EQ(coralnpu_top_->ReadRegister("x32").status().code(),
@@ -442,16 +442,16 @@ TEST_F(CoralNPUTopTest, RegisterNames) {
                               {"x4", "tp"},
                               {"x8", "s0"}}) {
     uint32_t write_value = 0xba5eba11;
-    EXPECT_OK(coralnpu_top_->WriteRegister(name, write_value));
+    ABSL_EXPECT_OK(coralnpu_top_->WriteRegister(name, write_value));
     uint32_t read_value;
     auto result = coralnpu_top_->ReadRegister(alias);
-    EXPECT_OK(result.status());
+    ABSL_EXPECT_OK(result.status());
     read_value = result.value();
     EXPECT_EQ(read_value, write_value);
   }
   // Custom CSRs.
   for (auto name : {"kisa"}) {
-    EXPECT_OK(coralnpu_top_->ReadRegister(name));
+    ABSL_EXPECT_OK(coralnpu_top_->ReadRegister(name));
   }
 
   // CSRs that diverge from stock values in MPACT.
@@ -459,7 +459,7 @@ TEST_F(CoralNPUTopTest, RegisterNames) {
   for (auto& [name, expected_value] :
        {std::tuple<std::string, uint32_t>{"misa", kMisaValue}}) {
     auto result = coralnpu_top_->ReadRegister(name);
-    EXPECT_OK(result.status());
+    ABSL_EXPECT_OK(result.status());
     EXPECT_EQ(result.value(), expected_value);
   }
 }
@@ -467,9 +467,9 @@ TEST_F(CoralNPUTopTest, RegisterNames) {
 TEST_F(CoralNPUTopTest, RunCoralNPUVectorProgram) {
   LoadFile(kCoralnpuVldVstFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -480,9 +480,9 @@ TEST_F(CoralNPUTopTest, RunCoralNPUVectorProgram) {
 
 TEST_F(CoralNPUTopTest, RunCoralNPUPerfCountersProgram) {
   LoadFile(kCoralnpuPerfCountersFileName);
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(static_cast<int>(halt_result.value()),
@@ -538,10 +538,10 @@ class CoralNPUTopExternalMemoryTest : public testing::Test {
 TEST_F(CoralNPUTopExternalMemoryTest, RunCoralNPUVectorProgram) {
   LoadFile(kCoralnpuVldVstFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
 
-  EXPECT_OK(coralnpu_top_->Run());
-  EXPECT_OK(coralnpu_top_->Wait());
+  ABSL_EXPECT_OK(coralnpu_top_->Run());
+  ABSL_EXPECT_OK(coralnpu_top_->Wait());
   auto halt_result = coralnpu_top_->GetLastHaltReason();
   CHECK_OK(halt_result);
   EXPECT_EQ(halt_result.value(), *HaltReason::kUserRequest);
@@ -553,15 +553,15 @@ TEST_F(CoralNPUTopExternalMemoryTest, RunCoralNPUVectorProgram) {
 TEST_F(CoralNPUTopExternalMemoryTest, StepMPauseProgram) {
   LoadFile(kMpauseElfFileName);
   testing::internal::CaptureStdout();
-  EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
+  ABSL_EXPECT_OK(coralnpu_top_->WriteRegister("pc", entry_point_));
 
   constexpr int kStep = 2000;
   absl::StatusOr<coralnpu::sim::HaltReasonValueType> halt_result;
   do {
     auto res = coralnpu_top_->Step(kStep);
-    EXPECT_OK(res.status());
+    ABSL_EXPECT_OK(res.status());
     halt_result = coralnpu_top_->GetLastHaltReason();
-    EXPECT_OK(halt_result);
+    ABSL_EXPECT_OK(halt_result);
   } while (halt_result.value() == *HaltReason::kNone);
 
   EXPECT_EQ(halt_result.value(), *HaltReason::kUserRequest);
@@ -584,12 +584,12 @@ TEST_F(CoralNPUTopExternalMemoryTest, AccessMemory) {
                                              sizeof(mem_bytes));
     uint64_t expected_length =
         std::min(kTestMemerySize, memory_size_ - test_access_address[i]);
-    EXPECT_OK(result);
+    ABSL_EXPECT_OK(result);
     EXPECT_EQ(result.value(), expected_length);
     // Read back the content from the external memory.
     result = coralnpu_top_->ReadMemory(test_access_address[i], mem_bytes_return,
                                        sizeof(mem_bytes_return));
-    EXPECT_OK(result);
+    ABSL_EXPECT_OK(result);
     EXPECT_EQ(result.value(), expected_length);
     for (int i = 0; i < result.value(); ++i) {
       EXPECT_EQ(mem_bytes[i], mem_bytes_return[i]);

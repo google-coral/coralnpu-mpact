@@ -21,6 +21,7 @@
 #include "sim/coralnpu_v2_state.h"
 #include "googletest/include/gtest/gtest.h"
 #include "absl/functional/any_invocable.h"
+#include "riscv/riscv_f_instructions.h"
 #include "riscv/riscv_i_instructions.h"
 #include "riscv/riscv_register.h"
 #include "riscv/riscv_state.h"
@@ -32,6 +33,7 @@
 
 namespace {
 
+using ::coralnpu::sim::CoralNPUV2Fsw;
 using ::coralnpu::sim::CoralNPUV2Lb;
 using ::coralnpu::sim::CoralNPUV2Lbu;
 using ::coralnpu::sim::CoralNPUV2Lh;
@@ -45,8 +47,10 @@ using ::coralnpu::sim::CoralNPUV2Sw;
 using ::mpact::sim::generic::DataBuffer;
 using ::mpact::sim::generic::ImmediateOperand;
 using ::mpact::sim::generic::Instruction;
+using ::mpact::sim::riscv::RiscVIFlwChild;
 using ::mpact::sim::riscv::RiscVXlen;
 using ::mpact::sim::riscv::RV32Register;
+using ::mpact::sim::riscv::RVFpRegister;
 using ::mpact::sim::riscv::RV32::RiscVILbChild;
 using ::mpact::sim::riscv::RV32::RiscVILbuChild;
 using ::mpact::sim::riscv::RV32::RiscVILhChild;
@@ -60,6 +64,8 @@ constexpr uint32_t kBadLsuAddress = 0x100;
 constexpr uint32_t kTestWord = 0xf0f0a5a5;
 constexpr uint16_t kTestHalfWord = 0xa5a5;
 constexpr uint8_t kTestByte = 0xa5;
+constexpr uint64_t kNanBoxedTestWord =
+    0xffffffff'00000000 | static_cast<uint64_t>(kTestWord);
 constexpr uint32_t kLsuAccessStartAddress = 0x00010000;
 constexpr uint32_t kLsuAccessLength = 0x8000;
 
@@ -87,6 +93,7 @@ class CoralNPUV2InstructionTest : public ::testing::Test {
 
     x1_reg_ = std::make_unique<RV32Register>(state_.get(), "x1");
     x2_reg_ = std::make_unique<RV32Register>(state_.get(), "x2");
+    f0_reg_ = std::make_unique<RVFpRegister>(state_.get(), "f0");
   }
   void AttachLoadChildInstruction(Instruction*, SemanticFunction);
   template <typename T>
@@ -97,6 +104,8 @@ class CoralNPUV2InstructionTest : public ::testing::Test {
       SemanticFunction child_semantic_function);
   std::unique_ptr<Instruction> CreateStoreInstruction(
       SemanticFunction parent_semantic_function);
+  std::unique_ptr<Instruction> CreateFloatLoadInstruction();
+  std::unique_ptr<Instruction> CreateFloatStoreInstruction();
   uint32_t GetXRegValue(RV32Register* reg) {
     return reg->data_buffer()->Get<uint32_t>(/*index=*/0);
   }
@@ -112,6 +121,7 @@ class CoralNPUV2InstructionTest : public ::testing::Test {
   std::unique_ptr<CoralNPUV2State> state_;
   std::unique_ptr<RV32Register> x1_reg_;
   std::unique_ptr<RV32Register> x2_reg_;
+  std::unique_ptr<RVFpRegister> f0_reg_;
   std::unique_ptr<Instruction> child_inst_;
   bool was_mpause_handler_called_ = false;
   bool was_trap_handler_called_ = false;
@@ -160,6 +170,35 @@ std::unique_ptr<Instruction> CoralNPUV2InstructionTest::CreateStoreInstruction(
   inst->AppendSource(x1_reg_->CreateSourceOperand());
   inst->AppendSource(new ImmediateOperand<int32_t>(0));
   inst->AppendSource(x2_reg_->CreateSourceOperand());
+  return inst;
+}
+
+std::unique_ptr<Instruction>
+CoralNPUV2InstructionTest::CreateFloatLoadInstruction() {
+  // Source operand 1: x register containing the base address to load.
+  // Source operand 2: immediate operand containing the offset to load.
+  // Destination operand 1: fp register to store the loaded data.
+  auto inst = std::make_unique<Instruction>(/*address=*/0, state_.get());
+  inst->set_size(4);
+  inst->set_semantic_function(CoralNPUV2Lw);
+  inst->AppendSource(x1_reg_->CreateSourceOperand());
+  inst->AppendSource(new ImmediateOperand<int32_t>(0));
+  AttachLoadChildInstruction(inst.get(), RiscVIFlwChild);
+  child_inst_->AppendDestination(f0_reg_->CreateDestinationOperand(0));
+  return inst;
+}
+
+std::unique_ptr<Instruction>
+CoralNPUV2InstructionTest::CreateFloatStoreInstruction() {
+  // Source operand 1: x register containing the base address to store.
+  // Source operand 2: immediate operand containing the offset to store.
+  // Source operand 3: fp register containing the data to store.
+  auto inst = std::make_unique<Instruction>(/*address=*/0, state_.get());
+  inst->set_size(4);
+  inst->set_semantic_function(CoralNPUV2Fsw);
+  inst->AppendSource(x1_reg_->CreateSourceOperand());
+  inst->AppendSource(new ImmediateOperand<int32_t>(0));
+  inst->AppendSource(f0_reg_->CreateSourceOperand());
   return inst;
 }
 
@@ -496,6 +535,67 @@ TEST_F(CoralNPUV2InstructionTest, TestLwGoodAccessBoundaryConditionEnd) {
   EXPECT_FALSE(was_trap_handler_called_);
   // Verify that the destination register does contain the test data.
   EXPECT_EQ(GetXRegValue(x2_reg_.get()), kTestWord);
+}
+
+TEST_F(CoralNPUV2InstructionTest, TestFlwGoodAccess) {
+  SetMemoryContents(kGoodLsuAddress, kTestWord);
+  x1_reg_->data_buffer()->Set<uint32_t>(/*index=*/0, kGoodLsuAddress);
+
+  // Create a test float load word (flw) instruction and execute it.
+  std::unique_ptr<Instruction> inst = CreateFloatLoadInstruction();
+  inst->Execute(/*context=*/nullptr);
+
+  // Verify that theres no trap for accessing a valid address.
+  EXPECT_FALSE(was_trap_handler_called_);
+  // Verify that the destination register contains the test data from memory.
+  uint64_t fp_word = f0_reg_->data_buffer()->Get<uint64_t>(0);
+  EXPECT_EQ(static_cast<uint32_t>(fp_word), kTestWord);
+}
+
+TEST_F(CoralNPUV2InstructionTest, TestFlwBadAccess) {
+  SetMemoryContents(kBadLsuAddress, kTestWord);
+  x1_reg_->data_buffer()->Set<uint32_t>(/*index=*/0, kBadLsuAddress);
+
+  // Create a test float load word (flw) instruction and execute it.
+  std::unique_ptr<Instruction> inst = CreateFloatLoadInstruction();
+  inst->Execute(/*context=*/nullptr);
+
+  // Verify that a trap was triggered for access an address outside the allowed
+  // ranges.
+  EXPECT_TRUE(was_trap_handler_called_);
+  // Verify that the destination register does not contain the test data.
+  uint64_t fp_word = f0_reg_->data_buffer()->Get<uint64_t>(0);
+  EXPECT_NE(static_cast<uint32_t>(fp_word), kTestWord);
+}
+
+TEST_F(CoralNPUV2InstructionTest, TestFswGoodAccess) {
+  x1_reg_->data_buffer()->Set<uint32_t>(/*index=*/0, kGoodLsuAddress);
+  f0_reg_->data_buffer()->Set<uint64_t>(/*index=*/0, kNanBoxedTestWord);
+
+  // Create a test float store word (fsw) instruction and execute it.
+  std::unique_ptr<Instruction> inst = CreateFloatStoreInstruction();
+  inst->Execute(/*context=*/nullptr);
+
+  // Verify that theres no trap for accessing a valid address.
+  EXPECT_FALSE(was_trap_handler_called_);
+  // Verify that the memory contents were updated with the test data.
+  EXPECT_EQ(GetMemoryContents<uint32_t>(kGoodLsuAddress), kTestWord);
+}
+
+TEST_F(CoralNPUV2InstructionTest, TestFswBadAccess) {
+  x1_reg_->data_buffer()->Set<uint32_t>(/*index=*/0, kBadLsuAddress);
+  f0_reg_->data_buffer()->Set<uint64_t>(/*index=*/0, kNanBoxedTestWord);
+
+  // Create a test float store word (fsw) instruction and execute it.
+  std::unique_ptr<Instruction> inst = CreateFloatStoreInstruction();
+  inst->Execute(/*context=*/nullptr);
+
+  // Verify that a trap was triggered for access an address outside the allowed
+  // ranges.
+  EXPECT_TRUE(was_trap_handler_called_);
+  // Verify that the memory contents were not updated since the access was
+  // invalid.
+  EXPECT_NE(GetMemoryContents<uint32_t>(kGoodLsuAddress), kTestWord);
 }
 
 }  // namespace

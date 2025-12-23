@@ -96,6 +96,13 @@ void CoralNPUV2Sh(const Instruction* /*absl_nonnull*/ instruction);
 // bits of this register are used to store.
 void CoralNPUV2Sb(const Instruction* /*absl_nonnull*/ instruction);
 
+// Semantic function for the float store word (fsw) instruction. If the address
+// access is valid, the data is stored to the specified address. Otherwise, a
+// trap is triggered.
+// Source operand 1: scalar register containing the base address to store.
+// Source operand 2: immediate operand containing the offset to store.
+// Source operand 3: float register containing the data to store.
+void CoralNPUV2Fsw(const Instruction* /*absl_nonnull*/ instruction);
 }  // namespace coralnpu::sim
 
 #endif  // SIM_CORALNPU_V2_INSTRUCTIONS_H_

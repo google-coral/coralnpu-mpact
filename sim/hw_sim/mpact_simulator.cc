@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 
-#include "sim/hw_sim/kelvin_simulator.h"
+#include "sim/hw_sim/coralnpu_simulator.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "riscv/riscv32g_vec_decoder.h"
@@ -32,14 +32,14 @@
 
 const uint32_t addr_mailbox = 0x401fc000;  // user-configurable
 
-class MpactSimulator final : public KelvinSimulator {
+class MpactSimulator final : public CoralNPUSimulator {
  public:
   MpactSimulator()
       : rv_state_("RiscV32GV", mpact::sim::riscv::RiscVXlen::RV32, &memory_),
         rv_fp_state_(rv_state_.csr_set(), &rv_state_),
         rvv_state_(&rv_state_, /*vlenb*/ 16),
         rv_decoder_(&rv_state_, &memory_),
-        rv_top_("KelvinPlaceholder", &rv_state_, &rv_decoder_) {
+        rv_top_("CoralNPUPlaceholder", &rv_state_, &rv_decoder_) {
     // Make sure the architectural and abi register aliases are added.
     std::string reg_name;
     for (int i = 0; i < 32; i++) {
@@ -52,14 +52,14 @@ class MpactSimulator final : public KelvinSimulator {
   ~MpactSimulator() final = default;
 
   void ReadTCM(uint32_t addr, size_t size, char* data) final;
-  const KelvinMailbox& ReadMailbox() final;
+  const CoralNPUMailbox& ReadMailbox() final;
   void WriteTCM(uint32_t addr, size_t size, const char* data) final;
-  void WriteMailbox(const KelvinMailbox& mailbox) final;
+  void WriteMailbox(const CoralNPUMailbox& mailbox) final;
   void Run(uint32_t start_addr) final;
   bool WaitForTermination(int timeout) final;
 
  private:
-  KelvinMailbox mailbox_;
+  CoralNPUMailbox mailbox_;
   ::mpact::sim::util::FlatDemandMemory memory_;
   ::mpact::sim::riscv::RiscVState rv_state_;
   ::mpact::sim::riscv::RiscVFPState rv_fp_state_;
@@ -76,7 +76,7 @@ void MpactSimulator::ReadTCM(uint32_t addr, size_t size, char* data) {
   assert(result.ok());
 }
 
-const KelvinMailbox& MpactSimulator::ReadMailbox() {
+const CoralNPUMailbox& MpactSimulator::ReadMailbox() {
   auto result = rv_top_.ReadMemory(
       addr_mailbox, reinterpret_cast<char*>(mailbox_.message), 16);
   if (!result.ok()) {
@@ -94,7 +94,7 @@ void MpactSimulator::WriteTCM(uint32_t addr, size_t size, const char* data) {
   assert(result.ok());
 }
 
-void MpactSimulator::WriteMailbox(const KelvinMailbox& mailbox) {
+void MpactSimulator::WriteMailbox(const CoralNPUMailbox& mailbox) {
   for (int i = 0; i < 4; i++) {
     mailbox_.message[i] = mailbox.message[i];
   }
@@ -132,4 +132,4 @@ bool MpactSimulator::WaitForTermination(int timeout) {
 }
 
 // static
-KelvinSimulator* KelvinSimulator::Create() { return new MpactSimulator(); }
+CoralNPUSimulator* CoralNPUSimulator::Create() { return new MpactSimulator(); }

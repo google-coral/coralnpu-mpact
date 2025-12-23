@@ -1,24 +1,24 @@
-#ifndef LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_KELVIN_SIMULATOR_H_
-#define LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_KELVIN_SIMULATOR_H_
+#ifndef LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_CORALNPU_SIMULATOR_H_
+#define LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_CORALNPU_SIMULATOR_H_
 
 #include <cstddef>
 #include <cstdint>
 
-struct KelvinMailbox {
+struct CoralNPUMailbox {
   uint32_t message[4] = {0, 0, 0, 0};
 };
 
-class KelvinSimulator {
+class CoralNPUSimulator {
  public:
-  static KelvinSimulator* Create();
+  static CoralNPUSimulator* Create();
 
-  virtual ~KelvinSimulator() = default;
+  virtual ~CoralNPUSimulator() = default;
 
   // Functions for reading/writing TCMs and Mailbox.
   virtual void ReadTCM(uint32_t addr, size_t size, char* data) = 0;
-  virtual const KelvinMailbox& ReadMailbox() = 0;
+  virtual const CoralNPUMailbox& ReadMailbox() = 0;
   virtual void WriteTCM(uint32_t addr, size_t size, const char* data) = 0;
-  virtual void WriteMailbox(const KelvinMailbox& mailbox) = 0;
+  virtual void WriteMailbox(const CoralNPUMailbox& mailbox) = 0;
 
   // Wait for interrupt
   virtual bool WaitForTermination(int timeout) = 0;
@@ -28,4 +28,4 @@ class KelvinSimulator {
   virtual void Run(uint32_t start_addr) = 0;
 };
 
-#endif  // LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_KELVIN_SIMULATOR_H_
+#endif  // LEARNING_BRAIN_RESEARCH_KELVIN_SIM_HW_SIM_CORALNPU_SIMULATOR_H_

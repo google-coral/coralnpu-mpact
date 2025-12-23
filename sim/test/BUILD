@@ -21,7 +21,9 @@ exports_files(
     srcs = [
         "testfiles/coralnpu_ebreak.elf",
         "testfiles/coralnpu_perf_counters.elf",
+        "testfiles/coralnpu_v2_rvv_add_intrinsic.disassm",
         "testfiles/coralnpu_vldvst.elf",
+        "testfiles/disassm_to_header.awk",
         "testfiles/hello_world_mpause.bin",
         "testfiles/hello_world_mpause.elf",
         "testfiles/hello_world_rv32imf.elf",
@@ -240,5 +242,34 @@ cc_test(
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
+    ],
+)
+
+genrule(
+    name = "coralnpu_v2_rvv_add_intrinsic_generated_h",
+    srcs = ["testfiles/coralnpu_v2_rvv_add_intrinsic.disassm"],
+    outs = ["coralnpu_v2_rvv_add_intrinsic_generated.h"],
+    cmd = "awk -v header_guard=SIM_TEST_CORALNPU_V2_RVV_ADD_INTRINSIC_GENERATED_H_ -v nested_namespace=coralnpu_v2_rvv_add_intrinsic -f $(location testfiles/disassm_to_header.awk) $< > $@",
+    tools = ["testfiles/disassm_to_header.awk"],
+)
+
+cc_library(
+    name = "coralnpu_v2_rvv_add_intrinsic_generated",
+    hdrs = ["coralnpu_v2_rvv_add_intrinsic_generated.h"],
+)
+
+cc_test(
+    name = "coralnpu_v2_simulator_test",
+    srcs = ["coralnpu_v2_simulator_test.cc"],
+    copts = ["-Werror"],
+    deps = [
+        ":coralnpu_v2_rvv_add_intrinsic_generated",
+        "//sim:coralnpu_v2_simulator",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:status_matchers",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_mpact-sim//mpact/sim/generic:core",
     ],
 )

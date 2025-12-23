@@ -1,0 +1,157 @@
+coralnpu_v2_rvv_add_intrinsic.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <_start>:
+   0:	00018117          	auipc	sp,0x18
+   4:	00010113          	mv	sp,sp
+   8:	00010197          	auipc	gp,0x10
+   c:	7f818193          	addi	gp,gp,2040 # 10800 <__global_pointer$>
+  10:	00000213          	li	tp,0
+  14:	00000313          	li	t1,0
+  18:	00000393          	li	t2,0
+  1c:	00000413          	li	s0,0
+  20:	00000493          	li	s1,0
+  24:	00000593          	li	a1,0
+  28:	00000613          	li	a2,0
+  2c:	00000693          	li	a3,0
+  30:	00000713          	li	a4,0
+  34:	00000793          	li	a5,0
+  38:	00000813          	li	a6,0
+  3c:	00000893          	li	a7,0
+  40:	00000913          	li	s2,0
+  44:	00000993          	li	s3,0
+  48:	00000a13          	li	s4,0
+  4c:	00000a93          	li	s5,0
+  50:	00000b13          	li	s6,0
+  54:	00000b93          	li	s7,0
+  58:	00000c13          	li	s8,0
+  5c:	00000c93          	li	s9,0
+  60:	00000d13          	li	s10,0
+  64:	00000d93          	li	s11,0
+  68:	00000e13          	li	t3,0
+  6c:	00000e93          	li	t4,0
+  70:	00000f13          	li	t5,0
+  74:	00000f93          	li	t6,0
+  78:	81018513          	addi	a0,gp,-2032 # 10010 <input_1>
+  7c:	00011597          	auipc	a1,0x11
+  80:	f9458593          	addi	a1,a1,-108 # 11010 <__bss_end>
+  84:	10c000ef          	jal	190 <crt_section_clear>
+  88:	20000413          	li	s0,512
+  8c:	20000493          	li	s1,512
+  90:	00947a63          	bgeu	s0,s1,a4 <init_array_loop_end>
+
+00000094 <init_array_loop>:
+  94:	00042283          	lw	t0,0(s0)
+  98:	000280e7          	jalr	t0
+  9c:	00440413          	addi	s0,s0,4
+  a0:	fe946ae3          	bltu	s0,s1,94 <init_array_loop>
+
+000000a4 <init_array_loop_end>:
+  a4:	00000297          	auipc	t0,0x0
+  a8:	0c828293          	addi	t0,t0,200 # 16c <coralnpu_exception_handler>
+  ac:	30529073          	csrw	mtvec,t0
+  b0:	00010297          	auipc	t0,0x10
+  b4:	f5028293          	addi	t0,t0,-176 # 10000 <__data_start__>
+  b8:	0badd537          	lui	a0,0xbadd
+  bc:	00d50513          	addi	a0,a0,13 # badd00d <__stack_end__+0xbac500d>
+  c0:	00a2a023          	sw	a0,0(t0)
+  c4:	00000513          	li	a0,0
+  c8:	00000593          	li	a1,0
+  cc:	00000097          	auipc	ra,0x0
+  d0:	02c08093          	addi	ra,ra,44 # f8 <main>
+  d4:	000080e7          	jalr	ra
+  d8:	00010297          	auipc	t0,0x10
+  dc:	f2828293          	addi	t0,t0,-216 # 10000 <__data_start__>
+  e0:	00a2a023          	sw	a0,0(t0)
+  e4:	00050663          	beqz	a0,f0 <success>
+
+000000e8 <failure>:
+  e8:	00100073          	ebreak
+  ec:	0080006f          	j	f4 <loop>
+
+000000f0 <success>:
+  f0:	08000073          	.insn	4, 0x08000073
+
+000000f4 <loop>:
+  f4:	0000006f          	j	f4 <loop>
+
+000000f8 <main>:
+  f8:	ff010113          	addi	sp,sp,-16 # 17ff0 <__heap_end+0x70>
+  fc:	00112623          	sw	ra,12(sp)
+ 100:	40000613          	li	a2,1024
+ 104:	00100593          	li	a1,1
+ 108:	81018513          	addi	a0,gp,-2032 # 10010 <input_1>
+ 10c:	068000ef          	jal	174 <memset>
+ 110:	40000613          	li	a2,1024
+ 114:	00600593          	li	a1,6
+ 118:	c1018513          	addi	a0,gp,-1008 # 10410 <input_2>
+ 11c:	058000ef          	jal	174 <memset>
+ 120:	c1018693          	addi	a3,gp,-1008 # 10410 <input_2>
+ 124:	81018613          	addi	a2,gp,-2032 # 10010 <input_1>
+ 128:	00010717          	auipc	a4,0x10
+ 12c:	6e870713          	addi	a4,a4,1768 # 10810 <output>
+ 130:	01018593          	addi	a1,gp,16 # 10810 <output>
+ 134:	02000793          	li	a5,32
+ 138:	0c27f057          	vsetvli	zero,a5,e8,m4,ta,ma
+ 13c:	02068207          	vle8.v	v4,(a3)
+ 140:	02060807          	vle8.v	v16,(a2)
+ 144:	c7022457          	vwadd.vv	v8,v16,v4
+ 148:	02075427          	vse16.v	v8,(a4)
+ 14c:	02068693          	addi	a3,a3,32
+ 150:	02060613          	addi	a2,a2,32
+ 154:	04070713          	addi	a4,a4,64
+ 158:	feb692e3          	bne	a3,a1,13c <main+0x44>
+ 15c:	00000513          	li	a0,0
+ 160:	00c12083          	lw	ra,12(sp)
+ 164:	01010113          	addi	sp,sp,16
+ 168:	00008067          	ret
+
+0000016c <coralnpu_exception_handler>:
+ 16c:	00100073          	ebreak
+ 170:	0000006f          	j	170 <coralnpu_exception_handler+0x4>
+
+00000174 <memset>:
+ 174:	00050313          	mv	t1,a0
+ 178:	00060a63          	beqz	a2,18c <memset+0x18>
+ 17c:	00b30023          	sb	a1,0(t1)
+ 180:	fff60613          	addi	a2,a2,-1
+ 184:	00130313          	addi	t1,t1,1
+ 188:	fe061ae3          	bnez	a2,17c <memset+0x8>
+ 18c:	00008067          	ret
+
+Disassembly of section .crt:
+
+00000190 <crt_section_clear>:
+ 190:	02b57063          	bgeu	a0,a1,1b0 <crt_section_clear+0x20>
+ 194:	00b562b3          	or	t0,a0,a1
+ 198:	0032f293          	andi	t0,t0,3
+ 19c:	00029e63          	bnez	t0,1b8 <crt_section_clear+0x28>
+ 1a0:	00052023          	sw	zero,0(a0)
+ 1a4:	00450513          	addi	a0,a0,4
+ 1a8:	feb56ce3          	bltu	a0,a1,1a0 <crt_section_clear+0x10>
+ 1ac:	00008067          	ret
+ 1b0:	00b51463          	bne	a0,a1,1b8 <crt_section_clear+0x28>
+ 1b4:	00008067          	ret
+ 1b8:	00100073          	ebreak
+
+000001bc <crt_section_copy>:
+ 1bc:	02b57c63          	bgeu	a0,a1,1f4 <crt_section_copy+0x38>
+ 1c0:	00b562b3          	or	t0,a0,a1
+ 1c4:	00c2e2b3          	or	t0,t0,a2
+ 1c8:	0032f293          	andi	t0,t0,3
+ 1cc:	02029863          	bnez	t0,1fc <crt_section_copy+0x40>
+ 1d0:	40c502b3          	sub	t0,a0,a2
+ 1d4:	40a58333          	sub	t1,a1,a0
+ 1d8:	0262e263          	bltu	t0,t1,1fc <crt_section_copy+0x40>
+ 1dc:	00062283          	lw	t0,0(a2)
+ 1e0:	00460613          	addi	a2,a2,4
+ 1e4:	00552023          	sw	t0,0(a0)
+ 1e8:	00450513          	addi	a0,a0,4
+ 1ec:	feb568e3          	bltu	a0,a1,1dc <crt_section_copy+0x20>
+ 1f0:	00008067          	ret
+ 1f4:	00b51463          	bne	a0,a1,1fc <crt_section_copy+0x40>
+ 1f8:	00008067          	ret
+ 1fc:	00100073          	ebreak
+

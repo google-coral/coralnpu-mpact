@@ -336,29 +336,44 @@ cc_library(
     ],
 )
 
-cc_binary(
-    name = "coralnpu_v2_sim",
-    srcs = ["coralnpu_v2_sim.cc"],
+cc_library(
+    name = "coralnpu_v2_simulator",
+    srcs = ["coralnpu_v2_simulator.cc"],
+    hdrs = ["coralnpu_v2_simulator.h"],
     copts = ["-O3"],
     deps = [
         ":coralnpu_v2_state",
         ":coralnpu_v2_user_decoder",
-        "@com_google_absl//absl/flags:flag",
-        "@com_google_absl//absl/flags:parse",
-        "@com_google_absl//absl/flags:usage",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
-        "@com_google_absl//absl/log:initialize",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/time",
         "@com_google_mpact-riscv//riscv:debug_command_shell",
         "@com_google_mpact-riscv//riscv:riscv_fp_state",
         "@com_google_mpact-riscv//riscv:riscv_state",
         "@com_google_mpact-riscv//riscv:riscv_top",
         "@com_google_mpact-sim//mpact/sim/generic:core",
         "@com_google_mpact-sim//mpact/sim/generic:core_debug_interface",
+        "@com_google_mpact-sim//mpact/sim/generic:instruction",
         "@com_google_mpact-sim//mpact/sim/util/memory",
         "@com_google_mpact-sim//mpact/sim/util/program_loader:elf_loader",
+    ],
+)
+
+cc_binary(
+    name = "coralnpu_v2_sim",
+    srcs = ["coralnpu_v2_sim.cc"],
+    copts = ["-O3"],
+    deps = [
+        ":coralnpu_v2_simulator",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/flags:usage",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:initialize",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/time",
     ],
 )

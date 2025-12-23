@@ -44,7 +44,7 @@ py_repositories()
 
 python_register_toolchains(
     name = "python3",
-    python_version = "3.9",
+    python_version = "3.11",
 )
 
 http_file(

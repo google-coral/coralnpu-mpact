@@ -519,12 +519,12 @@ slot riscv32f {
   opcodes {
     flw{(: rs1, I_imm12 : ), (: : frd)},
       resources: { next_pc, rs1 : frd[0..]},
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVILw",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Lw",
                "&::mpact::sim::riscv::RiscVIFlwChild",
       disasm: "flw", "%frd, %I_imm12(%rs1)";
     fsw{: rs1, S_imm12, frs2},
       resources: { next_pc, rs1, frs2},
-      semfunc: "&::mpact::sim::riscv::RV32::RiscVFSw",
+      semfunc: "&::coralnpu::sim::CoralNPUV2Fsw",
       disasm: "fsw", "%frs2, %S_imm12(%rs1)";
     fadd_s{: frs1, frs2, rm : frd},
       resources: ThreeOp,
