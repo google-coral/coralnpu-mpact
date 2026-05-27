@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "sim/coralnpu_v2.bin_fmt"
+#include "coralnpu_v2.bin_fmt"
 
 decoder CoralNPUM3 {
   namespace coralnpu::sim::encoding_m3;

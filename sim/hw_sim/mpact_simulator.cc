@@ -118,7 +118,12 @@ bool MpactSimulator::WaitForTermination(int timeout) {
       return false;
     }
 
-    uint32_t pc = rv_top_.ReadRegister("pc").value();
+    auto pc_reg = rv_top_.ReadRegister("pc");
+    if (!pc_reg.ok()) {
+      std::cerr << "Error: " << pc_reg.status() << std::endl;
+      return false;
+    }
+    uint32_t pc = *pc_reg;
     uint32_t inst = 0;
     this->ReadTCM(pc, 4, reinterpret_cast<char*>(&inst));
     if (pc > 0x1FFF || inst == halt || inst == wfi) {

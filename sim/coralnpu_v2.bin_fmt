@@ -493,10 +493,6 @@ instruction group RiscVZve32xInst32[32] : Inst32Format {
   vse32 : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b00000, width == 0b110, opcode == 0b010'0111;
   // Mask store.
   vsm   : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b01011, width == 0b000, opcode == 0b010'0111;
-  // Unit stride, fault first.
-  vse8ff  : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b000, opcode == 0b010'0111;
-  vse16ff : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b101, opcode == 0b010'0111;
-  vse32ff : VMem : nf == 0, mew == 0, mop == 0b00, sumop == 0b10000, width == 0b110, opcode == 0b010'0111;
   // Unit stride, whole register store.
   vs1re8  : VMem : nf == 0, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b000, opcode == 0b010'0111;
   vs1re16 : VMem : nf == 0, mop == 0b00, vm == 1, sumop == 0b01000, width == 0b101, opcode == 0b010'0111;
@@ -740,7 +736,6 @@ instruction group RiscVZve32xInst32[32] : Inst32Format {
   vwmaccu_vx  : VArith : func6 == 0b111'100, func3 == 0b110, opcode == 0b101'0111;
   vwmacc_vv   : VArith : func6 == 0b111'101, func3 == 0b010, opcode == 0b101'0111;
   vwmacc_vx   : VArith : func6 == 0b111'101, func3 == 0b110, opcode == 0b101'0111;
-  vwmaccus_vv : VArith : func6 == 0b111'110, func3 == 0b010, opcode == 0b101'0111;
   vwmaccus_vx : VArith : func6 == 0b111'110, func3 == 0b110, opcode == 0b101'0111;
   vwmaccsu_vv : VArith : func6 == 0b111'111, func3 == 0b010, opcode == 0b101'0111;
   vwmaccsu_vx : VArith : func6 == 0b111'111, func3 == 0b110, opcode == 0b101'0111;

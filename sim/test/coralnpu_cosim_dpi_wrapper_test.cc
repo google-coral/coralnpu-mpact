@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "sim/coralnpu_architecture.h"

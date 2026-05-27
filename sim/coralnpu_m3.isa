@@ -24,7 +24,7 @@ isa CoralNPUM3 {
   slots { coralnpu_m3; }
 }
 
-#include "sim/coralnpu_v2.isa"
+#include "coralnpu_v2.isa"
 
 slot riscv_zve32f {
   includes {

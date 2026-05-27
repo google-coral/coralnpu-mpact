@@ -16,11 +16,11 @@ decoder CoralNPU {
   RiscVZbbImmInst32;
 };
 
-#include "sim/coralnpu_format.bin_fmt"
-#include "sim/coralnpu_arith.bin_fmt"
-#include "sim/coralnpu_base.bin_fmt"
-#include "sim/coralnpu_conv.bin_fmt"
-#include "sim/coralnpu_memory.bin_fmt"
-#include "sim/coralnpu_mul.bin_fmt"
-#include "sim/coralnpu_shift.bin_fmt"
+#include "coralnpu_format.bin_fmt"
+#include "coralnpu_arith.bin_fmt"
+#include "coralnpu_base.bin_fmt"
+#include "coralnpu_conv.bin_fmt"
+#include "coralnpu_memory.bin_fmt"
+#include "coralnpu_mul.bin_fmt"
+#include "coralnpu_shift.bin_fmt"
 #include "external/com_google_mpact-riscv/riscv/riscv32zb.bin_fmt"

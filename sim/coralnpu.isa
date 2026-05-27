@@ -11,11 +11,11 @@ isa CoralNPU {
   slots { coralnpu; }
 }
 
-#include "sim/coralnpu_base.isa"
-#include "sim/coralnpu_arith.isa"
-#include "sim/coralnpu_shift.isa"
-#include "sim/coralnpu_memory.isa"
-#include "sim/coralnpu_mul.isa"
+#include "coralnpu_base.isa"
+#include "coralnpu_arith.isa"
+#include "coralnpu_shift.isa"
+#include "coralnpu_memory.isa"
+#include "coralnpu_mul.isa"
 #include "external/com_google_mpact-riscv/riscv/riscv32zb.isa"
 
 // Combining all coralnpu instruction sets.

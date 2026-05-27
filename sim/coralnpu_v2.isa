@@ -996,17 +996,6 @@ slot riscv_zve32x {
       disasm: "vsm",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2Vsm)";
 
-    // Vector store, unit stride, fault first.
-    vse8ff{: vs3, rs1, const1, vmask:},
-      disasm: "vse8ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsStrided, /*element_width*/ 1)";
-    vse16ff{: vs3, rs1, const2, vmask:},
-      disasm: "vse16ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsStrided, /*element_width*/ 2)";
-    vse32ff{: vs3, rs1, const4, vmask:},
-      disasm: "vse32ff.v", "%vs3, (%rs1), %vmask",
-      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsStrided, /*element_width*/ 4)";
-
     // Vector store register.
     vs1re8{(: vs3, rs1 :)},
       disasm: "vs1re8.v", "%vs3, (%rs1)",
@@ -1695,9 +1684,6 @@ slot riscv_zve32x {
     vwmacc_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmacc.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vwmacc";
-    vwmaccus_vv{: vs2, vs1, vd, vmask: vd},
-      disasm: "vwmaccus.vv", "%vd, %vs2, %vs1, %vmask",
-      semfunc: "&::mpact::sim::riscv::Vwmaccus";
     vwmaccus_vx{: vs2, rs1, vd, vmask: vd},
       disasm: "vwmaccus.vx", "%vd, %vs2, %rs1, %vmask",
       semfunc: "&::mpact::sim::riscv::Vwmaccus";
