@@ -55,6 +55,7 @@ class CoralNPUXStatusTest : public ::testing::Test {
 
 TEST_F(CoralNPUXStatusTest, InitialState) {
   EXPECT_EQ(mstatus_->ms(), kMsOff);
+  EXPECT_EQ(mstatus_->vs(), kMsOff);
   EXPECT_FALSE(mstatus_->sd());
 }
 
@@ -76,10 +77,28 @@ TEST_F(CoralNPUXStatusTest, UpdateMsUpdatesSd) {
   EXPECT_TRUE(mstatus_->sd());  // ms == kMsDirty, sd should be true.
 }
 
+TEST_F(CoralNPUXStatusTest, UpdateVsUpdatesSd) {
+  // VS bits are 9:10.
+  mstatus_->set_vs(kMsInitial);
+  mstatus_->Submit();
+  EXPECT_EQ(mstatus_->vs(), kMsInitial);
+  EXPECT_FALSE(mstatus_->sd());
+
+  mstatus_->set_vs(kMsClean);
+  mstatus_->Submit();
+  EXPECT_EQ(mstatus_->vs(), kMsClean);
+  EXPECT_FALSE(mstatus_->sd());
+
+  mstatus_->set_vs(kMsDirty);
+  mstatus_->Submit();
+  EXPECT_EQ(mstatus_->vs(), kMsDirty);
+  EXPECT_TRUE(mstatus_->sd());
+}
+
 TEST_F(CoralNPUXStatusTest, WriteMaskHonored) {
   // Try writing all 1s via 32-bit Write. Only bits in coralnpu_write_mask_32_
-  // (0x607ff9bb) should stick.
-  constexpr uint32_t kExpectedWriteMask32 = 0x607ff9bbU;
+  // (0x607fffbb) should stick.
+  constexpr uint32_t kExpectedWriteMask32 = 0x607fffbbU;
   mstatus_->Write(0xffff'ffffU);
 
   EXPECT_EQ(mstatus_->ms(), kMsDirty);

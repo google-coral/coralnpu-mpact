@@ -28,8 +28,12 @@ namespace sim {
 // bits (MS bits, slice [30:29]) exclusive to the CoralNPU extensions.
 class CoralNPUMStatus : public ::mpact::sim::riscv::RiscVMStatus {
  public:
-  static constexpr uint64_t kCoralNpuReadMask = 0x8000'000f'607f'f9bbULL;
-  static constexpr uint64_t kCoralNpuWriteMask = 0x0000'0000'607f'f9bbULL;
+  static constexpr uint64_t kVsMask = 0x0000'0600ULL;
+  static constexpr uint64_t kMsMask = 0x6000'0000ULL;
+  static constexpr uint64_t kCoralNpuReadMask =
+      RiscVMStatus::kDefaultReadMask | kMsMask | kVsMask;
+  static constexpr uint64_t kCoralNpuWriteMask =
+      RiscVMStatus::kDefaultWriteMask | kMsMask | kVsMask;
 
   CoralNPUMStatus() = delete;
   CoralNPUMStatus(uint32_t initial_value,
@@ -40,29 +44,18 @@ class CoralNPUMStatus : public ::mpact::sim::riscv::RiscVMStatus {
                   ::mpact::sim::riscv::RiscVMIsa* misa);
   ~CoralNPUMStatus() override = default;
 
-  bool sd() { return RiscVMStatus::sd() || ms() == 0b11; }
-
-  // MS - matrix state dirty.
-  int ms() { return (GetUint64() >> 29) & 0b11; }
-  void set_ms(uint32_t value) {
-    uint64_t mask = 0b11ULL << 29;
-    uint64_t new_val =
-        (GetUint64() & ~mask) | ((static_cast<uint64_t>(value) << 29) & mask);
-    Set(new_val);
+  bool sd() {
+    return RiscVMStatus::sd() || ms() == 0b11 || vs() == 0b11 || fs() == 0b11 ||
+           xs() == 0b11;
   }
 
-  uint32_t GetUint32() override;
-  uint32_t AsUint32() override;
-  void Write(uint32_t value) override;
-  void SetBits(uint32_t bits) override;
-  void ClearBits(uint32_t bits) override;
-  void Set(uint32_t value) override;
+  // MS - matrix state dirty (bits [30:29]).
+  int ms() { return GetterHelper<29, 0b11>(); }
+  void set_ms(uint32_t value) { SetterHelper<29, 0b11>(value); }
 
- protected:
-  uint32_t coralnpu_write_mask_32_ = 0x607ff9bb;
-  uint32_t coralnpu_read_mask_32_ = 0x607ff9bb | 0x80000000;
-  uint64_t coralnpu_set_mask_from_32_ =
-      0xffff'fff0'ffff'ffffULL | 0x60000000ULL;
+  // VS - vector state dirty (bits [10:9]).
+  int vs() { return GetterHelper<9, 0b11>(); }
+  void set_vs(uint32_t value) { SetterHelper<9, 0b11>(value); }
 };
 
 }  // namespace sim

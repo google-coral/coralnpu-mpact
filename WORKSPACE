@@ -43,9 +43,9 @@ cc_library(
 # MPACT-RiscV repo
 http_archive(
     name = "com_google_mpact-riscv",
-    sha256 = "9624e0381d565df5f2d5f3781cc8812f7f0b0afa8e100d47507cf7606e7d362c",
-    strip_prefix = "mpact-riscv-960707b7a1df5ef244424396bbfd5fcd8074b77d",
-    url = "https://github.com/google/mpact-riscv/archive/960707b7a1df5ef244424396bbfd5fcd8074b77d.tar.gz",
+    sha256 = "06d89e9604ea7cc743e0c32d5ab3cf798e22905da19ebb819143b3b4d0df676a",
+    strip_prefix = "mpact-riscv-e4f1e9c1b243954ff8388fd39019248b2ae7341a",
+    url = "https://github.com/google/mpact-riscv/archive/e4f1e9c1b243954ff8388fd39019248b2ae7341a.tar.gz",
 )
 
 # MPACT-Sim repo

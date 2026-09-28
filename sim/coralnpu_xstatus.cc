@@ -26,59 +26,14 @@ namespace sim {
 CoralNPUMStatus::CoralNPUMStatus(uint32_t initial_value,
                                  ::mpact::sim::generic::ArchState* state,
                                  ::mpact::sim::riscv::RiscVMIsa* misa)
-    : ::mpact::sim::riscv::RiscVMStatus(initial_value, state, misa) {
-  set_read_mask(kCoralNpuReadMask);
-  set_write_mask(kCoralNpuWriteMask);
-  Set(initial_value);
-}
+    : ::mpact::sim::riscv::RiscVMStatus(
+          initial_value, state, misa, kCoralNpuReadMask, kCoralNpuWriteMask) {}
 
 CoralNPUMStatus::CoralNPUMStatus(uint64_t initial_value,
                                  ::mpact::sim::generic::ArchState* state,
                                  ::mpact::sim::riscv::RiscVMIsa* misa)
-    : ::mpact::sim::riscv::RiscVMStatus(initial_value, state, misa) {
-  set_read_mask(kCoralNpuReadMask);
-  set_write_mask(kCoralNpuWriteMask);
-}
-
-static inline uint64_t CoralNpuStretchMStatus32(uint32_t value) {
-  uint64_t value64 = static_cast<uint64_t>(value);
-  value64 = ((value64 & 0x80000000ULL) << 32) | (value64 & 0x7fffffffULL);
-  return value64;
-}
-
-static inline uint32_t CoralNpuCompressMStatus64(uint64_t value) {
-  uint32_t value32 = ((value >> 32) & 0x80000000ULL) | (value & 0x7fffffffULL);
-  return value32;
-}
-
-uint32_t CoralNPUMStatus::GetUint32() {
-  return CoralNpuCompressMStatus64(GetUint64());
-}
-
-uint32_t CoralNPUMStatus::AsUint32() {
-  return GetUint32() & coralnpu_read_mask_32_;
-}
-
-void CoralNPUMStatus::Write(uint32_t value) {
-  Set(value & coralnpu_write_mask_32_);
-}
-
-void CoralNPUMStatus::SetBits(uint32_t bits) {
-  uint32_t new_value = GetUint32() | (bits & coralnpu_write_mask_32_);
-  Set(new_value);
-}
-
-void CoralNPUMStatus::ClearBits(uint32_t bits) {
-  uint32_t new_value = GetUint32() & ~(bits & coralnpu_write_mask_32_);
-  Set(new_value);
-}
-
-void CoralNPUMStatus::Set(uint32_t value) {
-  uint64_t new_value =
-      (CoralNpuStretchMStatus32(value) & coralnpu_set_mask_from_32_) |
-      (GetUint64() & ~coralnpu_set_mask_from_32_);
-  ::mpact::sim::riscv::RiscVMStatus::Set(new_value);
-}
+    : ::mpact::sim::riscv::RiscVMStatus(
+          initial_value, state, misa, kCoralNpuReadMask, kCoralNpuWriteMask) {}
 
 }  // namespace sim
 }  // namespace coralnpu
