@@ -170,7 +170,7 @@ void CoralNPUVAdd(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs1 + vs2.
   CoralNPUBinaryVectorOp(inst, scalar, strip_mine,
                          std::function<T(T, T)>([](T vs1, T vs2) -> T {
-                           using UT = typename std::make_unsigned<T>::type;
+                           using UT = std::make_unsigned_t<T>;
                            // Cast to unsigned type before the operation to
                            // avoid undefined overflow behavior in intx_t.
                            UT uvs1 = static_cast<UT>(vs1);
@@ -187,7 +187,7 @@ void CoralNPUVSub(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs1 - vs2.
   CoralNPUBinaryVectorOp(inst, scalar, strip_mine,
                          std::function<T(T, T)>([](T vs1, T vs2) -> T {
-                           using UT = typename std::make_unsigned<T>::type;
+                           using UT = std::make_unsigned_t<T>;
                            // Cast to unsigned type before the operation to
                            // avoid undefined overflow behavior in intx_t.
                            UT uvs1 = static_cast<UT>(vs1);
@@ -204,7 +204,7 @@ void CoralNPUVRSub(bool scalar, bool strip_mine, Instruction* inst) {
   // Return vs2 - vs1.
   CoralNPUBinaryVectorOp(inst, scalar, strip_mine,
                          std::function<T(T, T)>([](T vs1, T vs2) -> T {
-                           using UT = typename std::make_unsigned<T>::type;
+                           using UT = std::make_unsigned_t<T>;
                            // Cast to unsigned type before the operation to
                            // avoid undefined overflow behavior in intx_t.
                            UT uvs1 = static_cast<UT>(vs1);
@@ -299,11 +299,11 @@ void CoralNPUVAbsd(bool scalar, bool strip_mine, Instruction* inst) {
   // Returns the absolute difference between vs1 and vs2.
   // Note: for signed(INTx_MAX - INTx_MIN) the result will be UINTx_MAX.
   CoralNPUBinaryVectorOp<false /* halftype */, false /* widen_dst */,
-                         typename std::make_unsigned<T>::type, T, T>(
+                         std::make_unsigned_t<T>, T, T>(
       inst, scalar, strip_mine,
-      std::function<typename std::make_unsigned<T>::type(T, T)>(
-          [](T vs1, T vs2) -> typename std::make_unsigned<T>::type {
-            using UT = typename std::make_unsigned<T>::type;
+      std::function<std::make_unsigned_t<T>(T, T)>(
+          [](T vs1, T vs2) -> std::make_unsigned_t<T> {
+            using UT = std::make_unsigned_t<T>;
             // Cast to unsigned type before the operation to avoid undefined
             // overflow behavior in intx_t.
             UT uvs1 = static_cast<UT>(vs1);
@@ -355,7 +355,7 @@ void CoralNPUVAdd3(bool scalar, bool strip_mine, Instruction* inst) {
                          T>(
       inst, scalar, strip_mine,
       std::function<T(T, T, T)>([](T vd, T vs1, T vs2) -> T {
-        using UT = typename std::make_unsigned<T>::type;
+        using UT = std::make_unsigned_t<T>;
         UT uvs1 = static_cast<UT>(vs1);
         UT uvs2 = static_cast<UT>(vs2);
         UT uvd = static_cast<UT>(vd);
@@ -371,7 +371,7 @@ template void CoralNPUVAdd3<int32_t>(bool, bool, Instruction*);
 // when compiled with --config=asan, will trigger an exception.
 template <typename T>
 inline T VAddsHelper(T vs1, T vs2) {
-  using UT = typename std::make_unsigned<T>::type;
+  using UT = std::make_unsigned_t<T>;
   UT uvs1 = static_cast<UT>(vs1);
   UT uvs2 = static_cast<UT>(vs2);
   UT usum = uvs1 + uvs2;
@@ -416,7 +416,7 @@ template void CoralNPUVAddsu<uint32_t>(bool, bool, Instruction*);
 // Helper function for Vsubs (saturated signed subtraction).
 template <typename T>
 inline T VSubsHelper(T vs1, T vs2) {
-  using UT = typename std::make_unsigned<T>::type;
+  using UT = std::make_unsigned_t<T>;
   UT uvs1 = static_cast<UT>(vs1);
   UT uvs2 = static_cast<UT>(vs2);
   UT usub = uvs1 - uvs2;
@@ -482,7 +482,7 @@ void CoralNPUVAcc(bool scalar, bool strip_mine, Instruction* inst) {
   CoralNPUBinaryVectorOp(
       inst, scalar, strip_mine,
       std::function<Td(Td, Ts2)>([](Td vs1, Ts2 vs2) -> Td {
-        using UTd = typename std::make_unsigned<Td>::type;
+        using UTd = std::make_unsigned_t<Td>;
         return static_cast<Td>(static_cast<UTd>(vs1) + static_cast<UTd>(vs2));
       }));
 }
@@ -734,7 +734,7 @@ template void CoralNPUVSrl<uint32_t>(bool, bool, Instruction*);
 template <typename T>
 T CoralNPUVShiftHelper(bool round, T vs1, T vs2) {
   using WT = typename mpact::sim::generic::WideType<T>::type;
-  if (std::is_signed<T>::value == true) {
+  if (std::is_signed_v<T> == true) {
     constexpr int kMaxShiftBit = sizeof(T) * 8;
     int shamt = vs2;
     WT shift = vs1;
@@ -749,7 +749,7 @@ T CoralNPUVShiftHelper(bool round, T vs1, T vs2) {
                (round ? static_cast<WT>(1ll << (shamt - 1)) : 0)) >>
               shamt;
     } else {  // shamt < 0
-      using UT = typename std::make_unsigned<T>::type;
+      using UT = std::make_unsigned_t<T>;
       UT ushamt =
           static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
       CHECK_LE(ushamt, kMaxShiftBit);
@@ -769,7 +769,7 @@ T CoralNPUVShiftHelper(bool round, T vs1, T vs2) {
   // unsigned.
   constexpr int kMaxShiftBit = sizeof(T) * 8;
   // Shift can be positive/negative.
-  int shamt = static_cast<typename std::make_signed<T>::type>(vs2);
+  int shamt = static_cast<std::make_signed_t<T>>(vs2);
   WT shift = vs1;
   if (!vs1) {
     return 0;
@@ -780,7 +780,7 @@ T CoralNPUVShiftHelper(bool round, T vs1, T vs2) {
              (round ? static_cast<WT>(1ull << (shamt - 1)) : 0)) >>
             shamt;
   } else {
-    using UT = typename std::make_unsigned<T>::type;
+    using UT = std::make_unsigned_t<T>;
     UT ushamt = static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
     shift = static_cast<WT>(vs1) << (ushamt);
   }
@@ -937,7 +937,7 @@ void CoralNPUVMuls(bool scalar, bool strip_mine, Instruction* inst) {
       inst, scalar, strip_mine, std::function<T(T, T)>([](T vs1, T vs2) -> T {
         using WT = typename mpact::sim::generic::WideType<T>::type;
         WT result = static_cast<WT>(vs1) * static_cast<WT>(vs2);
-        if (std::is_signed<T>::value) {
+        if (std::is_signed_v<T>) {
           result = std::max(
               static_cast<WT>(std::numeric_limits<T>::min()),
               std::min(static_cast<WT>(std::numeric_limits<T>::max()), result));

@@ -115,9 +115,11 @@ CoralNPUTop::CoralNPUTop(std::string name, uint64_t memory_block_size_bytes,
 CoralNPUTop::~CoralNPUTop() {
   // If the simulator is still running, request a halt (set halted_ to true),
   // and wait until the simulator finishes before continuing the destructor.
-  if (run_status_ == RunStatus::kRunning) {
+  if (run_halted_ != nullptr) {
+    halted_ = true;
     run_halted_->WaitForNotification();
     delete run_halted_;
+    run_halted_ = nullptr;
   }
 
   delete bp_manager_;
@@ -511,24 +513,21 @@ absl::Status CoralNPUTop::Run() {
 }
 
 absl::Status CoralNPUTop::Wait() {
-  // If the simulator isn't running, then just return.
-  if (run_status_ != RunStatus::kRunning) return absl::OkStatus();
-
-  // Wait for the simulator to finish (i.e., a value is available on the
-  // channel).
-  run_halted_->WaitForNotification();
-  delete run_halted_;
-  run_halted_ = nullptr;
+  if (run_halted_ != nullptr) {
+    run_halted_->WaitForNotification();
+    delete run_halted_;
+    run_halted_ = nullptr;
+  }
   return absl::OkStatus();
 }
 
 absl::StatusOr<CoralNPUTop::RunStatus> CoralNPUTop::GetRunStatus() {
-  return run_status_;
+  return run_status_.load();
 }
 
 absl::StatusOr<CoralNPUTop::HaltReasonValueType>
 CoralNPUTop::GetLastHaltReason() {
-  return halt_reason_;
+  return halt_reason_.load();
 }
 
 absl::StatusOr<uint64_t> CoralNPUTop::ReadRegister(const std::string& name) {

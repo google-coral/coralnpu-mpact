@@ -179,7 +179,7 @@ class CoralNPUVectorConvolutionInstructionsTest
     coralnpu::sim::vdwconv_u8_t dwconv_cmd;
     memset(&dwconv_cmd, 0, sizeof(dwconv_cmd));
     dwconv_cmd.regbase = regbase;
-    if (std::is_signed<T>::value) {
+    if (std::is_signed_v<T>) {
       dwconv_cmd.sdata1 = 1;
       dwconv_cmd.sdata2 = 1;
     }

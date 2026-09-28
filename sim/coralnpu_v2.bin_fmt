@@ -471,6 +471,10 @@ instruction group RiscVZve32xInst32[32] : Inst32Format {
   vlsege8:   VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b00000, width == 0b000, opcode == 0b000'0111;
   vlsege16:  VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b00000, width == 0b101, opcode == 0b000'0111;
   vlsege32:  VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b00000, width == 0b110, opcode == 0b000'0111;
+  // Vector segment load, unit stride, fault first.
+  vlsege8ff:   VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b10000, width == 0b000, opcode == 0b000'0111;
+  vlsege16ff:  VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b10000, width == 0b101, opcode == 0b000'0111;
+  vlsege32ff:  VMem : nf != 0, mew == 0, mop == 0b00, lumop == 0b10000, width == 0b110, opcode == 0b000'0111;
   // Vector segment load, strided.
   vlssege8:   VMem : nf != 0, mew == 0, mop == 0b10, width == 0b000, opcode == 0b000'0111;
   vlssege16:  VMem : nf != 0, mew == 0, mop == 0b10, width == 0b101, opcode == 0b000'0111;

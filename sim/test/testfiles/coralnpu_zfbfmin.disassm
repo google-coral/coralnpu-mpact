@@ -1,0 +1,11 @@
+
+/tmp/coralnpu_zfbfmin.o:	file format elf32-littleriscv
+
+Disassembly of section .text:
+
+00000000 <_start>:
+       0: 4480f153     	fcvt.bf16.s	ft2, ft1
+       4: 44808153     	fcvt.bf16.s	ft2, ft1, rne
+       8: 44805153     	<unknown>
+       c: 4480b153     	fcvt.bf16.s	ft2, ft1, rup
+      10: 00100073     	ebreak

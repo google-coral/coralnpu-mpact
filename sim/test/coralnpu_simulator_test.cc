@@ -25,8 +25,11 @@
 
 #include "sim/coralnpu_architecture.h"
 #include "sim/coralnpu_m3_user_decoder.h"
+#include "sim/coralnpu_m4_state.h"
+#include "sim/coralnpu_m4_user_decoder.h"
 #include "sim/coralnpu_v2_state.h"
 #include "sim/coralnpu_v2_user_decoder.h"
+#include "sim/coralnpu_xstatus.h"
 #include "sim/test/coralnpu_v2_rvv_add_intrinsic_generated.h"
 #include "googlemock/include/gmock/gmock.h"
 #include "googletest/include/gtest/gtest.h"
@@ -100,6 +103,8 @@ std::string ArchitectureName(
       return "V2";
     case Architecture::kM3:
       return "M3";
+    case Architecture::kM4:
+      return "M4";
     default:
       return "Unknown";
   }
@@ -180,7 +185,11 @@ class CoralNPUSimulatorTest : public ::testing::TestWithParam<Architecture> {
 };
 
 TEST_P(CoralNPUSimulatorTest, TestDecoderType) {
-  if (GetParam() == Architecture::kM3) {
+  if (GetParam() == Architecture::kM4) {
+    EXPECT_NE(dynamic_cast<::coralnpu::sim::CoralNPUM4UserDecoder*>(
+                  simulator_->decoder()),
+              nullptr);
+  } else if (GetParam() == Architecture::kM3) {
     EXPECT_NE(dynamic_cast<::coralnpu::sim::CoralNPUM3UserDecoder*>(
                   simulator_->decoder()),
               nullptr);
@@ -191,11 +200,47 @@ TEST_P(CoralNPUSimulatorTest, TestDecoderType) {
   }
 }
 
+TEST_P(CoralNPUSimulatorTest, TestStateType) {
+  if (GetParam() == Architecture::kM4) {
+    EXPECT_NE(
+        dynamic_cast<::coralnpu::sim::CoralNPUM4State*>(simulator_->state()),
+        nullptr);
+    EXPECT_NE(dynamic_cast<::coralnpu::sim::CoralNPUMStatus*>(
+                  simulator_->state()->mstatus()),
+              nullptr);
+  } else {
+    EXPECT_EQ(
+        dynamic_cast<::coralnpu::sim::CoralNPUM4State*>(simulator_->state()),
+        nullptr);
+    EXPECT_EQ(dynamic_cast<::coralnpu::sim::CoralNPUMStatus*>(
+                  simulator_->state()->mstatus()),
+              nullptr);
+  }
+}
+
 TEST_P(CoralNPUSimulatorTest, TestArchitectureId) {
-  if (GetParam() == Architecture::kM3) {
+  if (GetParam() == Architecture::kM4) {
+    EXPECT_EQ(simulator_->state()->id(), "CoralNPUM4");
+  } else if (GetParam() == Architecture::kM3) {
     EXPECT_EQ(simulator_->state()->id(), "CoralNPUM3");
   } else {
     EXPECT_EQ(simulator_->state()->id(), "CoralNPUV2");
+  }
+}
+
+TEST_P(CoralNPUSimulatorTest, TestMatrixStateExistsForM4) {
+  auto mtype_status =
+      simulator_->state()->csr_set()->GetCsr(0xC23);  // mtype CSR index
+  if (GetParam() == Architecture::kM4) {
+    ABSL_EXPECT_OK(mtype_status) << "M4 should have matrix state and mtype CSR.";
+    if (mtype_status.ok()) {
+      // Read the CSR to ensure the matrix_state_ object is actually alive
+      // (catches use-after-free).
+      EXPECT_EQ((*mtype_status)->AsUint64(), 0);
+    }
+  } else {
+    EXPECT_FALSE(mtype_status.ok())
+        << "Non-M4 architectures should not have mtype CSR.";
   }
 }
 
@@ -209,7 +254,7 @@ TEST_P(CoralNPUSimulatorTest, TestMisaStretching) {
 }
 
 TEST_P(CoralNPUSimulatorTest, TestIntegerRegisters) {
-  for (int i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; i++) {
     ABSL_ASSERT_OK(simulator_->WriteRegister(absl::StrCat("x", i), i));
     ASSERT_OK_AND_ASSIGN(uint32_t value,
                          simulator_->ReadRegister(absl::StrCat("x", i)));
@@ -218,7 +263,7 @@ TEST_P(CoralNPUSimulatorTest, TestIntegerRegisters) {
 }
 
 TEST_P(CoralNPUSimulatorTest, TestFloatingPointRegisters) {
-  for (int i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; i++) {
     ABSL_ASSERT_OK(simulator_->WriteRegister(absl::StrCat("f", i), i));
     ASSERT_OK_AND_ASSIGN(uint64_t value,
                          simulator_->ReadRegister(absl::StrCat("f", i)));
@@ -227,7 +272,7 @@ TEST_P(CoralNPUSimulatorTest, TestFloatingPointRegisters) {
 }
 
 TEST_P(CoralNPUSimulatorTest, TestVectorRegisters) {
-  for (int i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; i++) {
     ASSERT_OK_AND_ASSIGN(DataBuffer * reg_db, simulator_->GetRegisterDataBuffer(
                                                   absl::StrCat("v", i)));
     EXPECT_NE(reg_db, nullptr);
@@ -302,7 +347,8 @@ TEST_P(CoralNPUSimulatorTest, TestRvvAddIntrinsicWriteRegister) {
 }
 
 INSTANTIATE_TEST_SUITE_P(Architecture, CoralNPUSimulatorTest,
-                         Values(Architecture::kV2, Architecture::kM3),
+                         Values(Architecture::kV2, Architecture::kM3,
+                                Architecture::kM4),
                          ArchitectureName);
 
 using CoralNPUSimulatorParamTest = ::testing::TestWithParam<Architecture>;
@@ -494,7 +540,8 @@ TEST_P(CoralNPUSimulatorParamTest, TestInvalidCsrDecode) {
 }
 
 INSTANTIATE_TEST_SUITE_P(Architecture, CoralNPUSimulatorParamTest,
-                         Values(Architecture::kV2, Architecture::kM3),
+                         Values(Architecture::kV2, Architecture::kM3,
+                                Architecture::kM4),
                          ArchitectureName);
 
 TEST(CoralNPUV2StateTest, TestMultipleMpauseHandlers) {
@@ -595,7 +642,8 @@ TEST_P(CoralNPUSimulatorSemihostTest, TestHelloWordSemihost) {
 }
 
 INSTANTIATE_TEST_SUITE_P(Architecture, CoralNPUSimulatorSemihostTest,
-                         Values(Architecture::kV2, Architecture::kM3),
+                         Values(Architecture::kV2, Architecture::kM3,
+                                Architecture::kM4),
                          ArchitectureName);
 
 }  // namespace

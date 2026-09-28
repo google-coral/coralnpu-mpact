@@ -50,7 +50,7 @@ template <typename Register, typename ValueType>
 bool AccessCheck(const Instruction* /*absl_nonnull*/ instruction,
                  ExceptionCode fault_exception_code) {
   using RegVal = typename Register::ValueType;
-  using URegVal = typename std::make_unsigned<RegVal>::type;
+  using URegVal = std::make_unsigned_t<RegVal>;
   URegVal base = ::mpact::sim::generic::GetInstructionSource<URegVal>(
       instruction, /*index=*/0);
   RegVal offset = ::mpact::sim::generic::GetInstructionSource<RegVal>(
@@ -326,7 +326,7 @@ void CoralNPUV2Fsw(const Instruction* /*absl_nonnull*/ instruction) {
 
 void CoralNPUV2Jal(const Instruction* /*absl_nonnull*/ instruction) {
   using RegVal = RV32Register::ValueType;
-  using URegVal = typename std::make_unsigned<RegVal>::type;
+  using URegVal = std::make_unsigned_t<RegVal>;
   RegVal offset =
       ::mpact::sim::generic::GetInstructionSource<RegVal>(instruction, 0);
   URegVal address = instruction->address() + offset;
@@ -338,7 +338,7 @@ void CoralNPUV2Jal(const Instruction* /*absl_nonnull*/ instruction) {
 
 void CoralNPUV2Jalr(const Instruction* /*absl_nonnull*/ instruction) {
   using RegVal = RV32Register::ValueType;
-  using URegVal = typename std::make_unsigned<RegVal>::type;
+  using URegVal = std::make_unsigned_t<RegVal>;
   URegVal base =
       ::mpact::sim::generic::GetInstructionSource<URegVal>(instruction, 0);
   RegVal offset =

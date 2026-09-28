@@ -1,0 +1,43 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+isa CoralNPUM4 {
+  namespace coralnpu::sim::isa32_m4;
+  slots { coralnpu_m4; }
+}
+
+#include "coralnpu_m3.isa"
+#include "external/com_google_mpact-riscv/riscv/riscv_zvt.isa"
+
+slot coralnpu_m4 : riscv_zvt, coralnpu_m3 {
+  includes {
+    #include "sim/coralnpu_m4_instructions.h"
+  }
+  default size = 4;
+  default latency = global_latency;
+  default opcode =
+    disasm: "Illegal instruction at %(@:08x)",
+    semfunc: "&::mpact::sim::riscv::RiscVIUnimplemented";
+
+  opcodes {
+    vtle8 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtle, 8)";
+    vtle16 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtle, 16)";
+    vtle32 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtle, 32)";
+    vtle64 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtle, 64)";
+    vtse8 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtse, 8)";
+    vtse16 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtse, 16)";
+    vtse32 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtse, 32)";
+    vtse64 = override, semfunc: "absl::bind_front(&::mpact::sim::riscv::CoralNPUM4Vtse, 64)";
+  }
+}

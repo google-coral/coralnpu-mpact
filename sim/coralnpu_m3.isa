@@ -17,6 +17,7 @@ includes {
   #include "external/com_google_mpact-riscv/riscv/riscv_vector_fp_unary_instructions.h"
   #include "external/com_google_mpact-riscv/riscv/riscv_vector_fp_reduction_instructions.h"
   #include "external/com_google_mpact-riscv/riscv/riscv_vector_fp_compare_instructions.h"
+  #include "sim/coralnpu_m3_instructions.h"
 }
 
 isa CoralNPUM3 {
@@ -345,7 +346,16 @@ slot riscv_zve32f {
   }
 }
 
-slot coralnpu_m3 : coralnpu_v2, riscv_zve32f {
+slot riscv_zvfbfmin {
+  default size = 4;
+  opcodes {
+    fcvt_bf16_s{: frs1, rm : frd, fflags},
+      disasm: "fcvt.bf16.s", "%frd, %frs1",
+      semfunc: "&::coralnpu::sim::CoralNPUFcvtBf16S";
+  }
+}
+
+slot coralnpu_m3 : coralnpu_v2, riscv_zve32f, riscv_zvfbfmin {
   default size = 4;
   default latency = global_latency;
   default opcode =

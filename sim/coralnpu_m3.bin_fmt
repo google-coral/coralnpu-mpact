@@ -33,6 +33,7 @@ decoder CoralNPUM3 {
     RiscVZbbImmInst32,
     RiscVPrivInst32,
     CoralNPUV2CustomInst32,
+    RiscVZvfbfminInst32_M3,
   };
 };
 
@@ -156,3 +157,7 @@ instruction group RiscVZve32fInst32[32] : Inst32Format {
   vfrec7_v  : VArith : func6 == 0b010'011, vs1 == 0b00101, func3 == 0b001, opcode == 0b101'0111;
   vfclass_v : VArith : func6 == 0b010'011, vs1 == 0b10000, func3 == 0b001, opcode == 0b101'0111;
 };
+
+instruction group RiscVZvfbfminInst32_M3[32] : Inst32Format {
+  fcvt_bf16_s : RType : func7 == 0b010'0010, rs2 == 0b01000, opcode == 0b101'0011;
+}

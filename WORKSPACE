@@ -12,6 +12,9 @@ http_archive(
 http_archive(
     name = "com_google_protobuf",
     integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    repo_mapping = {
+        "@com_google_absl": "@abseil-cpp",
+    },
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
@@ -22,12 +25,92 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz"],
 )
 
+http_archive(
+    name = "linenoise",
+    build_file_content = """
+cc_library(
+    name = "linenoise",
+    srcs = ["linenoise.c"],
+    hdrs = ["linenoise.h"],
+    visibility = ["//visibility:public"],
+)
+""",
+    integrity = "sha256-l619QEHhHX+jlYGf13PBiS3qieUpI0I3ioNFaSzonCk=",
+    strip_prefix = "linenoise-2.0",
+    url = "https://github.com/antirez/linenoise/archive/refs/tags/2.0.tar.gz",
+)
+
 # MPACT-RiscV repo
 http_archive(
     name = "com_google_mpact-riscv",
-    sha256 = "38faef26745f34a82de0daf3b65a207c8d2ecf825f37484a4a27132512583574",
-    strip_prefix = "mpact-riscv-cb68bd4a2cb80dea24d9760dc6397b5854ea41bd",
-    url = "https://github.com/google/mpact-riscv/archive/cb68bd4a2cb80dea24d9760dc6397b5854ea41bd.tar.gz",
+    sha256 = "9624e0381d565df5f2d5f3781cc8812f7f0b0afa8e100d47507cf7606e7d362c",
+    strip_prefix = "mpact-riscv-960707b7a1df5ef244424396bbfd5fcd8074b77d",
+    url = "https://github.com/google/mpact-riscv/archive/960707b7a1df5ef244424396bbfd5fcd8074b77d.tar.gz",
+)
+
+# MPACT-Sim repo
+http_archive(
+    name = "mpact-sim",
+    sha256 = "2dc7e2463556f2e29bb6c2429833d9f672774dde79d4ced7f553703018c9e91c",
+    strip_prefix = "mpact-sim-9c43949f80bef9978654473d9703ac29de30bc34",
+    url = "https://github.com/google/mpact-sim/archive/9c43949f80bef9978654473d9703ac29de30bc34.tar.gz",
+)
+
+http_archive(
+    name = "abseil-cpp",
+    sha256 = "f50e5ac311a81382da7fa75b97310e4b9006474f9560ac46f54a9967f07d4ae3",
+    strip_prefix = "abseil-cpp-20240722.0",
+    url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20240722.0.tar.gz",
+)
+
+http_archive(
+    name = "com_google_googletest",
+    repo_mapping = {
+        "@com_google_absl": "@abseil-cpp",
+    },
+    sha256 = "8ad598c73ad796e0d8280b082cebd82a630d73e73cd3c70057938a6501bba5d7",
+    strip_prefix = "googletest-1.14.0",
+    urls = ["https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"],
+)
+
+http_archive(
+    name = "com_googlesource_code_re2",
+    repo_mapping = {
+        "@com_google_absl": "@abseil-cpp",
+    },
+    sha256 = "4e6593ac3c71de1c0f322735bc8b0492a72f66ffccfad76e259fa21c41d27d8a",
+    strip_prefix = "re2-2023-11-01",
+    urls = ["https://github.com/google/re2/archive/refs/tags/2023-11-01/re2-2023-11-01.tar.gz"],
+)
+
+http_archive(
+    name = "rules_cc",
+    sha256 = "64cb81641305dcf7b3b3d5a73095ee8fe7444b26f7b72a12227d36e15cfbb6cb",
+    strip_prefix = "rules_cc-0.1.3",
+    url = "https://github.com/bazelbuild/rules_cc/releases/download/0.1.3/rules_cc-0.1.3.tar.gz",
+)
+
+http_archive(
+    name = "com_github_serge1_elfio",
+    build_file = "@mpact-sim//:external/BUILD.elfio",
+    sha256 = "caf49f3bf55a9c99c98ebea4b05c79281875783802e892729eea0415505f68c4",
+    strip_prefix = "elfio-3.12",
+    urls = ["https://github.com/serge1/ELFIO/releases/download/Release_3.12/elfio-3.12.tar.gz"],
+)
+
+http_file(
+    name = "org_antlr_tool",
+    sha256 = "bc13a9c57a8dd7d5196888211e5ede657cb64a3ce968608697e4f668251a8487",
+    url = "https://www.antlr.org/download/antlr-4.13.1-complete.jar",
+)
+
+http_archive(
+    name = "org_antlr4_cpp_runtime",
+    add_prefix = "antlr4-runtime",
+    build_file = "@mpact-sim//:external/BUILD.antlr4",
+    sha256 = "d350e09917a633b738c68e1d6dc7d7710e91f4d6543e154a78bb964cfd8eb4de",
+    strip_prefix = "runtime/src",
+    urls = ["https://www.antlr.org/download/antlr4-cpp-runtime-4.13.1-source.zip"],
 )
 
 # Download only the single svdpi.h file.
@@ -38,17 +121,9 @@ http_file(
     urls = ["https://raw.githubusercontent.com/verilator/verilator/v5.028/include/vltstd/svdpi.h"],
 )
 
-load("@com_google_mpact-riscv//:repos.bzl", "mpact_riscv_repos")
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
-mpact_riscv_repos()
-
-load("@com_google_mpact-riscv//:dep_repos.bzl", "mpact_riscv_dep_repos")
-
-mpact_riscv_dep_repos()
-
-load("@com_google_mpact-riscv//:deps.bzl", "mpact_riscv_deps")
-
-mpact_riscv_deps()
+protobuf_deps()
 
 http_archive(
     name = "rules_python",

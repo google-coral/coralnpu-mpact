@@ -17,6 +17,7 @@
 #ifndef SIM_CORALNPU_TOP_H_
 #define SIM_CORALNPU_TOP_H_
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -137,12 +138,12 @@ class CoralNPUTop : public mpact::sim::generic::Component,
   // The DB factory is used to manage data buffers for memory read/writes.
   mpact::sim::generic::DataBufferFactory db_factory_;
   // Current status and last halt reasons.
-  RunStatus run_status_ = RunStatus::kHalted;
-  HaltReasonValueType halt_reason_ =
-      static_cast<HaltReasonValueType>(HaltReason::kNone);
+  std::atomic<RunStatus> run_status_{RunStatus::kHalted};
+  std::atomic<HaltReasonValueType> halt_reason_{
+      static_cast<HaltReasonValueType>(HaltReason::kNone)};
   // Halting flag. This is set to true when execution must halt.
-  bool halted_ = false;
-  absl::Notification* run_halted_;
+  std::atomic<bool> halted_{false};
+  absl::Notification* run_halted_ = nullptr;
   // The local CoralNPU state.
   sim::CoralNPUState* state_;
   mpact::sim::riscv::RiscVFPState* fp_state_;
@@ -154,7 +155,7 @@ class CoralNPUTop : public mpact::sim::generic::Component,
   BreakpointManager* bp_manager_ = nullptr;
   // Flat to indicate that the current instruction is a break/action point that
   // needs to be stepped over.
-  bool need_to_step_over_ = false;
+  std::atomic<bool> need_to_step_over_{false};
   // The pc register instance.
   mpact::sim::generic::RegisterBase* pc_;
   // CoralNPU decoder decoder instance.

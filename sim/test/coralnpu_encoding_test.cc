@@ -156,8 +156,8 @@ class CoralNPUEncodingTest : public testing::Test {
   T* EncodeOpHelper(uint32_t inst_word, OpcodeEnum opcode, std::any op) const {
     enc_->ParseInstruction(inst_word);
     EXPECT_EQ(enc_->GetOpcode(SlotEnum::kCoralnpu, 0), opcode);
-    if (std::is_same<T, RV32SourceOperand>::value ||
-        std::is_same<T, RV32VectorSourceOperand>::value) {
+    if (std::is_same_v<T, RV32SourceOperand> ||
+        std::is_same_v<T, RV32VectorSourceOperand>) {
       auto* source = enc_->GetSource(SlotEnum::kCoralnpu, 0, opcode,
                                      std::any_cast<SourceOpEnum>(op), 0);
       return reinterpret_cast<T*>(source);

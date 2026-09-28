@@ -19,10 +19,6 @@
 # load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@cc_static_library_external//file:cc_static_libarary.bzl", "cc_static_library")
 
-package(
-    default_visibility = ["//visibility:public"],
-)
-
 cc_library(
     name = "coralnpu_cosim_lib",
     srcs = [
@@ -37,11 +33,11 @@ cc_library(
         "//sim:coralnpu_architecture",
         "//sim:coralnpu_simulator",
         "//sim:coralnpu_v2_state",
-        "@com_google_absl//absl/log",
-        "@com_google_absl//absl/log:check",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/types:span",
-        "@com_google_mpact-sim//mpact/sim/generic:core",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/types:span",
+        "@mpact-sim//mpact/sim/generic:core",
         # INTERNAL_VERILATOR_DEPENDENCY,
     ],
     alwayslink = True,

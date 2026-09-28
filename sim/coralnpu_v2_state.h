@@ -38,14 +38,14 @@ enum class MemoryPermission : uint8_t {
   kReadWriteExecute = kRead | kWrite | kExecute,
 };
 
-inline constexpr MemoryPermission operator|(MemoryPermission lhs,
-                                            MemoryPermission rhs) {
+constexpr MemoryPermission operator|(MemoryPermission lhs,
+                                     MemoryPermission rhs) {
   return static_cast<MemoryPermission>(static_cast<uint8_t>(lhs) |
                                        static_cast<uint8_t>(rhs));
 }
 
-inline constexpr MemoryPermission operator&(MemoryPermission lhs,
-                                            MemoryPermission rhs) {
+constexpr MemoryPermission operator&(MemoryPermission lhs,
+                                     MemoryPermission rhs) {
   return static_cast<MemoryPermission>(static_cast<uint8_t>(lhs) &
                                        static_cast<uint8_t>(rhs));
 }

@@ -16,6 +16,7 @@ edition = "2023";
 
 package coralnpu.sim.proto;
 
+// option features.default_symbol_visibility = STRICT;
 option features.utf8_validation = NONE;
 
 message TraceEntry {

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines the CoralNPUSimulator class, which provides a high-level
+// interface for configuring, loading, and running the CoralNPU simulator.
+// It manages the architectural state, memory, and top-level execution loop.
+
 #ifndef SIM_CORALNPU_SIMULATOR_H_
 #define SIM_CORALNPU_SIMULATOR_H_
 
@@ -39,6 +43,7 @@
 
 namespace mpact::sim::riscv {
 class RiscV32HtifSemiHost;
+class RiscVZvtMatrixState;
 }  // namespace mpact::sim::riscv
 
 namespace coralnpu::sim {
@@ -63,6 +68,10 @@ struct CoralNPUSimulatorOptions {
   bool skip_default_handlers = false;
 };
 
+// The main simulator class for the CoralNPU architecture. It encapsulates
+// the full simulation state (scalar, vector, matrix), memory interface,
+// and the execution loop. It supports batch execution and interactive
+// debugging modes.
 class CoralNPUSimulator {
  public:
   using HaltReason = ::mpact::sim::generic::CoreDebugInterface::HaltReason;
@@ -112,13 +121,15 @@ class CoralNPUSimulator {
   absl::Status Halt();
 
   // Returns the number of cycles executed.
-  uint64_t GetCycleCount() const;
+  [[nodiscard]] uint64_t GetCycleCount() const;
 
   // Accessors
-  mpact::sim::riscv::RiscVTop* top() const { return top_.get(); }
-  mpact::sim::util::MemoryInterface* memory() const { return memory_.get(); }
-  CoralNPUV2State* state() const { return state_.get(); }
-  mpact::sim::generic::DecoderInterface* decoder() const {
+  [[nodiscard]] mpact::sim::riscv::RiscVTop* top() { return top_.get(); }
+  [[nodiscard]] mpact::sim::util::MemoryInterface* memory() {
+    return memory_.get();
+  }
+  [[nodiscard]] CoralNPUV2State* state() { return state_.get(); }
+  [[nodiscard]] mpact::sim::generic::DecoderInterface* decoder() {
     return decoder_.get();
   }
 
@@ -128,6 +139,8 @@ class CoralNPUSimulator {
   std::unique_ptr<CoralNPUV2State> state_;
   std::unique_ptr<mpact::sim::riscv::RiscVFPState> rv_fp_state_;
   std::unique_ptr<mpact::sim::riscv::RiscVVectorState> rvv_state_;
+  // Matrix tile state for the M4 generation (null for V2/M3).
+  std::unique_ptr<mpact::sim::riscv::RiscVZvtMatrixState> matrix_state_;
   std::unique_ptr<mpact::sim::generic::DecoderInterface> decoder_;
   std::unique_ptr<mpact::sim::riscv::RiscVTop> top_;
   std::unique_ptr<mpact::sim::util::ElfProgramLoader> elf_loader_;

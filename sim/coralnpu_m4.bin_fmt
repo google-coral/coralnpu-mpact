@@ -1,0 +1,57 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "coralnpu_m3.bin_fmt"
+#include "external/com_google_mpact-riscv/riscv/riscv_zvt.bin_fmt"
+
+// TODO(b/448154052): Kelvin V2 sim should reuse mpact-riscv isa and bin_fmt files
+// Matrix-multiply format (OP-VE). Same field layout as VArith but the rd field
+// carries the destination tile (MSBs) and an "alt format" bit (LSB).
+format VMatrix[32] : Inst32Format {
+  fields:
+    unsigned func6[6];
+    unsigned vm[1];
+    unsigned vs2[5];
+    unsigned vs1[5];
+    unsigned func3[3];
+    unsigned mtd[5];
+    unsigned opcode[7];
+  overlays:
+    unsigned alt[1] = mtd[0];
+    // Named tile index (mt0..mt15): rd[11:8], i.e. mtd[4..1].
+    unsigned mtile[4] = mtd[4..1];
+};
+
+decoder CoralNPUM4 {
+  namespace coralnpu::sim::encoding_m4;
+  opcode_enum = "::coralnpu::sim::isa32_m4::OpcodeEnum";
+  includes {
+    #include "sim/coralnpu_m4_decoder.h"
+  }
+  CoralNPUM4Inst32 = {
+    RiscVIInst32,
+    RiscVZicsrInst32,
+    RiscVZifenceiInst32,
+    RiscVMInst32,
+    RiscVFInst32,
+    RiscVZve32xInst32,
+    RiscVZve32fInst32,
+    RiscVZbbInst32,
+    RiscVZbbInst32Only,
+    RiscVZbbImmInst32,
+    RiscVPrivInst32,
+    CoralNPUV2CustomInst32,
+    RiscVZvtInst32,
+  };
+};

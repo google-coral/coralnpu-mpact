@@ -1,5 +1,6 @@
 #include "sim/coralnpu_v2_state.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "googletest/include/gtest/gtest.h"
@@ -60,6 +61,26 @@ TEST(CoralNPUV2StateTest, HasPermission) {
   // Check spanning multiple regions (should fail even if both have
   // permissions).
   EXPECT_FALSE(state->HasPermission(0x6FFC, 8, MemoryPermission::kRead));
+}
+
+TEST(CoralNPUV2StateTest, MepcLegalization) {
+  auto memory = std::make_unique<FlatDemandMemory>();
+  auto state = CreateCoralNPUV2State("test", RiscVXlen::RV32, memory.get());
+  auto res = state->csr_set()->GetCsr("mepc");
+  if (!res.ok()) {
+    FAIL() << "Failed to get mepc CSR: " << res.status();
+  }
+  auto* mepc = res.value();
+
+  // Bit 1 must be cleared when writing to mepc on CoralNPU (IALIGN=32).
+  mepc->Write(static_cast<uint32_t>(0x2));
+  EXPECT_EQ(mepc->AsUint32(), 0x0);
+  EXPECT_EQ(mepc->GetUint32(), 0x0);
+
+  // Bit 1 must remain 0 when writing 0xFFFFFFFF.
+  mepc->Write(static_cast<uint32_t>(0xFFFFFFFF));
+  EXPECT_EQ(mepc->AsUint32() & 0x2, 0x0);
+  EXPECT_EQ(mepc->GetUint32() & 0x2, 0x0);
 }
 
 }  // namespace

@@ -20,9 +20,12 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 #include "sim/coralnpu_architecture.h"
 #include "sim/coralnpu_m3_user_decoder.h"
+#include "sim/coralnpu_m4_state.h"
+#include "sim/coralnpu_m4_user_decoder.h"
 #include "sim/coralnpu_v2_state.h"
 #include "sim/coralnpu_v2_user_decoder.h"
 #include "absl/log/check.h"
@@ -38,6 +41,7 @@
 #include "riscv/riscv_state.h"
 #include "riscv/riscv_top.h"
 #include "riscv/riscv_vector_state.h"
+#include "riscv/riscv_zvt_state.h"
 #include "mpact/sim/generic/data_buffer.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/type_helpers.h"
@@ -99,11 +103,26 @@ CoralNPUSimulator::CoralNPUSimulator(const CoralNPUSimulatorOptions& options)
       .initial_misa_value = options_.initial_misa_value,
       .memory_regions = options_.memory_regions,
   };
-  std::string id = (options_.architecture == Architecture::kM3) ? "CoralNPUM3"
-                                                                : "CoralNPUV2";
-  state_ =
-      CreateCoralNPUV2State(id, mpact::sim::riscv::RiscVXlen::RV32,
-                            memory_.get(), /*atomic_memory=*/nullptr, &config);
+  const std::string id = [&]() {
+    switch (options_.architecture) {
+      case Architecture::kM4:
+        return "CoralNPUM4";
+      case Architecture::kM3:
+        return "CoralNPUM3";
+      case Architecture::kV2:
+        return "CoralNPUV2";
+    }
+    LOG(FATAL) << "Unknown architecture";
+  }();
+  if (options_.architecture == Architecture::kM4) {
+    state_ = CreateCoralNPUM4State(id, mpact::sim::riscv::RiscVXlen::RV32,
+                                   memory_.get(), /*atomic_memory=*/nullptr,
+                                   &config);
+  } else {
+    state_ = CreateCoralNPUV2State(id, mpact::sim::riscv::RiscVXlen::RV32,
+                                   memory_.get(), /*atomic_memory=*/nullptr,
+                                   &config);
+  }
 
   // Add the scalar, floating point and vector registers to the state.
   std::string reg_name;
@@ -130,7 +149,17 @@ CoralNPUSimulator::CoralNPUSimulator(const CoralNPUSimulatorOptions& options)
   rvv_state_ = std::make_unique<RiscVVectorState>(state_.get(),
                                                   kCoralNPUV2VectorByteLength);
 
-  if (options_.architecture == Architecture::kM3) {
+  if (options_.architecture == Architecture::kM4) {
+    // The M4 generation adds the matrix tile state (and the mtype CSR, which
+    // the matrix state registers into the CSR set).
+    auto matrix_status =
+        ::mpact::sim::riscv::RiscVZvtMatrixState::Create(state_.get());
+    CHECK(matrix_status.ok())
+        << "Failed to create matrix state: " << matrix_status.status();
+    matrix_state_ = std::move(*matrix_status);
+    decoder_ = std::make_unique<CoralNPUM4UserDecoder>(
+        static_cast<CoralNPUM4State*>(state_.get()), memory_.get());
+  } else if (options_.architecture == Architecture::kM3) {
     decoder_ =
         std::make_unique<CoralNPUM3UserDecoder>(state_.get(), memory_.get());
   } else {

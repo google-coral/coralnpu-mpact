@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//     https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,29 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SIM_CORALNPU_ARCHITECTURE_H_
-#define SIM_CORALNPU_ARCHITECTURE_H_
+#include "sim/coralnpu_m4_encoding.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <cstdint>
 
-typedef enum {
-  kCoralNPUV2 = 0,
-  kCoralNPUM3 = 1,
-  kCoralNPUM4 = 2,
-} coralnpu_architecture_t;
-
-#ifdef __cplusplus
-}  // extern "C"
+#include "sim/coralnpu_m4_bin_decoder.h"
+#include "sim/coralnpu_v2_encoding_template.h"
 
 namespace coralnpu::sim {
-enum class Architecture {
-  kV2 = kCoralNPUV2,
-  kM3 = kCoralNPUM3,
-  kM4 = kCoralNPUM4,
-};
-}  // namespace coralnpu::sim
-#endif
 
-#endif  // SIM_CORALNPU_ARCHITECTURE_H_
+void CoralNPUM4Encoding::ParseInstruction(uint32_t inst_word) {
+  CoralNPUV2EncodingTemplate::ParseInstruction(
+      inst_word, ::coralnpu::sim::encoding_m4::DecodeCoralNPUM4Inst32);
+}
+
+}  // namespace coralnpu::sim

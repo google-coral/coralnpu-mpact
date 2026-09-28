@@ -935,6 +935,20 @@ slot riscv_zve32x {
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegment, /*element_width*/ 4)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
+    // Vector unit-stride segment load, fault first.
+    vlsege8ff{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\eff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegment, /*element_width*/ 1)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
+    vlsege16ff{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\eff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegment, /*element_width*/ 2)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
+    vlsege32ff{(: rs1, vmask, nf:), (: nf : vd)},
+      disasm: "vlseg%nf\\eff.v", "%vd, (%rs1), %vmask",
+      semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegment, /*element_width*/ 4)",
+               "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
+
     // Vector strided segment load.
     vlssege8{(: rs1, rs2, vmask, nf: ), (: nf : vd)},
       disasm: "vlsseg%nf\\e8.v", "%vd, (%rs1), %rs2, %vmask",
@@ -966,15 +980,15 @@ slot riscv_zve32x {
     // Vector indexed segment load ordered.
 
     vloxsegei8{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei1.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegmentIndexed, /*index_width*/ 1)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 1)";
     vloxsegei16{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei2.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegmentIndexed, /*index_width*/ 2)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 2)";
     vloxsegei32{(: rs1, vs2, vmask, nf :), (: nf : vd)},
-      disasm: "vluxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
+      disasm: "vloxseg%nf\\ei4.v", "%vd, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VlSegmentIndexed, /*index_width*/ 4)",
                "absl::bind_front(&::mpact::sim::riscv::VlSegmentChild, /*element_width*/ 4)";
 
@@ -1102,13 +1116,13 @@ slot riscv_zve32x {
 
     // Vector indexed segment store ordered.
     vsoxsegei8{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei1.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsSegmentIndexed, /*index_width*/ 1)";
     vsoxsegei16{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei2.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsSegmentIndexed, /*index_width*/ 2)";
     vsoxsegei32{(: vs3, rs1, vs2, vmask, nf :)},
-      disasm: "vsuxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
+      disasm: "vsoxseg%nf\\ei4.v", "%vs3, (%rs1), %vs2, %vmask",
       semfunc: "absl::bind_front(&::coralnpu::sim::CoralNPUV2VsSegmentIndexed, /*index_width*/ 4)";
 
     // Integer OPIVV, OPIVX, OPIVI.

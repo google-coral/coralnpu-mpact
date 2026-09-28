@@ -28,13 +28,17 @@ cc_library(
     linkstatic = True,
     deps = [
         ":coralnpu_simulator_headers",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
-        "@com_google_mpact-riscv//riscv:riscv32g_vec_decoder",
+        "//sim:coralnpu_m3_user_decoder",
+        "//sim:coralnpu_v2_state",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
         "@com_google_mpact-riscv//riscv:riscv_fp_state",
         "@com_google_mpact-riscv//riscv:riscv_state",
         "@com_google_mpact-riscv//riscv:riscv_top",
-        "@com_google_mpact-sim//mpact/sim/util/memory",
+        "@mpact-sim//mpact/sim/generic:core",
+        "@mpact-sim//mpact/sim/generic:instruction",
+        "@mpact-sim//mpact/sim/util/memory",
     ],
     alwayslink = True,
 )
@@ -42,7 +46,11 @@ cc_library(
 # generate libraries for external projects
 cc_binary(
     name = "libcoralnpu_simulator_mpact.so",
+    linkopts = ["-Wl,--version-script=$(location :simulator.lds)"],
     linkshared = True,
     visibility = ["//visibility:public"],
-    deps = [":mpact_simulator"],
+    deps = [
+        ":mpact_simulator",
+        ":simulator.lds",
+    ],
 )

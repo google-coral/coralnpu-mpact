@@ -688,7 +688,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VPsubu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VHaddOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) + static_cast<int64_t>(vs2)) >> 1);
     }
@@ -713,7 +713,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VHaddu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VHaddrOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) + static_cast<int64_t>(vs2) + 1) >> 1);
     }
@@ -738,7 +738,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VHaddur) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VHsubOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) - static_cast<int64_t>(vs2)) >> 1);
     }
@@ -763,7 +763,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VHsubu) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VHsubrOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       return static_cast<Vd>(
           (static_cast<int64_t>(vs1) - static_cast<int64_t>(vs2) + 1) >> 1);
     }
@@ -964,7 +964,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VMvp) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VShiftOp {
   static Vd Op(bool round, Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value == true) {
+    if (std::is_signed_v<Vd> == true) {
       constexpr int kMaxShiftBit = sizeof(Vd) * 8;
       int shamt = 0;
       if (sizeof(Vd) == 1) shamt = static_cast<int8_t>(vs2);
@@ -1010,7 +1010,7 @@ struct VShiftOp {
           (static_cast<uint64_t>(vs1) + (round ? (1ull << (shamt - 1)) : 0)) >>
           shamt;
     } else {
-      using UT = typename std::make_unsigned<Vd>::type;
+      using UT = std::make_unsigned_t<Vd>;
       UT ushamt =
           static_cast<UT>(-shamt <= kMaxShiftBit ? -shamt : kMaxShiftBit);
       shift = static_cast<uint64_t>(vs1) << (ushamt);
@@ -1197,7 +1197,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VSraqsr) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VMulOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       return static_cast<Vd>(static_cast<int64_t>(vs1) *
                              static_cast<int64_t>(vs2));
     }
@@ -1217,7 +1217,7 @@ TEST_F(CoralNPUVectorInstructionsTest, VMul) {
 template <typename Vd, typename Vs1, typename Vs2>
 struct VMulsOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
-    if (std::is_signed<Vd>::value) {
+    if (std::is_signed_v<Vd>) {
       int64_t m = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
       m = std::max(
           static_cast<int64_t>(std::numeric_limits<Vd>::min()),
@@ -1268,7 +1268,7 @@ template <typename Vd, typename Vs1, typename Vs2>
 struct VMulhOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     constexpr int n = sizeof(Vd) * 8;
-    if (std::is_signed<Vs1>::value) {
+    if (std::is_signed_v<Vs1>) {
       int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
       return static_cast<uint64_t>(result) >> n;
     }
@@ -1295,7 +1295,7 @@ template <typename Vd, typename Vs1, typename Vs2>
 struct VMulhrOp {
   static Vd Op(Vs1 vs1, Vs2 vs2) {
     constexpr int n = sizeof(Vd) * 8;
-    if (std::is_signed<Vs1>::value) {
+    if (std::is_signed_v<Vs1>) {
       int64_t result = static_cast<int64_t>(vs1) * static_cast<int64_t>(vs2);
       result += 1ll << (n - 1);
       return static_cast<uint64_t>(result) >> n;

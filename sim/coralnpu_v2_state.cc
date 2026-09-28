@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 
+#include "riscv/riscv_csr.h"
 #include "riscv/riscv_state.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/util/memory/memory_interface.h"
@@ -44,7 +45,18 @@ inline uint64_t StretchMisa32(uint32_t value) {
 CoralNPUV2State::CoralNPUV2State(
     std::string id, RiscVXlen xlen, MemoryInterface* memory,
     ::mpact::sim::util::AtomicMemoryOpInterface* atomic_memory)
-    : RiscVState(id, xlen, memory, atomic_memory) {}
+    : RiscVState(id, xlen, memory, atomic_memory) {
+  // CoralNPU supports only IALIGN=32 (no C compressed extension).
+  // Per RISC-V Privileged Architecture Spec 3.1.14, mepc[1:0] must be zero.
+  auto mepc_result = csr_set()->GetCsr("mepc");
+  if (mepc_result.ok()) {
+    auto* mepc_csr =
+        static_cast<::mpact::sim::riscv::RiscV32SimpleCsr*>(*mepc_result);
+    mepc_csr->set_write_mask(mepc_csr->write_mask() &
+                             ~static_cast<uint32_t>(2));
+    mepc_csr->set_read_mask(mepc_csr->read_mask() & ~static_cast<uint32_t>(2));
+  }
+}
 
 CoralNPUV2State::~CoralNPUV2State() = default;
 
