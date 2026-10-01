@@ -227,7 +227,6 @@ cc_library(
     deps = [
         "@abseil-cpp//absl/functional:any_invocable",
         "@com_google_mpact-riscv//riscv:riscv_state",
-        "@mpact-sim//mpact/sim/generic:arch_state",
         "@mpact-sim//mpact/sim/generic:instruction",
         "@mpact-sim//mpact/sim/util/memory",
     ],
