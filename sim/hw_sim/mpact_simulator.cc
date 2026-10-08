@@ -32,6 +32,7 @@
 #include "riscv/riscv_top.h"
 #include "riscv/riscv_vector_state.h"
 #include "mpact/sim/generic/data_buffer.h"
+#include "mpact/sim/generic/decoder_interface.h"
 #include "mpact/sim/generic/instruction.h"
 #include "mpact/sim/generic/ref_count.h"
 #include "mpact/sim/util/memory/flat_demand_memory.h"
@@ -40,6 +41,10 @@
 namespace {
 
 const uint32_t kAddrMailbox = 0x401fc000;  // user-configurable
+
+// The mcause of the CoralNPU usage fault (custom cause 24 + 1), which the RTL
+// raises on ebreak.
+constexpr uint32_t kMcauseUsageFault = 25;
 
 // DMA Controller Constants
 constexpr uint32_t kDmaBase = 0x40050000;
@@ -62,16 +67,35 @@ constexpr uint32_t kDmaStatusBusy = 0x1;
 constexpr uint32_t kDmaStatusDone = 0x2;
 [[maybe_unused]] constexpr uint32_t kDmaStatusError = 0x4;
 
+// The callbacks set with SetTraceCallback and SetMemoryAccessCallback.
+struct ObserverState {
+  TraceCallback trace_callback;
+  bool trace_disasm = false;
+  MemoryAccessCallback memory_access_callback;
+  // True while the core runs, so that host ReadMem/WriteMem aren't reported.
+  bool core_running = false;
+  // True while the decoder fetches an instruction.
+  bool decoding = false;
+
+  // Returns whether to report data accesses: only those of the running core
+  // (not instruction fetches), and only if there is a callback.
+  bool ReportsMemory() const {
+    return core_running && !decoding && memory_access_callback != nullptr;
+  }
+};
+
 class DmaMemoryWrapper : public ::mpact::sim::util::MemoryInterface {
  public:
-  explicit DmaMemoryWrapper(::mpact::sim::util::MemoryInterface* parent)
-      : parent_(parent) {}
+  DmaMemoryWrapper(::mpact::sim::util::MemoryInterface* parent,
+                   const ObserverState* observer_state)
+      : parent_(parent), observer_state_(observer_state) {}
 
   ~DmaMemoryWrapper() override = default;
 
   void Load(uint64_t address, ::mpact::sim::generic::DataBuffer* db,
             ::mpact::sim::generic::Instruction* inst,
             ::mpact::sim::generic::ReferenceCount* context) override {
+    Report(address, db->size<uint8_t>(), /*is_store=*/false);
     if (IsDmaAddress(address)) {
       HandleDmaRead(address, db);
       if (inst != nullptr) {
@@ -83,6 +107,7 @@ class DmaMemoryWrapper : public ::mpact::sim::util::MemoryInterface {
   }
 
   void Store(uint64_t address, ::mpact::sim::generic::DataBuffer* db) override {
+    Report(address, db->size<uint8_t>(), /*is_store=*/true);
     if (IsDmaAddress(address)) {
       HandleDmaWrite(address, db);
       return;
@@ -95,16 +120,40 @@ class DmaMemoryWrapper : public ::mpact::sim::util::MemoryInterface {
             ::mpact::sim::generic::DataBuffer* db,
             ::mpact::sim::generic::Instruction* inst,
             ::mpact::sim::generic::ReferenceCount* context) override {
+    ReportVector(address_db, mask_db, el_size, /*is_store=*/false);
     parent_->Load(address_db, mask_db, el_size, db, inst, context);
   }
 
   void Store(::mpact::sim::generic::DataBuffer* address_db,
              ::mpact::sim::generic::DataBuffer* mask_db, int el_size,
              ::mpact::sim::generic::DataBuffer* db) override {
+    ReportVector(address_db, mask_db, el_size, /*is_store=*/true);
     parent_->Store(address_db, mask_db, el_size, db);
   }
 
  private:
+  // Reports a data access of the core to the memory access callback.
+  void Report(uint64_t address, int size, bool is_store) {
+    // Report only the core's own accesses, and only if there is a callback.
+    if (!observer_state_->ReportsMemory()) return;
+    observer_state_->memory_access_callback(
+        static_cast<uint32_t>(address), static_cast<uint32_t>(size), is_store);
+  }
+
+  // Reports each active element of a vector access as a data access.
+  void ReportVector(::mpact::sim::generic::DataBuffer* address_db,
+                    ::mpact::sim::generic::DataBuffer* mask_db, int el_size,
+                    bool is_store) {
+    // Report only the core's own accesses, and only if there is a callback.
+    if (!observer_state_->ReportsMemory()) return;
+    int num_elements = address_db->size<uint64_t>();
+    for (int i = 0; i < num_elements; ++i) {
+      // Inactive elements don't access memory.
+      if (mask_db != nullptr && !mask_db->Get<bool>(i)) continue;
+      Report(address_db->Get<uint64_t>(i), el_size, is_store);
+    }
+  }
+
   bool IsDmaAddress(uint64_t addr) {
     return addr >= kDmaBase && addr < kDmaBase + kDmaRegsSize;
   }
@@ -194,6 +243,7 @@ class DmaMemoryWrapper : public ::mpact::sim::util::MemoryInterface {
   }
 
   ::mpact::sim::util::MemoryInterface* parent_;
+  const ObserverState* observer_state_;
   uint32_t dma_ctrl_ = 0;
   uint32_t dma_status_ = 0;
   uint32_t dma_desc_addr_ = 0;
@@ -201,11 +251,93 @@ class DmaMemoryWrapper : public ::mpact::sim::util::MemoryInterface {
   uint32_t dma_xfer_remain_ = 0;
 };
 
+// Wraps a decoded instruction to call the trace callback before executing it.
+// Instruction has no getter for its semantic function, so the wrapper owns the
+// decoded instruction and executes it from its own semantic function.
+class ObservedInstruction : public ::mpact::sim::generic::Instruction {
+ public:
+  ObservedInstruction(::mpact::sim::generic::Instruction* inst,
+                      uint32_t encoding, const ObserverState* observer_state)
+      : Instruction(inst->address(), inst->state()),
+        inst_(inst),
+        encoding_(encoding),
+        observer_state_(observer_state) {
+    set_opcode(inst->opcode());
+    set_size(inst->size());
+    set_semantic_function(
+        [this](::mpact::sim::generic::Instruction*) { ExecuteObserved(); });
+  }
+
+  ~ObservedInstruction() override { inst_->DecRef(); }
+
+  std::string AsString() const override { return inst_->AsString(); }
+
+ private:
+  void ExecuteObserved() {
+    // The callback may have been removed since the instruction was decoded.
+    if (observer_state_->trace_callback) {
+      std::string disassembly;
+      if (observer_state_->trace_disasm) disassembly = inst_->AsString();
+      observer_state_->trace_callback(static_cast<uint32_t>(address()),
+                                      encoding_, disassembly);
+    }
+    inst_->Execute(context());
+  }
+
+  ::mpact::sim::generic::Instruction* inst_;
+  uint32_t encoding_;
+  const ObserverState* observer_state_;
+};
+
+// Forwards to the CoralNPU decoder. Marks instruction fetches, so that they
+// aren't reported as data accesses, and wraps the decoded instructions in
+// ObservedInstruction while a trace callback is set.
+class ObservingDecoder : public ::mpact::sim::generic::DecoderInterface {
+ public:
+  ObservingDecoder(::mpact::sim::generic::DecoderInterface* decoder,
+                   ::mpact::sim::util::MemoryInterface* memory,
+                   ObserverState* observer_state)
+      : decoder_(decoder),
+        memory_(memory),
+        observer_state_(observer_state),
+        encoding_db_(db_factory_.Allocate<uint32_t>(1)) {}
+
+  ~ObservingDecoder() override { encoding_db_->DecRef(); }
+
+  ::mpact::sim::generic::Instruction* DecodeInstruction(
+      uint64_t address) override {
+    observer_state_->decoding = true;
+    ::mpact::sim::generic::Instruction* inst =
+        decoder_->DecodeInstruction(address);
+    observer_state_->decoding = false;
+    // Without a trace callback, the instruction runs without the wrapper.
+    if (inst == nullptr || !observer_state_->trace_callback) return inst;
+    memory_->Load(address, encoding_db_, nullptr, nullptr);
+    uint32_t encoding = encoding_db_->Get<uint32_t>(0);
+    // Compressed instructions are 16 bits wide.
+    if (inst->size() == 2) encoding &= 0xffff;
+    return new ObservedInstruction(inst, encoding, observer_state_);
+  }
+
+  int GetNumOpcodes() const override { return decoder_->GetNumOpcodes(); }
+
+  const char* GetOpcodeName(int index) const override {
+    return decoder_->GetOpcodeName(index);
+  }
+
+ private:
+  ::mpact::sim::generic::DecoderInterface* decoder_;
+  ::mpact::sim::util::MemoryInterface* memory_;
+  ObserverState* observer_state_;
+  ::mpact::sim::generic::DataBufferFactory db_factory_;
+  ::mpact::sim::generic::DataBuffer* encoding_db_;
+};
+
 class MpactSimulator final : public CoralNPUSimulator {
  public:
   MpactSimulator()
       : memory_(),
-        dma_memory_(&memory_),
+        dma_memory_(&memory_, &observer_state_),
         rv_state_("RiscV32GV", mpact::sim::riscv::RiscVXlen::RV32,
                   &dma_memory_),
         rv_fp_state_(rv_state_.csr_set(), &rv_state_),
@@ -213,7 +345,8 @@ class MpactSimulator final : public CoralNPUSimulator {
             &rv_state_,
             /*byte_length=*/::coralnpu::sim::kCoralNPUV2VectorByteLength),
         rv_decoder_(&rv_state_, &dma_memory_),
-        rv_top_("CoralNPUPlaceholder", &rv_state_, &rv_decoder_) {
+        observing_decoder_(&rv_decoder_, &memory_, &observer_state_),
+        rv_top_("CoralNPUPlaceholder", &rv_state_, &observing_decoder_) {
     // Make sure the architectural and abi register aliases are added.
     std::string reg_name;
     for (int i = 0; i < 32; i++) {
@@ -256,6 +389,7 @@ class MpactSimulator final : public CoralNPUSimulator {
     // handler intercepts this and requests the simulator core to halt.
     rv_state_.AddMpauseHandler([this](const ::mpact::sim::generic::Instruction*
                                           inst) {
+      halted_ = true;
       rv_top_.RequestHalt(
           ::mpact::sim::generic::CoreDebugInterface::HaltReason::kUserRequest,
           inst);
@@ -297,6 +431,14 @@ class MpactSimulator final : public CoralNPUSimulator {
                 << mepc_disasm << ")"
                 << ", mtval=0x" << mtval << ", vtype=0x" << vtype << ", vl=0x"
                 << vl << ", frm=0x" << frm << std::dec;
+      // As on the RTL, ebreak is a usage fault: it sets mcause and mtval (not
+      // mepc) and halts the core with the fault bit set.
+      if (rv_state_.mcause()) rv_state_.mcause()->Set(kMcauseUsageFault);
+      if (rv_state_.mtval()) {
+        rv_state_.mtval()->Set(static_cast<uint32_t>(inst->address()));
+      }
+      halted_ = true;
+      fault_ = true;
       rv_top_.RequestHalt(
           ::mpact::sim::generic::CoreDebugInterface::HaltReason::kUserRequest,
           inst);
@@ -306,6 +448,8 @@ class MpactSimulator final : public CoralNPUSimulator {
     // Register handler for WFI (Wait For Interrupt) instructions.
     // The original simulator loop intercepted WFI (0x10500073) to halt.
     // RiscVState provides a built-in 'on_wfi' callback when executing WFI.
+    // The simulation stops, but as on the RTL, the core isn't halted: it waits
+    // for an interrupt.
     rv_state_.set_on_wfi([this](
                              const ::mpact::sim::generic::Instruction* inst) {
       rv_top_.RequestHalt(
@@ -323,18 +467,27 @@ class MpactSimulator final : public CoralNPUSimulator {
   void Run(uint32_t start_addr) final;
   bool WaitForTermination(int timeout) final;
   uint64_t GetCycleCount() const final;
-  void SetTraceCallback(TraceCallback callback, bool disasm) final;
+  bool SetTraceCallback(TraceCallback callback, bool disasm) final;
+  bool SetMemoryAccessCallback(MemoryAccessCallback callback) final;
+  bool ReadCoreState(CoralNPUCoreState* state) final;
 
  private:
   CoralNPUMailbox mailbox_;
+  ObserverState observer_state_;
   ::mpact::sim::util::FlatDemandMemory memory_;
   DmaMemoryWrapper dma_memory_;
   ::coralnpu::sim::CoralNPUV2State rv_state_;
   ::mpact::sim::riscv::RiscVFPState rv_fp_state_;
   ::mpact::sim::riscv::RiscVVectorState rvv_state_;
   ::coralnpu::sim::CoralNPUM3UserDecoder rv_decoder_;
+  ObservingDecoder observing_decoder_;
   ::mpact::sim::riscv::RiscVTop rv_top_;
-  TraceCallback trace_callback_;
+  // The status of the core, as in the status register of the RTL: mpause
+  // halts the core, ebreak halts it on a fault and wfi doesn't halt it.
+  bool halted_ = false;
+  bool fault_ = false;
+  // Whether the last run failed, so that the state of the core is unknown.
+  bool run_failed_ = false;
 };
 
 void MpactSimulator::ReadMem(uint32_t addr, size_t size, char* data) {
@@ -373,19 +526,28 @@ void MpactSimulator::WriteMailbox(const CoralNPUMailbox& mailbox) {
 }
 
 void MpactSimulator::Run(uint32_t start_addr) {
+  // The core status of the previous run doesn't apply to this one.
+  halted_ = false;
+  fault_ = false;
+  run_failed_ = false;
   absl::Status pc_write = rv_top_.WriteRegister("pc", start_addr);
   assert(pc_write.ok());
 }
 
 bool MpactSimulator::WaitForTermination(int timeout) {
+  observer_state_.core_running = true;
   auto status = rv_top_.Run();
   if (!status.ok()) {
+    observer_state_.core_running = false;
+    run_failed_ = true;
     LOG(ERROR) << "Simulator run failed: " << status.message();
     return false;
   }
 
   status = rv_top_.Wait();
+  observer_state_.core_running = false;
   if (!status.ok()) {
+    run_failed_ = true;
     LOG(ERROR) << "Simulator wait failed: " << status.message();
     return false;
   }
@@ -401,8 +563,36 @@ uint64_t MpactSimulator::GetCycleCount() const {
       ->GetValue();
 }
 
-void MpactSimulator::SetTraceCallback(TraceCallback callback, bool disasm) {
-  trace_callback_ = std::move(callback);
+bool MpactSimulator::SetTraceCallback(TraceCallback callback, bool disasm) {
+  observer_state_.trace_callback = std::move(callback);
+  observer_state_.trace_disasm = disasm;
+  return true;
+}
+
+bool MpactSimulator::SetMemoryAccessCallback(MemoryAccessCallback callback) {
+  observer_state_.memory_access_callback = std::move(callback);
+  return true;
+}
+
+bool MpactSimulator::ReadCoreState(CoralNPUCoreState* state) {
+  // After a failed run, the state of the core is unknown.
+  if (run_failed_) return false;
+  auto pc = rv_top_.ReadRegister("pc");
+  auto minstret = rv_state_.csr_set()->GetCsr("minstret");
+  auto minstreth = rv_state_.csr_set()->GetCsr("minstreth");
+  // Without the pc and minstret, the state is incomplete.
+  if (!pc.ok() || !minstret.ok() || !minstreth.ok()) return false;
+  state->halted = halted_;
+  state->fault = fault_;
+  state->pc = static_cast<uint32_t>(*pc);
+  state->mepc = rv_state_.mepc() ? rv_state_.mepc()->AsUint32() : 0;
+  state->mtval = rv_state_.mtval() ? rv_state_.mtval()->AsUint32() : 0;
+  state->mcause = rv_state_.mcause() ? rv_state_.mcause()->AsUint32() : 0;
+  // The CSR, as the firmware reads it: unlike the instruction counter of the
+  // simulator, it counts from the last write by the firmware.
+  state->minstret = (static_cast<uint64_t>((*minstreth)->AsUint32()) << 32) |
+                    (*minstret)->AsUint32();
+  return true;
 }
 
 }  // namespace
